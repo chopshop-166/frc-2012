@@ -6,8 +6,6 @@
 
 #include "Watchdog.h"
 
-#include "Utility.h"
-
 const double Watchdog::kDefaultWatchdogExpiration;
 
 /**

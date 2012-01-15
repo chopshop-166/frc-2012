@@ -4,9 +4,10 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#include "DriverStation.h"
 #include "IterativeRobot.h"
-#include "Utility.h"
+
+#include "DriverStation.h"
+#include <taskLib.h>
 
 const double IterativeRobot::kDefaultPeriod;
 

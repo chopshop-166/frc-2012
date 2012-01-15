@@ -11,34 +11,12 @@
 
 // XXX max and min are not used?
 
-PIDCommand::PIDOutputImpl::PIDOutputImpl(PIDCommand *pidcommand)
-{
-	command = pidcommand;
-}
-
-void PIDCommand::PIDOutputImpl::PIDWrite(float output)
-{
-	command->UsePIDOutput(output);
-}
-
-PIDCommand::PIDSourceImpl::PIDSourceImpl(PIDCommand *pidcommand)
-{
-	command = pidcommand;
-}
-
-double PIDCommand::PIDSourceImpl::PIDGet()
-{
-	return command->ReturnPIDInput();
-}
-
 PIDCommand::PIDCommand(const char *name, double p, double i, double d) :
 	Command(name)
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output);
+	m_controller = new SendablePIDController(p, i, d, this, this);
 }
 
 PIDCommand::PIDCommand(const char *name, double p, double i, double d, double period) :
@@ -46,32 +24,26 @@ PIDCommand::PIDCommand(const char *name, double p, double i, double d, double pe
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output, period);
+	m_controller = new SendablePIDController(p, i, d, this, this, period);
 }
 
 PIDCommand::PIDCommand(double p, double i, double d)
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output);
+	m_controller = new SendablePIDController(p, i, d, this, this);
 }
 
 PIDCommand::PIDCommand(double p, double i, double d, double period)
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output, period);
+	m_controller = new SendablePIDController(p, i, d, this, this, period);
 }
 
-PIDController *PIDCommand::GetPIDController()
+PIDCommand::~PIDCommand()
 {
-	return m_controller;
+	delete m_controller;
 }
 
 void PIDCommand::_Initialize()
@@ -92,6 +64,21 @@ void PIDCommand::_Interrupted()
 void PIDCommand::SetSetpointRelative(double deltaSetpoint)
 {
 	SetSetpoint(GetSetpoint() + deltaSetpoint);
+}
+
+void PIDCommand::PIDWrite(float output)
+{
+	UsePIDOutput(output);
+}
+
+double PIDCommand::PIDGet()
+{
+	return ReturnPIDInput();
+}
+
+PIDController *PIDCommand::GetPIDController()
+{
+	return m_controller;
 }
 
 void PIDCommand::SetSetpoint(double setpoint)

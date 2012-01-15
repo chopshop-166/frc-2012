@@ -15,7 +15,7 @@
 class NetworkTable;
 class SendablePIDController;
 
-class PIDSubsystem : public Subsystem
+class PIDSubsystem : public Subsystem, public PIDOutput, public PIDSource
 {
 public:
 	PIDSubsystem(const char *name, double p, double i, double d);
@@ -28,41 +28,32 @@ public:
 	void Disable();
 	NetworkTable *GetControllerTable();
 
+	// SmartDashboardData interface
 	virtual std::string GetType();
 
-protected:
-	PIDController *GetPIDController();
+	// PIDOutput interface
+	virtual void PIDWrite(float output);
+
+	// PIDSource interface
+	virtual double PIDGet();
 	void SetSetpoint(double setpoint);
 	void SetSetpointRelative(double deltaSetpoint);
 	double GetSetpoint();
 	double GetPosition();
 	void SetSetpointRange(double a, double b);
+
+protected:
+	PIDController *GetPIDController();
+
 	virtual double ReturnPIDInput() = 0;
 	virtual void UsePIDOutput(double output) = 0;
 
 private:
-	// TODO: Eliminate the classes
-	class PIDOutputImpl : public PIDOutput {
-	public:
-		PIDOutputImpl(PIDSubsystem *pidsubsystem);
-		void PIDWrite(float output);
-	
-	private:
-		PIDSubsystem *subsystem;
-	};
-	class PIDSourceImpl : public PIDSource {
-	public:
-		PIDSourceImpl(PIDSubsystem *pidsubsystem);
-		double PIDGet();
-		
-	private:
-		PIDSubsystem *subsystem;
-	};
-
 	/** The max setpoint value */
 	double m_max;
 	/** The min setpoint value */
 	double m_min;
+	/** The internal {@link PIDController} */
 	SendablePIDController *m_controller;
 };
 

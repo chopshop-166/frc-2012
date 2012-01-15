@@ -18,10 +18,22 @@
 Subsystem::Subsystem(const char *name) :
 	m_table(NULL),
 	m_currentCommand(NULL),
-	m_defaultCommand(NULL)
+	m_defaultCommand(NULL),
+	m_initializedDefaultCommand(false)
 {
 	m_name = name;
 	Scheduler::GetInstance()->RegisterSubsystem(this);
+}
+/**
+ * Initialize the default command for this subsystem
+ * This is meant to be the place to call SetDefaultCommand in a subsystem and will be called
+ * on all the subsystems by the CommandBase method before the program starts running by using
+ * the list of all registered Subsystems inside the Scheduler.
+ * 
+ * This should be overridden by a Subsystem that has a default Command
+ */
+void Subsystem::InitDefaultCommand() {
+
 }
 
 /**
@@ -81,6 +93,10 @@ void Subsystem::SetDefaultCommand(Command *command)
  */
 Command *Subsystem::GetDefaultCommand()
 {
+	if (!m_initializedDefaultCommand) {
+		m_initializedDefaultCommand = true;
+		InitDefaultCommand();
+	}
 	return m_defaultCommand;
 }
 

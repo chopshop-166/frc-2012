@@ -5,7 +5,6 @@
 /*----------------------------------------------------------------------------*/
 
 #include "BinaryImage.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 /** Private NI function needed to write to the VxWorks target */

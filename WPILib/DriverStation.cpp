@@ -8,9 +8,9 @@
 #include "AnalogChannel.h"
 #include "Synchronized.h"
 #include "Timer.h"
-#include "Utility.h"
 #include "NetworkCommunication/FRCComm.h"
 #include "MotorSafetyHelper.h"
+#include "Utility.h"
 #include "WPIErrors.h"
 #include <strLib.h>
 
@@ -202,7 +202,8 @@ void DriverStation::SetData()
  */
 float DriverStation::GetBatteryVoltage()
 {
-	wpi_assert(m_batteryChannel != NULL);
+	if (m_batteryChannel == NULL)
+		wpi_setWPIError(NullParameter);
 
 	// The Analog bumper has a voltage divider on the battery source.
 	// Vbatt *--/\/\/\--* Vsample *--/\/\/\--* Gnd
@@ -268,7 +269,9 @@ float DriverStation::GetStickAxis(UINT32 stick, UINT32 axis)
  */
 short DriverStation::GetStickButtons(UINT32 stick)
 {
-	wpi_assert ((stick >= 1) && (stick <= 4));
+	if (stick < 1 || stick > 4)
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "stick must be between 1 and 4");
+
 	switch (stick)
 	{
 	case 1:
@@ -297,7 +300,9 @@ short DriverStation::GetStickButtons(UINT32 stick)
  */
 float DriverStation::GetAnalogIn(UINT32 channel)
 {
-	wpi_assert ((channel >= 1) && (channel <= 4));
+	if (channel < 1 || channel > 4)
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "channel must be between 1 and 4");
+
 	switch (channel)
 	{
 	case 1:
@@ -320,7 +325,9 @@ float DriverStation::GetAnalogIn(UINT32 channel)
  */
 bool DriverStation::GetDigitalIn(UINT32 channel)
 {
-	wpi_assert ((channel >= 1) && (channel <= 8));
+	if (channel < 1 || channel > 8)
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "channel must be between 1 and 8");
+
 	return ((m_controlData->dsDigitalIn >> (channel-1)) & 0x1) ? true : false;
 }
 
@@ -335,7 +342,9 @@ bool DriverStation::GetDigitalIn(UINT32 channel)
  */
 void DriverStation::SetDigitalOut(UINT32 channel, bool value) 
 {
-	wpi_assert ((channel >= 1) && (channel <= 8));
+	if (channel < 1 || channel > 8)
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "channel must be between 1 and 8");
+
 	m_digitalOut &= ~(0x1 << (channel-1));
 	m_digitalOut |= ((UINT8)value << (channel-1));
 }
@@ -347,7 +356,9 @@ void DriverStation::SetDigitalOut(UINT32 channel, bool value)
  */
 bool DriverStation::GetDigitalOut(UINT32 channel) 
 {
-	wpi_assert ((channel >= 1) && (channel <= 8));
+	if (channel < 1 || channel > 8)
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "channel must be between 1 and 8");
+
 	return ((m_digitalOut >> (channel-1)) & 0x1) ? true : false;;
 }
 
@@ -454,4 +465,13 @@ double DriverStation::GetMatchTime()
 	if (m_approxMatchTimeOffset < 0.0)
 		return 0.0;
 	return Timer::GetFPGATimestamp() - m_approxMatchTimeOffset;
+}
+
+/**
+ * Return the team number that the Driver Station is configured for
+ * @return The team number
+ */
+UINT16 DriverStation::GetTeamNumber()
+{
+	return m_controlData->teamID;
 }

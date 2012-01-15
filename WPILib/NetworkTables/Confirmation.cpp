@@ -18,17 +18,18 @@ Confirmation::Confirmation(int count) :
 
 void Confirmation::Encode(Buffer *buffer)
 {
-	for (int i = m_count; i > 0; i -= kNetworkTables_DENIAL - 1)
+	for (int i = m_count; i > 0; i -= kNetworkTables_CONFIRMATION - 1)
 	{
-		buffer->WriteByte(kNetworkTables_DENIAL | std::min(kNetworkTables_DENIAL - 1, i));
+		buffer->WriteByte(kNetworkTables_CONFIRMATION | std::min(kNetworkTables_CONFIRMATION - 1, i));
 	}
 }
 
+// Currently unused
 Confirmation *Confirmation::Combine(Confirmation *a, Confirmation *b)
 {
-	a->m_count = a->m_count + a->m_count;
+	a->m_count = a->m_count + b->m_count;
 	delete b;
 	return a;
 }
 
-} // namespace
+}

@@ -7,7 +7,6 @@
 #include "Encoder.h"
 #include "DigitalInput.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 static Resource *quadEncoders = NULL;
@@ -34,6 +33,16 @@ void Encoder::InitEncoder(bool reverseDirection, EncodingType encodingType)
 		if (index == ~0ul)
 		{
 			CloneError(quadEncoders);
+			return;
+		}
+		if (m_aSource->StatusIsFatal())
+		{
+			CloneError(m_aSource);
+			return;
+		}
+		if (m_bSource->StatusIsFatal())
+		{
+			CloneError(m_bSource);
 			return;
 		}
 		m_index = index;
@@ -76,7 +85,9 @@ void Encoder::InitEncoder(bool reverseDirection, EncodingType encodingType)
  */
 Encoder::Encoder(UINT8 aModuleNumber, UINT32 aChannel,
 						UINT8 bModuleNumber, UINT32 bChannel,
-						bool reverseDirection, EncodingType encodingType)
+						bool reverseDirection, EncodingType encodingType) :
+	m_encoder(NULL),
+	m_counter(NULL)
 {
 	m_aSource = new DigitalInput(aModuleNumber, aChannel);
 	m_bSource = new DigitalInput(bModuleNumber, bChannel);
@@ -98,7 +109,9 @@ Encoder::Encoder(UINT8 aModuleNumber, UINT32 aChannel,
  * a counter object will be used and the returned value will either exactly match the spec'd count
  * or be double (2x) the spec'd count.
  */
-Encoder::Encoder(UINT32 aChannel, UINT32 bChannel, bool reverseDirection, EncodingType encodingType)
+Encoder::Encoder(UINT32 aChannel, UINT32 bChannel, bool reverseDirection, EncodingType encodingType) :
+	m_encoder(NULL),
+	m_counter(NULL)
 {
 	m_aSource = new DigitalInput(aChannel);
 	m_bSource = new DigitalInput(bChannel);
@@ -122,7 +135,9 @@ Encoder::Encoder(UINT32 aChannel, UINT32 bChannel, bool reverseDirection, Encodi
  * a counter object will be used and the returned value will either exactly match the spec'd count
  * or be double (2x) the spec'd count.
  */
-Encoder::Encoder(DigitalSource *aSource, DigitalSource *bSource, bool reverseDirection, EncodingType encodingType)
+Encoder::Encoder(DigitalSource *aSource, DigitalSource *bSource, bool reverseDirection, EncodingType encodingType) :
+	m_encoder(NULL),
+	m_counter(NULL)
 {
 	m_aSource = aSource;
 	m_bSource = bSource;
@@ -149,7 +164,9 @@ Encoder::Encoder(DigitalSource *aSource, DigitalSource *bSource, bool reverseDir
  * a counter object will be used and the returned value will either exactly match the spec'd count
  * or be double (2x) the spec'd count.
  */
-Encoder::Encoder(DigitalSource &aSource, DigitalSource &bSource, bool reverseDirection, EncodingType encodingType)
+Encoder::Encoder(DigitalSource &aSource, DigitalSource &bSource, bool reverseDirection, EncodingType encodingType) :
+	m_encoder(NULL),
+	m_counter(NULL)
 {
 	m_aSource = &aSource;
 	m_bSource = &bSource;

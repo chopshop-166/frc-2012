@@ -14,6 +14,7 @@ class Command;
 class Button : public SmartDashboardData
 {
 public:
+	Button();
 	virtual ~Button() {}
 	bool Grab();
 	virtual bool Get() = 0;

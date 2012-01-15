@@ -8,15 +8,41 @@
 
 #include "NetworkTables/NetworkTable.h"
 
+static const char *kP = "p";
+static const char *kI = "i";
+static const char *kD = "d";
+static const char *kSetpoint = "setpoint";
+static const char *kEnabled = "enabled";
+
+/**
+ * Allocate a PID object with the given constants for P, I, D, using a 50ms period.
+ * @param p the proportional coefficient
+ * @param i the integral coefficient
+ * @param d the derivative coefficient
+ * @param source The PIDSource object that is used to get values
+ * @param output The PIDOutput object that is set to the output value
+ */
 SendablePIDController::SendablePIDController(double p, double i, double d,
 	PIDSource* source, PIDOutput* output) :
-	PIDController(p, i, d, source, output)
+	PIDController(p, i, d, source, output),
+	m_table(NULL)
 {
 }
 
+/**
+ * Allocate a PID object with the given constants for P, I, D
+ * @param p the proportional coefficient
+ * @param i the integral coefficient
+ * @param d the derivative coefficient
+ * @param source The PIDSource object that is used to get values
+ * @param output The PIDOutput object that is set to the output value
+ * @param period the loop time for doing calculations in seconds. This particularly effects calculations of the
+ * integral and differential terms. The default is 50ms.
+ */
 SendablePIDController::SendablePIDController(double p, double i, double d,
 	PIDSource* source, PIDOutput* output, double period) :
-	PIDController(p, i, d, source, output, period)
+	PIDController(p, i, d, source, output, period),
+	m_table(NULL)
 {
 }
 
@@ -26,32 +52,59 @@ SendablePIDController::~SendablePIDController()
 		m_table->RemoveChangeListenerAny(this);
 }
 
+/**
+ * Set the setpoint for the PIDController
+ * @param setpoint the desired setpoint
+ */
+void SendablePIDController::SetSetpoint(float setpoint)
+{
+	PIDController::SetSetpoint(setpoint);
+
+	if (m_table != NULL)
+	{
+		m_table->PutDouble(kSetpoint, setpoint);
+	}
+}
+
+/**
+ * Set the PID Controller gain parameters.
+ * Set the proportional, integral, and differential coefficients.
+ * @param p Proportional coefficient
+ * @param i Integral coefficient
+ * @param d Differential coefficient
+ */
 void SendablePIDController::SetPID(double p, double i, double d)
 {
 	PIDController::SetPID(p, i, d);
 
 	if (m_table != NULL)
 	{
-		m_table->PutDouble("p", p);
-		m_table->PutDouble("i", i);
-		m_table->PutDouble("d", d);
+		m_table->PutDouble(kP, p);
+		m_table->PutDouble(kI, i);
+		m_table->PutDouble(kD, d);
 	}
 }
 
+/**
+ * Begin running the PIDController
+ */
 void SendablePIDController::Enable()
 {
 	PIDController::Enable();
 
 	if (m_table != NULL)
-		m_table->PutBoolean("enabled", true);
+		m_table->PutBoolean(kEnabled, true);
 }
 
+/**
+ * Stop running the PIDController, this sets the output to zero before stopping.
+ */
 void SendablePIDController::Disable()
 {
 	PIDController::Disable();
 
 	if (m_table != NULL)
-		m_table->PutBoolean("enabled", false);
+		m_table->PutBoolean(kEnabled, false);
 }
 
 NetworkTable* SendablePIDController::GetTable()
@@ -60,11 +113,11 @@ NetworkTable* SendablePIDController::GetTable()
 	{
 		m_table = new NetworkTable();
 
-		m_table->PutDouble("p", GetP());
-		m_table->PutDouble("i", GetI());
-		m_table->PutDouble("d", GetD());
-		m_table->PutDouble("setpoint", GetSetpoint());
-		m_table->PutBoolean("enabled", IsEnabled());
+		m_table->PutDouble(kP, GetP());
+		m_table->PutDouble(kI, GetI());
+		m_table->PutDouble(kD, GetD());
+		m_table->PutDouble(kSetpoint, GetSetpoint());
+		m_table->PutBoolean(kEnabled, IsEnabled());
 
 		m_table->AddChangeListenerAny(this);
 	}
@@ -73,18 +126,18 @@ NetworkTable* SendablePIDController::GetTable()
 
 void SendablePIDController::ValueChanged(NetworkTable *table, const char *name, NetworkTables_Types type)
 {
-	if (strcmp(name, "p") == 0 || strcmp(name, "i") == 0 || strcmp(name, "d") == 0)
+	if (strcmp(name, kP) == 0 || strcmp(name, kI) == 0 || strcmp(name, kD) == 0)
 	{
-		PIDController::SetPID(table->GetDouble("p"), table->GetDouble("i"),
-			table->GetDouble("d"));
+		PIDController::SetPID(table->GetDouble(kP), table->GetDouble(kI),
+			table->GetDouble(kD));
 	}
-	else if (strcmp(name, "setpoint") == 0)
+	else if (strcmp(name, kSetpoint) == 0)
 	{
-		PIDController::SetSetpoint(table->GetDouble("setpoint"));
+		PIDController::SetSetpoint(table->GetDouble(kSetpoint));
 	}
-	else if (strcmp(name, "enabled") == 0)
+	else if (strcmp(name, kEnabled) == 0)
 	{
-		if (table->GetBoolean("enabled"))
+		if (table->GetBoolean(kEnabled))
 			PIDController::Enable();
 		else
 			PIDController::Disable();

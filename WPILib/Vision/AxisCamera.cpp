@@ -4,10 +4,12 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
+#include "Vision/AxisCamera.h"
+
 #include <string.h>
 #include "Synchronized.h"
-#include "AxisCamera.h"
-#include "PCVideoServer.h"
+#include "Vision/PCVideoServer.h"
+#include "WPIErrors.h"
 
 /** Private NI function to decode JPEG */
 IMAQ_FUNC int Priv_ReadJPEGString_C(Image* _image, const unsigned char* _string, UINT32 _stringLength);
@@ -23,18 +25,19 @@ AxisCamera *AxisCamera::_instance = NULL;
  */
 AxisCamera::AxisCamera(const char *ipAddress)
 	: AxisCameraParams(ipAddress)
-	, m_cameraSocket (0)
+	, m_cameraSocket(ERROR)
 	, m_protectedImageBuffer(NULL)
-	, m_protectedImageBufferLength (0)
-	, m_protectedImageSize (0)
-	, m_protectedImageSem (NULL)
-	, m_freshImage (false)
+	, m_protectedImageBufferLength(0)
+	, m_protectedImageSize(0)
+	, m_protectedImageSem(NULL)
+	, m_freshImage(false)
 	, m_imageStreamTask("cameraTask", (FUNCPTR)s_ImageStreamTaskFunction)
-	, m_videoServer (NULL)
+	, m_videoServer(NULL)
 {
 	m_protectedImageSem = semMCreate(SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
 
-	m_imageStreamTask.Start((int)this);
+	if (!StatusIsFatal())
+		m_imageStreamTask.Start((int)this); 
 }
 
 /**
@@ -57,11 +60,11 @@ AxisCamera::~AxisCamera()
 	m_newImageSemSet.clear();
 
 	semDelete(m_protectedImageSem);
-	_instance = NULL;
 }
 
 /**
  * Get a pointer to the AxisCamera object, if the object does not exist, create it
+ * To use the camera on port 2 of a cRIO-FRC, pass "192.168.0.90" to the first GetInstance call.
  * @return reference to AxisCamera object
  */
 AxisCamera &AxisCamera::GetInstance(const char *cameraIP)
@@ -82,6 +85,7 @@ AxisCamera &AxisCamera::GetInstance(const char *cameraIP)
 void AxisCamera::DeleteInstance()
 {
 	delete _instance;
+	_instance = NULL;
 }
 
 /**
@@ -125,6 +129,7 @@ int AxisCamera::GetImage(Image* imaqImage)
 	return 1;
 }
 
+#if JAVA_CAMERA_LIB != 1
 /**
  * Get an image from the camera and store it in the provided image.
  * @param image The image to store the result in. This must be an HSL or RGB image
@@ -147,6 +152,7 @@ HSLImage* AxisCamera::GetImage()
 	GetImage(image);
 	return image;
 }
+#endif
 
 /**
  * Copy an image into an existing buffer.
@@ -161,8 +167,12 @@ HSLImage* AxisCamera::GetImage()
 int AxisCamera::CopyJPEG(char **destImage, int &destImageSize, int &destImageBufferSize)
 {
 	Synchronized sync(m_protectedImageSem);
-	wpi_assert(destImage != NULL);
-	if (m_protectedImageBuffer == NULL) return 0; // if no source image
+	if (destImage == NULL)
+		wpi_setWPIErrorWithContext(NullParameter, "destImage must not be NULL");
+
+	if (m_protectedImageBuffer == NULL || m_protectedImageSize <= 0)
+		return 0; // if no source image
+
 	if (destImageBufferSize < m_protectedImageSize) // if current destination buffer too small
 	{
 		if (*destImage != NULL) delete [] *destImage;
@@ -171,9 +181,10 @@ int AxisCamera::CopyJPEG(char **destImage, int &destImageSize, int &destImageBuf
 		if (*destImage == NULL) return 0;
 	}
 	// copy this image into destination buffer
-	wpi_assert(*destImage != NULL);
-	wpi_assert(m_protectedImageBuffer != NULL);
-	wpi_assert(m_protectedImageSize > 0);
+	if (*destImage == NULL)
+	{
+		wpi_setWPIErrorWithContext(NullParameter, "*destImage must not be NULL");
+	}
 	// TODO: Is this copy realy necessary... perhaps we can simply transmit while holding the protected buffer
 	memcpy(*destImage, m_protectedImageBuffer, m_protectedImageSize);
 	destImageSize = m_protectedImageSize;
@@ -207,7 +218,7 @@ Cache-Control: no-cache\n\
 Authorization: Basic RlJDOkZSQw==\n\n";
 		semTake(m_socketPossessionSem, WAIT_FOREVER);
 		m_cameraSocket = CreateCameraSocket(requestString);
-		if (m_cameraSocket == 0)
+		if (m_cameraSocket == ERROR)
 		{
 			// Don't hammer the camera if it isn't ready.
 			semGive(m_socketPossessionSem);
@@ -246,9 +257,9 @@ int AxisCamera::ReadImagesFromCamera()
 			// TODO: fix me... this cannot be the most efficient way to approach this, reading one byte at a time.
 			if(recv(m_cameraSocket, intermediateBuffer, 1, 0) == ERROR)
 			{
-				perror ("AxisCamera: Failed to read image header");
+				wpi_setErrnoErrorWithContext("Failed to read image header");
 				close (m_cameraSocket);
-				return (ERROR);
+				return ERROR;
 			}
 			strncat(initialReadBuffer, intermediateBuffer, 1);
 			// trailingCounter ensures that we start looking for the 4 byte string after
@@ -267,9 +278,9 @@ int AxisCamera::ReadImagesFromCamera()
 		char *contentLength = strstr(initialReadBuffer, "Content-Length: ");
 		if (contentLength == NULL)
 		{
-			perror("AxisCamera: No content-length token found in packet");
+			wpi_setWPIErrorWithContext(IncompatibleMode, "No content-length token found in packet");
 			close(m_cameraSocket);
-			return(ERROR);
+			return ERROR;
 		}
 		contentLength = contentLength + 16; // skip past "content length"
 		int readLength = atol(contentLength); // get the image byte count
@@ -303,7 +314,7 @@ int AxisCamera::ReadImagesFromCamera()
 			// params need to be updated: close the video stream; release the camera.
 			close(m_cameraSocket);
 			semGive(m_socketPossessionSem);
-			return(0);
+			return 0;
 		}
 	}
 }
@@ -354,13 +365,26 @@ void AxisCamera::RestartCameraTask()
 	m_imageStreamTask.Start((int)this);
 }
 
+#if JAVA_CAMERA_LIB == 1
 
 // C bindings used by Java
 // These need to stay as is or Java has to change
 
-void AxisCameraStart()
+void AxisCameraStart(const char *IPAddress)
 {
-	AxisCamera::GetInstance();
+#ifdef SVN_REV
+	if (strlen(SVN_REV))
+	{
+		printf("JavaCameraLib was compiled from SVN revision %s\n", SVN_REV);
+	}
+	else
+	{
+		printf("JavaCameraLib was compiled from a location that is not source controlled.\n");
+	}
+#else
+	printf("JavaCameraLib was compiled without -D'SVN_REV=nnnn'\n");
+#endif
+	AxisCamera::GetInstance(IPAddress);
 }
 
 int AxisCameraGetImage (Image* image)
@@ -460,11 +484,13 @@ AxisCameraParams::Rotation_t AxisCameraGetRotation()
 
 void AxisCameraDeleteInstance()
 {
-	AxisCamera::GetInstance().DeleteInstance();
+	AxisCamera::DeleteInstance();
 }
 
 int AxisCameraFreshImage()
 {
 	return AxisCamera::GetInstance().IsFreshImage();
 }
+
+#endif // JAVA_CAMERA_LIB == 1
 

@@ -6,7 +6,6 @@
 
 #include "Task.h"
 
-#include "Utility.h"
 #include "WPIErrors.h"
 #include <errnoLib.h>
 #include <string.h>

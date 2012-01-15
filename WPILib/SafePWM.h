@@ -4,12 +4,13 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef _SAFE_PWM_
-#define _SAFE_PWM_
+#ifndef __SAFE_PWM__
+#define __SAFE_PWM__
 
 #include "MotorSafety.h"
-#include "MotorSafetyHelper.h"
 #include "PWM.h"
+
+class MotorSafetyHelper;
 
 /**
  * A safe version of the PWM class.
@@ -18,7 +19,8 @@
  * This delegates the actual work to a MotorSafetyHelper object that is used for all
  * objects that implement MotorSafety.
  */
-class SafePWM: public PWM, public MotorSafety {
+class SafePWM: public PWM, public MotorSafety
+{
 public:
 	explicit SafePWM(UINT32 channel);
 	SafePWM(UINT8 moduleNumber, UINT32 channel);
@@ -30,6 +32,7 @@ public:
 	void StopMotor();
 	bool IsSafetyEnabled();
 	void SetSafetyEnabled(bool enabled);
+	void GetDescription(char *desc);
 
 	virtual void SetSpeed(float speed);
 private:

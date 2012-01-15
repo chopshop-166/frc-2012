@@ -9,9 +9,9 @@
 #include "PWM.h"
 #include "Resource.h"
 #include "Synchronized.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 #include <math.h>
+#include <taskLib.h>
 
 static Resource *DIOChannels = NULL;
 static Resource *DO_PWMGenerators[tDIO::kNumSystems] = {NULL};

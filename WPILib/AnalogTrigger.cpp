@@ -9,7 +9,6 @@
 #include "AnalogChannel.h"
 #include "AnalogModule.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 static Resource *triggers = NULL;
@@ -121,7 +120,8 @@ void AnalogTrigger::SetAveraged(bool useAveragedValue)
 {
 	if (StatusIsFatal()) return;
 	tRioStatusCode localStatus = NiFpga_Status_Success;
-	wpi_assert(m_trigger->readSourceSelect_Filter(&localStatus) == 0);
+	if (m_trigger->readSourceSelect_Filter(&localStatus) != 0)
+		wpi_setWPIErrorWithContext(IncompatibleMode, "Hardware does not support average and filtering at the same time.");
 	m_trigger->writeSourceSelect_Averaged(useAveragedValue, &localStatus);
 	wpi_setError(localStatus);
 }
@@ -135,7 +135,8 @@ void AnalogTrigger::SetFiltered(bool useFilteredValue)
 {
 	if (StatusIsFatal()) return;
 	tRioStatusCode localStatus = NiFpga_Status_Success;
-	wpi_assert(m_trigger->readSourceSelect_Averaged(&localStatus) == 0);
+	if (m_trigger->readSourceSelect_Averaged(&localStatus) != 0)
+		wpi_setWPIErrorWithContext(IncompatibleMode, "Hardware does not support average and filtering at the same time.");
 	m_trigger->writeSourceSelect_Filter(useFilteredValue, &localStatus);
 	wpi_setError(localStatus);
 }

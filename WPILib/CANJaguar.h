@@ -87,6 +87,7 @@ public:
 	void StopMotor();
 	bool IsSafetyEnabled();
 	void SetSafetyEnabled(bool enabled);
+	void GetDescription(char *desc);
 
 protected:
 	UINT8 packPercentage(UINT8 *buffer, double value);

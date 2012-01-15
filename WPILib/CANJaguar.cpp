@@ -9,7 +9,6 @@
 #include "ChipObject/NiFpga.h"
 #include "CAN/JaguarCANDriver.h"
 #include "CAN/can_proto.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 #include <stdio.h>
 
@@ -1213,6 +1212,11 @@ bool CANJaguar::IsSafetyEnabled()
 void CANJaguar::SetSafetyEnabled(bool enabled)
 {
 	if (m_safetyHelper) m_safetyHelper->SetSafetyEnabled(enabled);
+}
+
+void CANJaguar::GetDescription(char *desc)
+{
+	sprintf(desc, "CANJaguar ID %d", m_deviceNumber);
 }
 
 /**

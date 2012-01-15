@@ -6,9 +6,8 @@
 
 #include "SensorBase.h"
 
-#include "Utility.h"
-#include "WPIErrors.h"
 #include "NetworkCommunication/LoadOut.h"
+#include "WPIErrors.h"
 
 const UINT32 SensorBase::kSystemClockTicksPerMicrosecond;
 const UINT32 SensorBase::kDigitalChannels;

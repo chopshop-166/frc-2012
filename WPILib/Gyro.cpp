@@ -8,7 +8,6 @@
 #include "AnalogChannel.h"
 #include "AnalogModule.h"
 #include "Timer.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 const UINT32 Gyro::kOversampleBits;
