@@ -77,8 +77,8 @@ void Scheduler::ProcessCommandAddition(Command *command)
 	}
 
 	// Only add if not already in
-	CommandMap::iterator found = m_commandMap.find(command);
-	if (found != m_commandMap.end())
+	CommandSet::iterator found = m_commands.find(command);
+	if (found == m_commands.end())
 	{
 		// Check that the requirements can be had
 		Command::SubsystemSet requirements = command->GetRequirements();
@@ -104,9 +104,7 @@ void Scheduler::ProcessCommandAddition(Command *command)
 		}
 		m_adding = false;
 
-		m_commands.push_back(command);
-		CommandList::iterator commandListElement = m_commands.end()--;
-		m_commandMap.insert(CommandMap::value_type(command, commandListElement));
+		m_commands.insert(command);
 
 		command->StartRunning();
 	}
@@ -137,12 +135,16 @@ void Scheduler::Run()
 	}
 
 	// Loop through the commands
-	CommandList::iterator commandIter = m_commands.begin();
-	for (; commandIter != m_commands.end(); commandIter++)
+	CommandSet::iterator commandIter = m_commands.begin();
+	for (; commandIter != m_commands.end();)
 	{
 		Command *command = *commandIter;
+		// Increment before potentially removing to keep the iterator valid
+		commandIter++;
 		if (!command->Run())
+		{
 			Remove(command);
+		}
 	}
 
 	// Send the value over the table
@@ -212,12 +214,8 @@ void Scheduler::Remove(Command *command)
 		return;
 	}
 
-	CommandMap::iterator commandMapIter = m_commandMap.find(command);
-	if (commandMapIter == m_commandMap.end())
+	if (!m_commands.erase(command))
 		return;
-
-	m_commands.erase(commandMapIter->second);
-	m_commandMap.erase(commandMapIter);
 
 	Command::SubsystemSet requirements = command->GetRequirements();
 	Command::SubsystemSet::iterator iter = requirements.begin();

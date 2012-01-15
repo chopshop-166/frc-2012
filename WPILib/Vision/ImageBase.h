@@ -9,10 +9,9 @@
 
 #include <stdio.h>
 #include "nivision.h"
-#include "Utility.h"
 #include "ErrorBase.h"
 
-#define DEFAULT_BORDER_SIZE				3
+#define DEFAULT_BORDER_SIZE 3
 
 class ImageBase : public ErrorBase
 {

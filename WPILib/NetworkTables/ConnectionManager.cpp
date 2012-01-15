@@ -8,41 +8,55 @@
 
 #include "NetworkTables/Connection.h"
 #include "NetworkTables/InterfaceConstants.h"
+#include "Synchronized.h"
+#include "WPIErrors.h"
+
 #include <inetLib.h>
+#include <selectLib.h>
+#include <semLib.h>
 #include <sockLib.h>
 #include <taskLib.h>
+#include <usrLib.h>
+
+#define kPort 1735
 
 namespace NetworkTables
 {
 
-const int ConnectionManager::kPort = 1735;
-bool ConnectionManager::_isServer = true;
-bool ConnectionManager::_initialized = false;
-ConnectionManager::ConnectionSet_t ConnectionManager::_connections;
-Task *ConnectionManager::_listener = NULL;
-bool ConnectionManager::_run = true;
+ConnectionManager *ConnectionManager::_instance = NULL;
 
-void ConnectionManager::Initialize()
+ConnectionManager::ConnectionManager() :
+	m_isServer(true),
+	m_listener("NetworkTablesListener", (FUNCPTR)InitListenTask),
+	m_run(true),
+	m_listenSocket(-1),
+	m_connectionLock(NULL)
 {
-	if (!_initialized)
-	{
-		_listener = new Task("NetworkTablesListener", (FUNCPTR)AcceptConnections);
-		_initialized = true;
-		_listener->Start();
-	}
+	AddToSingletonList();
+	m_connectionLock = semMCreate(SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
+	m_listener.Start((UINT32)this);
 }
 
-void ConnectionManager::Shutdown()
+ConnectionManager::~ConnectionManager()
 {
-	_run = false;
-	while(_listener->Verify())
+	close(m_listenSocket);
+	_instance->m_run = false;
+	while(_instance->m_listener.Verify())
 		taskDelay(10);
-	delete _listener;
+	semTake(m_connectionLock, WAIT_FOREVER);
+	m_connections.clear();
+	semDelete(m_connectionLock);
 }
 
-int ConnectionManager::AcceptConnections()
+ConnectionManager *ConnectionManager::GetInstance()
 {
-	int listenSocket;
+	if (_instance == NULL)
+		_instance = new ConnectionManager();
+	return _instance;
+}
+
+int ConnectionManager::ListenTaskRun()
+{
 	struct sockaddr_in serverAddr;
 	int sockAddrSize = sizeof(serverAddr);
 	bzero((char *)&serverAddr, sockAddrSize);
@@ -52,49 +66,82 @@ int ConnectionManager::AcceptConnections()
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	// Create the socket.
-	if ((listenSocket = socket(AF_INET, SOCK_STREAM, 0)) == ERROR)
+	if ((m_listenSocket = socket(AF_INET, SOCK_STREAM, 0)) == ERROR)
 	{
+		printErrno(0);
+		wpi_setGlobalWPIErrorWithContext(ResourceAlreadyAllocated, "Could not create NetworkTables server socket");
 		return -1;
 	}
 
 	// Set the TCP socket so that it can be reused if it is in the wait state.
 	int reuseAddr = 1;
-	setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseAddr, sizeof(reuseAddr));
+	setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseAddr, sizeof(reuseAddr));
 
 	// Bind socket to local address.
-	if (bind(listenSocket, (struct sockaddr *)&serverAddr, sockAddrSize) == ERROR)
+	if (bind(m_listenSocket, (struct sockaddr *)&serverAddr, sockAddrSize) == ERROR)
 	{
-		close(listenSocket);
+		close(m_listenSocket);
+		printErrno(0);
+		wpi_setGlobalWPIErrorWithContext(ResourceAlreadyAllocated, "Could not bind NetworkTables server socket");
 		return -1;
 	}
 
-	while (_run)
+	if (listen(m_listenSocket, 1) == ERROR)
 	{
-		// Create queue for client connection requests.
-		if (listen(listenSocket, 1) == ERROR)
-			continue;
+		close(m_listenSocket);
+		printErrno(0);
+		wpi_setGlobalWPIErrorWithContext(ResourceAlreadyAllocated, "Could not listen on NetworkTables server socket");
+		return -1;
+	}
 
-		struct sockaddr clientAddr;
-		int clientAddrSize;
-		int connectedSocket = accept(listenSocket, &clientAddr, &clientAddrSize);
-		if (connectedSocket == ERROR)
-			continue;
+	struct timeval timeout;
+	// Check for a shutdown once per second
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	while (m_run)
+	{
+		fd_set fdSet;
 
-		// TODO: Linger option?
-		AddConnection(new Connection(connectedSocket));
+		FD_ZERO(&fdSet);
+		FD_SET(m_listenSocket, &fdSet);
+		if (select(FD_SETSIZE, &fdSet, NULL, NULL, &timeout) > 0)
+		{
+			if (FD_ISSET(m_listenSocket, &fdSet))
+			{
+				struct sockaddr clientAddr;
+				int clientAddrSize;
+				int connectedSocket = accept(m_listenSocket, &clientAddr, &clientAddrSize);
+				if (connectedSocket == ERROR)
+					continue;
+
+				// TODO: Linger option?
+				AddConnection(new Connection(connectedSocket));
+			}
+		}
 	}
 	return 0;
 }
 
 void ConnectionManager::AddConnection(Connection *connection)
 {
-	_connections.insert(connection);
+	{
+		Synchronized sync(m_connectionLock);
+		if (!m_connections.insert(connection).second)
+		{
+			wpi_setGlobalWPIErrorWithContext(ResourceAlreadyAllocated, "Connection object already exists");
+			return;
+		}
+	}
 	connection->Start();
 }
 
 void ConnectionManager::RemoveConnection(Connection *connection)
 {
-	_connections.erase(connection);
+	{
+		Synchronized sync(m_connectionLock);
+		m_connections.erase(connection);
+	}
+	delete connection;
 }
 
-} // namespace
+}

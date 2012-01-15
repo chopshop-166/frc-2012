@@ -8,6 +8,7 @@
 #define __CONNECTION_MANAGER_H__
 
 #include "NetworkTables/Data.h"
+#include "SensorBase.h"
 #include "Task.h"
 #include <set>
 
@@ -15,26 +16,34 @@ namespace NetworkTables
 {
 class Connection;
 
-class ConnectionManager
+class ConnectionManager : public SensorBase
 {
 	friend class Connection;
 public:
-	static void Initialize();
-	static void Shutdown();
-	static const int kPort;
-private:
-	static int AcceptConnections();
-	static void AddConnection(Connection *connection);
-	static void RemoveConnection(Connection *connection);
+	static ConnectionManager *GetInstance();
 
-	typedef std::set<Connection *> ConnectionSet_t;
-	static bool _isServer;
-	static bool _initialized;
-	static ConnectionSet_t _connections;
-	static Task *_listener;
-	static bool _run;
+private:
+	ConnectionManager();
+	~ConnectionManager();
+
+	int ListenTaskRun();
+	bool IsServer() {return m_isServer;}
+	void AddConnection(Connection *connection);
+	void RemoveConnection(Connection *connection);
+
+	static int InitListenTask(ConnectionManager *obj) {obj->ListenTaskRun();return 0;}
+
+	typedef std::set<Connection *> ConnectionSet;
+	bool m_isServer;
+	ConnectionSet m_connections;
+	Task m_listener;
+	bool m_run;
+	int m_listenSocket;
+	SEM_ID m_connectionLock;
+
+	static ConnectionManager *_instance;
 };
 
-} // namespace
+}
 
-#endif // __CONNECTION_MANAGER_H__
+#endif

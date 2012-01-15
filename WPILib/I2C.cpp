@@ -7,8 +7,8 @@
 #include "I2C.h"
 #include "DigitalModule.h"
 #include "Synchronized.h"
-#include "Utility.h"
 #include "WPIErrors.h"
+#include <taskLib.h>
 
 SEM_ID I2C::m_semaphore = NULL;
 UINT32 I2C::m_objCount = 0;

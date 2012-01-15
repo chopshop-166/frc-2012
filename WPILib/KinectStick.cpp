@@ -5,9 +5,19 @@
 /*----------------------------------------------------------------------------*/
 
 #include "KinectStick.h"
+
+#include "DriverStation.h"
 #include "Joystick.h"
-#include "Utility.h"
 #include "NetworkCommunication/FRCComm.h"
+#include "Utility.h"
+#include "WPIErrors.h"
+
+UINT32 KinectStick::_recentPacketNumber = 0;
+KinectStick::KinectStickData KinectStick::_sticks;
+
+#define kJoystickBundleID kFRC_NetworkCommunication_DynamicType_Kinect_Joystick
+#define kTriggerMask 1
+#define kTopMask 2
 
 /**
  * Kinect joystick constructor
@@ -16,20 +26,12 @@
  */
 KinectStick::KinectStick(int id)
 {
-	wpi_assert(id == 1 || id == 2);
-	m_id = id;
-}
-
-/**
- * Get dynamic data from the driver station buffer
- */
-void KinectStick::GetData()
-{
-	int retVal = getDynamicControlData(kJoystickBundleID, sticks.data, sizeof(sticks.data), 5);
-	if (retVal == 0)
+	if (id != 1 && id != 2)
 	{
-		wpi_assert(sticks.formatted.size == sizeof(sticks.data) - 1);
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "KinectStick ID must be 1 or 2");
+		return;
 	}
+	m_id = id;
 }
 
 /**
@@ -38,26 +40,7 @@ void KinectStick::GetData()
  */
 float KinectStick::GetX(JoystickHand hand)
 {
-	return 0.0;
-}
-
-/**
- * Convert an 8 bit joystick value to a floating point (-1,1) value
- * @param value The 8 bit raw joystick value returned from the driver station
- */
-float KinectStick::convertRawToFloat(INT8 value)
-{
-	float result;
-	if (value < 0)
-		result = ((float) value) / 128.0;
-	else
-		result = ((float) value) / 127.0;
-	wpi_assert(result <= 1.0 && result >= -1.0);
-	if (result > 1.0)
-		result = 1.0;
-	else if (result < -1.0)
-		result = -1.0;
-	return result;
+	return GetRawAxis(Joystick::kDefaultXAxis);
 }
 
 /**
@@ -67,9 +50,7 @@ float KinectStick::convertRawToFloat(INT8 value)
  */
 float KinectStick::GetY(JoystickHand hand)
 {
-	GetData();
-	float value = convertRawToFloat(sticks.formatted.rawSticks[m_id - 1].axis[Joystick::kYAxis]);
-	return value;
+	return GetRawAxis(Joystick::kDefaultYAxis);
 }
 
 /**
@@ -78,7 +59,7 @@ float KinectStick::GetY(JoystickHand hand)
  */
 float KinectStick::GetZ()
 {
-	return 0;
+	return GetRawAxis(Joystick::kDefaultZAxis);
 }
 
 /**
@@ -87,7 +68,7 @@ float KinectStick::GetZ()
  */
 float KinectStick::GetTwist()
 {
-	return 0;
+	return GetRawAxis(Joystick::kDefaultTwistAxis);
 }
 
 /**
@@ -96,7 +77,7 @@ float KinectStick::GetTwist()
  */
 float KinectStick::GetThrottle()
 {
-	return 0;
+	return GetRawAxis(Joystick::kDefaultThrottleAxis);
 }
 
 /**
@@ -105,10 +86,11 @@ float KinectStick::GetThrottle()
  */
 float KinectStick::GetRawAxis(UINT32 axis)
 {
-	if (axis == Joystick::kYAxis)
-		return GetY();
-	else
-		return 0;
+	if (StatusIsFatal()) return 0.0;
+
+	GetData();
+	float value = ConvertRawToFloat(_sticks.formatted.rawSticks[m_id - 1].axis[axis-1]);
+	return value;
 }
 
 /**
@@ -118,8 +100,7 @@ float KinectStick::GetRawAxis(UINT32 axis)
  */
 bool KinectStick::GetTrigger(JoystickHand hand)
 {
-	GetData();
-	return (sticks.formatted.rawSticks[m_id - 1].buttons & kTriggerMask) != 0;
+	return GetRawButton(kTriggerMask);
 }
 
 /**
@@ -129,18 +110,59 @@ bool KinectStick::GetTrigger(JoystickHand hand)
  */
 bool KinectStick::GetTop(JoystickHand hand)
 {
-	GetData();
-	return (sticks.formatted.rawSticks[m_id - 1].buttons & kTopMask) != 0;
+	return GetRawButton(kTopMask);
 }
 
 bool KinectStick::GetBumper(JoystickHand hand)
 {
-	GetData();
-	return (sticks.formatted.rawSticks[m_id - 1].buttons & 4) != 0;
+	// TODO: Should this even be in GenericHID?  Is 4 an appropriate mask value (button 3)?
+	return GetRawButton(4);
 }
 
 bool KinectStick::GetRawButton(UINT32 button)
 {
+	if (StatusIsFatal()) return false;
+
 	GetData();
-	return (sticks.formatted.rawSticks[m_id - 1].buttons & (1 << button)) != 0;
+	return (_sticks.formatted.rawSticks[m_id - 1].buttons & (1 << button)) != 0;
+}
+
+/**
+ * Get dynamic data from the driver station buffer
+ */
+void KinectStick::GetData()
+{
+	UINT32 packetNumber = DriverStation::GetInstance()->GetPacketNumber();
+	if (_recentPacketNumber != packetNumber)
+	{
+		_recentPacketNumber = packetNumber;
+		int retVal = getDynamicControlData(kJoystickBundleID, _sticks.data, sizeof(_sticks.data), 5);
+		if (retVal == 0)
+		{
+			wpi_assert(_sticks.formatted.size == sizeof(_sticks.data) - 1);
+		}
+	}
+}
+
+/**
+ * Convert an 8 bit joystick value to a floating point (-1,1) value
+ * @param value The 8 bit raw joystick value returned from the driver station
+ */
+float KinectStick::ConvertRawToFloat(INT8 value)
+{
+	float result;
+
+	if (value < 0)
+		result = ((float) value) / 128.0;
+	else
+		result = ((float) value) / 127.0;
+
+	wpi_assert(result <= 1.0 && result >= -1.0);
+
+	if (result > 1.0)
+		result = 1.0;
+	else if (result < -1.0)
+		result = -1.0;
+
+	return result;
 }

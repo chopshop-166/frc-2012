@@ -50,10 +50,8 @@ private:
 	typedef std::vector<Command *> CommandVector;
 	SEM_ID m_additionsLock;
 	CommandVector m_additions;
-	typedef std::list<Command *> CommandList;
-	CommandList m_commands;
-	typedef std::map<Command *, CommandList::iterator> CommandMap;
-	CommandMap m_commandMap;
+	typedef std::set<Command *> CommandSet;
+	CommandSet m_commands;
 	bool m_adding;
 };
 #endif

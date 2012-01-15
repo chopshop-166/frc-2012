@@ -98,7 +98,7 @@ DoubleSolenoid::~DoubleSolenoid()
 void DoubleSolenoid::Set(Value value)
 {
 	if (StatusIsFatal()) return;
-	UINT8 rawValue;
+	UINT8 rawValue = 0x00;
 
 	switch(value)
 	{

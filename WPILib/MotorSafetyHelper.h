@@ -4,13 +4,15 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef _MOTOR_SAFETY_HELPER_
-#define _MOTOR_SAFETY_HELPER_
+#ifndef __MOTOR_SAFETY_HELPER__
+#define __MOTOR_SAFETY_HELPER__
 
-#include "MotorSafety.h"
+#include "ErrorBase.h"
 #include <semLib.h>
 
-class MotorSafetyHelper
+class MotorSafety;
+
+class MotorSafetyHelper : public ErrorBase
 {
 public:
 	MotorSafetyHelper(MotorSafety *safeObject);

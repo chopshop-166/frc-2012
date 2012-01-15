@@ -8,7 +8,6 @@
 #include "NetworkCommunication/FRCComm.h"
 #include "Synchronized.h"
 #include "WPIErrors.h"
-#include "Utility.h"
 #include <strLib.h>
 
 const UINT32 DriverStationLCD::kSyncTimeout_ms;

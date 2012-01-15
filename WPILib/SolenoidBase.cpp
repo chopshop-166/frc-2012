@@ -7,7 +7,6 @@
 #include "SolenoidBase.h"
 
 #include "Synchronized.h"
-#include "Utility.h"
 
 SEM_ID SolenoidBase::m_semaphore = NULL;
 Resource *SolenoidBase::m_allocated = NULL;

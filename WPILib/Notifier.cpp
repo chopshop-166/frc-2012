@@ -8,6 +8,7 @@
 #include "Synchronized.h"
 #include "Timer.h"
 #include "Utility.h"
+#include "WPIErrors.h"
 
 const UINT32 Notifier::kTimerInterruptNumber;
 Notifier *Notifier::timerQueueHead = NULL;
@@ -23,7 +24,8 @@ int Notifier::refcount = 0;
  */
 Notifier::Notifier(TimerEventHandler handler, void *param)
 {
-	wpi_assert(handler != NULL);
+	if (handler == NULL)
+		wpi_setWPIErrorWithContext(NullParameter, "handler must not be NULL");
 	m_handler = handler;
 	m_param = param;
 	m_periodic = false;

@@ -20,7 +20,7 @@
  * for changes to parameters and updates the camera.
  * It is only separate from AxisCamera to isolate the parameter code from the image streaming code.
  */
-class AxisCameraParams: public ErrorBase
+class AxisCameraParams : public ErrorBase
 {
 public:
 	typedef enum Exposure_t {kExposure_Automatic, kExposure_Hold, kExposure_FlickerFree50Hz, kExposure_FlickerFree60Hz};

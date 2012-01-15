@@ -10,6 +10,10 @@
 #define WPI_ERRORS_DEFINE_STRINGS
 #include "WPIErrors.h"
 
+#include <errnoLib.h>
+#include <symLib.h>
+#include <sysSymTbl.h>
+
 SEM_ID ErrorBase::_globalErrorMutex = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE);
 Error ErrorBase::_globalError;
 /**
@@ -44,9 +48,50 @@ void ErrorBase::ClearError() const
 }
 
 /**
+ * @brief Set error information associated with a C library call that set an error to the "errno" global variable.
+ * 
+ * @param contextMessage A custom message from the code that set the error.
+ * @param filename Filename of the error source
+ * @param function Function of the error source
+ * @param lineNumber Line number of the error source
+ */
+void ErrorBase::SetErrnoError(const char *contextMessage,
+		const char* filename, const char* function, UINT32 lineNumber) const
+{
+	char err[256];
+	int errNo = errnoGet();
+	if (errNo == 0)
+	{
+		sprintf(err, "OK: %s", contextMessage);
+	}
+	else
+	{
+		char *statName = new char[MAX_SYS_SYM_LEN + 1];
+		int pval;
+		SYM_TYPE ptype;
+		symFindByValue(statSymTbl, errNo, statName, &pval, &ptype);
+		if (pval != errNo)
+			snprintf(err, 256, "Unknown errno 0x%08X: %s", errNo, contextMessage);
+		else
+			snprintf(err, 256, "%s (0x%08X): %s", statName, errNo, contextMessage);
+		delete [] statName;
+	}
+
+	//  Set the current error information for this object.
+	m_error.Set(-1, err, filename, function, lineNumber, this);
+
+	// Update the global error if there is not one already set.
+	Synchronized mutex(_globalErrorMutex);
+	if (_globalError.GetCode() == 0) {
+		_globalError.Clone(m_error);
+	}
+}
+
+/**
  * @brief Set the current error information associated from the nivision Imaq API.
  * 
  * @param success The return from the function
+ * @param contextMessage A custom message from the code that set the error.
  * @param filename Filename of the error source
  * @param function Function of the error source
  * @param lineNumber Line number of the error source
@@ -73,6 +118,7 @@ void ErrorBase::SetImaqError(int success, const char *contextMessage, const char
  * @brief Set the current error information associated with this sensor.
  * 
  * @param code The error code
+ * @param contextMessage A custom message from the code that set the error.
  * @param filename Filename of the error source
  * @param function Function of the error source
  * @param lineNumber Line number of the error source
@@ -96,12 +142,13 @@ void ErrorBase::SetError(Error::Code code, const char *contextMessage,
 /**
  * @brief Set the current error information associated with this sensor.
  * 
- * @param code The error code
+ * @param errorMessage The error message from WPIErrors.h
+ * @param contextMessage A custom message from the code that set the error.
  * @param filename Filename of the error source
  * @param function Function of the error source
  * @param lineNumber Line number of the error source
  */
-void ErrorBase::SetError(const char *errorMessage, const char *contextMessage,
+void ErrorBase::SetWPIError(const char *errorMessage, const char *contextMessage,
 		const char* filename, const char* function, UINT32 lineNumber) const
 {
 	char err[256];
@@ -144,7 +191,7 @@ void ErrorBase::SetGlobalError(Error::Code code, const char *contextMessage,
 	}
 }
 
-void ErrorBase::SetGlobalError(const char *errorMessage, const char *contextMessage,
+void ErrorBase::SetGlobalWPIError(const char *errorMessage, const char *contextMessage,
         const char* filename, const char* function, UINT32 lineNumber)
 {
 	char err[256];

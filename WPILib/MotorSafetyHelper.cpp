@@ -5,8 +5,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "MotorSafetyHelper.h"
+
+#include "DriverStation.h"
+#include "MotorSafety.h"
 #include "Synchronized.h"
 #include "Timer.h"
+#include "WPIErrors.h"
 
 #include <stdio.h>
 
@@ -109,9 +113,14 @@ bool MotorSafetyHelper::IsAlive()
 void MotorSafetyHelper::Check()
 {
 	if (!m_enabled) return;
+	if (DriverStation::GetInstance()->IsDisabled()) return;
 	if (m_stopTime < Timer::GetFPGATimestamp())
 	{
-		// TODO: Produce an error for the driver station in the case of a timeout.
+		char buf[128];
+		char desc[64];
+		m_safeObject->GetDescription(desc);
+		snprintf(buf, 128, "%s... Output not updated often enough.", desc);
+		wpi_setWPIErrorWithContext(Timeout, buf);
 		m_safeObject->StopMotor();
 	}
 }

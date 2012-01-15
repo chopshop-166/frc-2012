@@ -7,7 +7,6 @@
 #include "DigitalOutput.h"
 #include "DigitalModule.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 extern Resource *interruptsResource;
@@ -66,6 +65,7 @@ DigitalOutput::DigitalOutput(UINT8 moduleNumber, UINT32 channel)
  */
 DigitalOutput::~DigitalOutput()
 {
+	if (StatusIsFatal()) return;
 	// Disable the PWM in case it was running.
 	DisablePWM();
 	m_module->FreeDIO(m_channel);
@@ -77,6 +77,7 @@ DigitalOutput::~DigitalOutput()
  */
 void DigitalOutput::Set(UINT32 value)
 {
+	if (StatusIsFatal()) return;
 	m_module->SetDIO(m_channel, value);
 }
 
@@ -96,6 +97,7 @@ UINT32 DigitalOutput::GetChannel()
  */
 void DigitalOutput::Pulse(float length)
 {
+	if (StatusIsFatal()) return;
 	m_module->Pulse(m_channel, length);
 }
 
@@ -105,6 +107,7 @@ void DigitalOutput::Pulse(float length)
  */
 bool DigitalOutput::IsPulsing()
 {
+	if (StatusIsFatal()) return false;
 	return m_module->IsPulsing(m_channel);
 }
 
@@ -119,6 +122,7 @@ bool DigitalOutput::IsPulsing()
  */
 void DigitalOutput::SetPWMRate(float rate)
 {
+	if (StatusIsFatal()) return;
 	m_module->SetDO_PWMRate(rate);
 }
 
@@ -136,6 +140,7 @@ void DigitalOutput::SetPWMRate(float rate)
  */
 void DigitalOutput::EnablePWM(float initialDutyCycle)
 {
+	if (StatusIsFatal()) return;
 	if (m_pwmGenerator != ~0ul) return;
 	m_pwmGenerator = m_module->AllocateDO_PWM();
 	m_module->SetDO_PWMDutyCycle(m_pwmGenerator, initialDutyCycle);
@@ -149,6 +154,7 @@ void DigitalOutput::EnablePWM(float initialDutyCycle)
  */
 void DigitalOutput::DisablePWM()
 {
+	if (StatusIsFatal()) return;
 	// Disable the output by routing to a dead bit.
 	m_module->SetDO_PWMOutputChannel(m_pwmGenerator, kDigitalChannels);
 	m_module->FreeDO_PWM(m_pwmGenerator);
@@ -165,6 +171,7 @@ void DigitalOutput::DisablePWM()
  */
 void DigitalOutput::UpdateDutyCycle(float dutyCycle)
 {
+	if (StatusIsFatal()) return;
 	m_module->SetDO_PWMDutyCycle(m_pwmGenerator, dutyCycle);
 }
 
@@ -181,6 +188,7 @@ UINT32 DigitalOutput::GetChannelForRouting()
  */
 UINT32 DigitalOutput::GetModuleForRouting()
 {
+	if (StatusIsFatal()) return 0;
 	return m_module->GetNumber() - 1;
 }
 
@@ -202,6 +210,7 @@ bool DigitalOutput::GetAnalogTriggerForRouting()
  */
 void DigitalOutput::RequestInterrupts(tInterruptHandler handler, void *param)
 {
+	if (StatusIsFatal()) return;
 	UINT32 index = interruptsResource->Allocate("Sync Interrupt");
 	if (index == ~0ul)
 	{
@@ -232,6 +241,7 @@ void DigitalOutput::RequestInterrupts(tInterruptHandler handler, void *param)
  */
 void DigitalOutput::RequestInterrupts()
 {
+	if (StatusIsFatal()) return;
 	UINT32 index = interruptsResource->Allocate("Sync Interrupt");
 	if (index == ~0ul)
 	{
@@ -252,7 +262,12 @@ void DigitalOutput::RequestInterrupts()
 
 void DigitalOutput::SetUpSourceEdge(bool risingEdge, bool fallingEdge)
 {
-	wpi_assert(m_interrupt != NULL);
+	if (StatusIsFatal()) return;
+	if (m_interrupt == NULL)
+	{
+		wpi_setWPIErrorWithContext(NullParameter, "You must call RequestInterrupts before SetUpSourceEdge");
+		return;
+	}
 	tRioStatusCode localStatus = NiFpga_Status_Success;
 	if (m_interrupt != NULL)
 	{
