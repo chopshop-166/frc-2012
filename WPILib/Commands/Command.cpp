@@ -287,9 +287,9 @@ void Command::SetParent(CommandGroup *parent)
 	{
 		wpi_setWPIErrorWithContext(NullParameter, "parent");
 	}
-	else if (m_parent != NULL && m_parent != parent)
+	else if (m_parent != NULL)
 	{
-		wpi_setWPIErrorWithContext(CommandIllegalUse, "Can not give command to multiple command groups");
+		wpi_setWPIErrorWithContext(CommandIllegalUse, "Can not give command to a command group after already being put in a command group");
 	}
 	else
 	{

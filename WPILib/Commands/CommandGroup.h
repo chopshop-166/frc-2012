@@ -54,7 +54,6 @@ protected:
 	virtual void _Interrupted();
 	virtual void _Execute();
 	virtual void _End();
-	virtual void _Cancel();
 
 private:
 	void CancelConflicts(Command *command);

@@ -9,43 +9,79 @@
 #include "NetworkTables/NetworkTable.h"
 #include "WPIErrors.h"
 
+#include <taskLib.h>
+
+/** The time (in seconds) between updates to the table */
 static const double kDefaultTimeBetweenUpdates = 0.2;
 static const char *kAngle = "angle";
 
+/**
+ * Gyro constructor given a moduleNumber and a channel.
+ *
+ * @param moduleNumber The analog module the gyro is connected to.
+ * @param channel The analog channel the gyro is connected to.
+ */
 SendableGyro::SendableGyro(UINT8 moduleNumber, UINT32 channel) :
-	Gyro(moduleNumber, channel)
+	Gyro(moduleNumber, channel),
+	m_offset(0.0),
+	m_period(kDefaultTimeBetweenUpdates),
+	m_table(NULL),
+	m_publisher("SendableGyroPublisher", (FUNCPTR)InitPublishTask),
+	m_runPublisher(false)
 {
-	m_offset = 0.0;
-	m_period = kDefaultTimeBetweenUpdates;
-	m_table = NULL;
-	m_notifier = NULL;
 }
 
+/**
+ * Gyro constructor with only a channel.
+ *
+ * Use the default analog module slot.
+ *
+ * @param channel The analog channel the gyro is connected to.
+ */
 SendableGyro::SendableGyro(UINT32 channel) :
-	Gyro(channel)
+	Gyro(channel),
+	m_offset(0.0),
+	m_period(kDefaultTimeBetweenUpdates),
+	m_table(NULL),
+	m_publisher("SendableGyroPublisher", (FUNCPTR)InitPublishTask),
+	m_runPublisher(false)
 {
-	m_offset = 0.0;
-	m_period = kDefaultTimeBetweenUpdates;
-	m_table = NULL;
-	m_notifier = NULL;
 }
 
+/**
+ * Gyro constructor with a precreated analog channel object.
+ * Use this constructor when the analog channel needs to be shared. There
+ * is no reference counting when an AnalogChannel is passed to the gyro.
+ * @param channel The AnalogChannel object that the gyro is connected to.
+ */
 SendableGyro::SendableGyro(AnalogChannel* channel):  
-	Gyro(channel)
+	Gyro(channel),
+	m_offset(0.0),
+	m_period(kDefaultTimeBetweenUpdates),
+	m_table(NULL),
+	m_publisher("SendableGyroPublisher", (FUNCPTR)InitPublishTask),
+	m_runPublisher(false)
 {
-	m_offset = 0.0;
-	m_period = kDefaultTimeBetweenUpdates;
-	m_table = NULL;
-	m_notifier = NULL;
 }
 
 SendableGyro::~SendableGyro()
 {
 	if (m_table != NULL)
+	{
+		// Stop the task
+		m_runPublisher = false;
+		while(m_publisher.Verify())
+			taskDelay(10);
+
+		// Stop listening to the table
 		m_table->RemoveChangeListener(kAngle, this);
+
+		delete m_table;
+		m_table = NULL;
+	}
 }
 
-double SendableGyro::GetAngle()
+float SendableGyro::GetAngle()
 {
 	return m_offset + Gyro::GetAngle();
 }
@@ -56,6 +92,11 @@ void SendableGyro::Reset()
 	Gyro::Reset();
 }
 
+/**
+ * Sets the time (in seconds) between updates to the {@link SmartDashboard}.
+ * The default is 0.2 seconds.
+ * @param period the new time between updates
+ */
 void SendableGyro::SetUpdatePeriod(double period)
 {
 	if (period <= 0.0)
@@ -64,11 +105,23 @@ void SendableGyro::SetUpdatePeriod(double period)
 		m_period = period;
 }
 
+/**
+ * Returns the period (in seconds) between updates to the {@link SmartDashboard}.
+ * This value is independent of whether or not this {@link SendableGyro} is connected
+ * to the {@link SmartDashboard}.  The default value is 0.2 seconds.
+ * @return the period (in seconds)
+ */
 double SendableGyro::GetUpdatePeriod()
 {
 	return m_period;
 }
 
+/**
+ * Reset the gyro.
+ * Resets the gyro to the given heading. This can be used if there is significant
+ * drift in the gyro and it needs to be recalibrated after it has been running.
+ * @param angle the angle the gyro should believe it is pointing
+ */
 void SendableGyro::ResetToAngle(double angle)
 {
 	m_offset = angle;
@@ -82,20 +135,23 @@ NetworkTable *SendableGyro::GetTable()
 		m_table = new NetworkTable();
 		m_table->PutInt(kAngle, (int)GetAngle());
 		m_table->AddChangeListener(kAngle, this);
-		m_notifier = new Notifier(SendableGyro::TimerUpdate, this);
-		m_notifier->StartSingle(m_period);
+		m_publisher.Start((UINT32)this);
 	}
 	return m_table;
 }
 
 void SendableGyro::ValueChanged(NetworkTable *table, const char *name, NetworkTables_Types type)
 {
+	// Update value from smart dashboard
 	ResetToAngle(m_table->GetDouble(name));
 }
 
-void SendableGyro::TimerUpdate(void *gyro)
+void SendableGyro::PublishTaskRun()
 {
-	SendableGyro *sg = (SendableGyro *)gyro;
-	sg->m_table->PutInt(kAngle, (int)sg->GetAngle());
-	sg->m_notifier->StartSingle(sg->m_period);
+	m_runPublisher = true;
+	while(m_runPublisher)
+	{
+		m_table->PutInt(kAngle, (int)GetAngle());
+		taskDelay((INT32)(m_period * 1000));
+	}
 }

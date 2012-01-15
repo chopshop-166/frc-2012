@@ -11,6 +11,10 @@
 #include "Buttons/ReleasedButtonScheduler.h"
 #include "NetworkTables/NetworkTable.h"
 
+Button::Button() {
+	m_table = NULL;
+}
+
 bool Button::Grab()
 {
 	if (Get())

@@ -7,7 +7,6 @@
 #include "AnalogModule.h"
 #include "Synchronized.h"
 #include "Timer.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 #include "NetworkCommunication/AICalibration.h"
 

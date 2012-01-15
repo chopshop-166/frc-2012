@@ -6,9 +6,9 @@
 
 #include "Timer.h"
 
-#include "sysLib.h" // for sysClkRateGet
-#include "time.h"
-#include "usrLib.h" // for taskDelay
+#include <sysLib.h> // for sysClkRateGet
+#include <time.h>
+#include <usrLib.h> // for taskDelay
 
 #include "Synchronized.h"
 #include "Utility.h"
@@ -194,7 +194,6 @@ extern "C"
  * Return the PowerPC timestamp since boot in seconds.
  * 
  * This is lower overhead than GetFPGATimestamp() but not synchronized with other FPGA timestamps.
- * Rolls over after 130 seconds.
  * @returns Robot running time in seconds.
  */
 double Timer::GetPPCTimestamp()

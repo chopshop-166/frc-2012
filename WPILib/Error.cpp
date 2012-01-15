@@ -5,9 +5,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "Error.h"
-#include "Utility.h"
-#include "Timer.h"
+
+#include <taskLib.h>
+
 #include "NetworkCommunication/FRCComm.h"
+#include "Timer.h"
+#include "Utility.h"
 
 bool Error::m_stackTraceEnabled = false;
 bool Error::m_suspendOnErrorEnabled = false;
@@ -72,18 +75,18 @@ void Error::Set(Code code, const char* contextMessage, const char* filename, con
 void Error::Report()
 {
 	// Error string buffers
-	char error[256];
-	char error_with_code[256];
+	char *error = new char[256];
+	char *error_with_code = new char[256];
 
 	// Build error strings
 	if (m_code != -1)
 	{
-		sprintf(error, "%s: status = %d (0x%08X) %s ...in %s() in %s at line %d\n",
+		snprintf(error, 256, "%s: status = %d (0x%08X) %s ...in %s() in %s at line %d\n",
 				m_code < 0 ? "ERROR" : "WARNING", (INT32)m_code, (UINT32)m_code, m_message.c_str(),
 				m_function.c_str(), m_filename.c_str(), m_lineNumber);
 		sprintf(error_with_code,"<Code>%d %s", (INT32)m_code, error);
 	} else {
-		sprintf(error, "ERROR: %s ...in %s() in %s at line %d\n", m_message.c_str(),
+		snprintf(error, 256, "ERROR: %s ...in %s() in %s at line %d\n", m_message.c_str(),
 				m_function.c_str(), m_filename.c_str(), m_lineNumber);
 		strcpy(error_with_code, error);
 	}
@@ -92,8 +95,13 @@ void Error::Report()
 	// Send to the DriverStation
 	setErrorData(error_with_code, strlen(error_with_code), 100);
 
+	delete [] error_with_code;
+
 	// Print to console
 	printf("\n\n>>>>%s", error);
+
+	delete [] error;
+
 	if (m_stackTraceEnabled)
 	{
 		printf("-----------<Stack Trace>----------------\n");

@@ -8,23 +8,30 @@
 #define __PID_COMMAND_H__
 
 #include "Commands/Command.h"
-#include "PIDController.h"
 #include "PIDSource.h"
 #include "PIDOutput.h"
 
 class NetworkTable;
+class PIDController;
 class SendablePIDController;
 
-class PIDCommand : public Command
+class PIDCommand : public Command, public PIDOutput, public PIDSource
 {
 public:
 	PIDCommand(const char *name, double p, double i, double d);
 	PIDCommand(const char *name, double p, double i, double d, double period);
 	PIDCommand(double p, double i, double d);
 	PIDCommand(double p, double i, double d, double period);
-	virtual ~PIDCommand() {}
+	virtual ~PIDCommand();
 	
 	void SetSetpointRelative(double deltaSetpoint);
+
+	// PIDOutput interface
+	virtual void PIDWrite(float output);
+
+	// PIDSource interface
+	virtual double PIDGet();
+
 	NetworkTable *GetControllerTable();
 
 	virtual std::string GetType();
@@ -37,28 +44,11 @@ protected:
 	double GetSetpoint();
 	double GetPosition();
 	void SetSetpointRange(double a, double b);
+
 	virtual double ReturnPIDInput() = 0;
 	virtual void UsePIDOutput(double output) = 0;
 
-private:
-	// TODO: Eliminate these classes
-	class PIDOutputImpl : public PIDOutput {
-	public:
-		PIDOutputImpl(PIDCommand *pidcommand);
-		void PIDWrite(float output);
-	
-	private:
-		PIDCommand *command;
-	};
-	class PIDSourceImpl : public PIDSource {
-	public:
-		PIDSourceImpl(PIDCommand *pidcommand);
-		double PIDGet();
-		
-	private:
-		PIDCommand *command;
-	};
-	
+private:	
 	/** The max setpoint value */
 	double m_max;
 	/** The min setpoint value */

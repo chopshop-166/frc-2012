@@ -72,7 +72,7 @@ void NetworkTable::Initialize()
 	if (!_initialized)
 	{
 		_initialized = true;
-		NetworkTables::ConnectionManager::Initialize();
+		NetworkTables::ConnectionManager::GetInstance();
 	}
 }
 
@@ -526,6 +526,7 @@ void NetworkTable::AddConnection(NetworkTables::Connection *connection)
 		}
 		if (m_connections.size() == 1)
 		{
+			Synchronized syncStatic(_staticMemberMutex);
 			_tableIdMap.insert(TableIdMap::value_type(m_id, this));
 
 			std::set<NetworkTableConnectionListener *>::iterator lit, lend;
@@ -545,6 +546,7 @@ void NetworkTable::RemoveConnection(NetworkTables::Connection *connection)
 
 	if (m_connections.size() == 0)
 	{
+		Synchronized syncStatic(_staticMemberMutex);
 		_tableIdMap.erase(m_id);
 
 		std::set<NetworkTableConnectionListener *>::iterator lit, lend;

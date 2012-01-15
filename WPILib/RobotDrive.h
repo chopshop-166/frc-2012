@@ -71,6 +71,7 @@ public:
 	void StopMotor();
 	bool IsSafetyEnabled();
 	void SetSafetyEnabled(bool enabled);
+	void GetDescription(char *desc);
 
 protected:
 	void InitRobotDrive();

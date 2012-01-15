@@ -7,7 +7,6 @@
 #include "HiTechnicCompass.h"
 #include "DigitalModule.h"
 #include "I2C.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 const UINT8 HiTechnicCompass::kAddress;

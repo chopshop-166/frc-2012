@@ -9,6 +9,7 @@
 #include "DriverStation.h"
 #include "NetworkCommunication/FRCComm.h"
 #include "NetworkCommunication/symModuleLink.h"
+#include "NetworkCommunication/UsageReporting.h"
 #include "Utility.h"
 #include <moduleLib.h>
 #include <taskLib.h>
@@ -175,6 +176,9 @@ void RobotBase::startRobotTask(FUNCPTR factory)
 
 	// Let the framework know that we are starting a new user program so the Driver Station can disable.
 	FRC_NetworkCommunication_observeUserProgramStarting();
+
+	// Let the Usage Reporting framework know that there is a C++ program running
+	nUsageReporting::report(nUsageReporting::kResourceType_Language, nUsageReporting::kLanguage_CPlusPlus);
 
 	// Start robot task
 	// This is done to ensure that the C++ robot task is spawned with the floating point

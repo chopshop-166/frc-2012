@@ -6,7 +6,6 @@
 
 #include "Joystick.h"
 #include "DriverStation.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 #include <math.h>
 
@@ -208,7 +207,6 @@ bool Joystick::GetTop(JoystickHand hand)
 bool Joystick::GetBumper(JoystickHand hand)
 {
 	// Joysticks don't have bumpers.
-	wpi_assert(false);
 	return false;
 }
 
@@ -241,7 +239,6 @@ bool Joystick::GetButton(ButtonType button)
 	case kTriggerButton: return GetTrigger();
 	case kTopButton: return GetTop();
 	default:
-		wpi_assert(false);
 		return false;
 	}
 }

@@ -10,34 +10,12 @@
 
 // XXX max and min are not used?
 
-PIDSubsystem::PIDOutputImpl::PIDOutputImpl(PIDSubsystem *pidsubsystem)
-{
-	subsystem = pidsubsystem;
-}
-
-void PIDSubsystem::PIDOutputImpl::PIDWrite(float output)
-{
-	subsystem->UsePIDOutput(output);
-}
-
-PIDSubsystem::PIDSourceImpl::PIDSourceImpl(PIDSubsystem *pidsubsystem)
-{
-	subsystem = pidsubsystem;
-}
-
-double PIDSubsystem::PIDSourceImpl::PIDGet()
-{
-	return subsystem->ReturnPIDInput();
-}
-
 PIDSubsystem::PIDSubsystem(const char *name, double p, double i, double d) :
 	Subsystem(name)
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output);
+	m_controller = new SendablePIDController(p, i, d, this, this);
 }
 
 PIDSubsystem::PIDSubsystem(const char *name, double p, double i, double d,
@@ -46,9 +24,7 @@ PIDSubsystem::PIDSubsystem(const char *name, double p, double i, double d,
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output, period);
+	m_controller = new SendablePIDController(p, i, d, this, this, period);
 }
 
 PIDSubsystem::PIDSubsystem(double p, double i, double d) :
@@ -56,9 +32,7 @@ PIDSubsystem::PIDSubsystem(double p, double i, double d) :
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output);
+	m_controller = new SendablePIDController(p, i, d, this, this);
 }
 
 PIDSubsystem::PIDSubsystem(double p, double i, double d, double period) :
@@ -66,9 +40,12 @@ PIDSubsystem::PIDSubsystem(double p, double i, double d, double period) :
 {
 	m_max = DBL_MAX;
 	m_min = DBL_MIN;
-	PIDSource *source = new PIDSourceImpl(this);
-	PIDOutput *output = new PIDOutputImpl(this);
-	m_controller = new SendablePIDController(p, i, d, source, output, period);
+	m_controller = new SendablePIDController(p, i, d, this, this, period);
+}
+
+PIDSubsystem::~PIDSubsystem()
+{
+	delete m_controller;
 }
 
 void PIDSubsystem::Enable()
@@ -81,18 +58,29 @@ void PIDSubsystem::Disable()
 	m_controller->Disable();
 }
 
+std::string PIDSubsystem::GetType()
+{
+	return "PIDSubsystem";
+}
+
+NetworkTable *PIDSubsystem::GetControllerTable()
+{
+	return m_controller->GetTable();
+}
+
 PIDController *PIDSubsystem::GetPIDController()
 {
 	return m_controller;
-}
-void PIDSubsystem::SetSetpointRelative(double deltaSetpoint)
-{
-	SetSetpoint(GetSetpoint() + deltaSetpoint);
 }
 
 void PIDSubsystem::SetSetpoint(double setpoint)
 {
 	m_controller->SetSetpoint(setpoint);
+}
+
+void PIDSubsystem::SetSetpointRelative(double deltaSetpoint)
+{
+	SetSetpoint(GetSetpoint() + deltaSetpoint);
 }
 
 double PIDSubsystem::GetSetpoint()
@@ -119,12 +107,12 @@ void PIDSubsystem::SetSetpointRange(double a, double b)
 	}
 }
 
-std::string PIDSubsystem::GetType()
+void PIDSubsystem::PIDWrite(float output)
 {
-	return "PIDSubsystem";
+	UsePIDOutput(output);
 }
 
-NetworkTable *PIDSubsystem::GetControllerTable()
+double PIDSubsystem::PIDGet()
 {
-	return m_controller->GetTable();
+	return ReturnPIDInput();
 }

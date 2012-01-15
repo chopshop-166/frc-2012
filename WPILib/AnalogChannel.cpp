@@ -7,7 +7,6 @@
 #include "AnalogChannel.h"
 #include "AnalogModule.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 static Resource *channels = NULL;

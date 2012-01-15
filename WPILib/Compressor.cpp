@@ -7,7 +7,6 @@
 #include "Compressor.h"
 #include "DigitalInput.h"
 #include "Timer.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 /**

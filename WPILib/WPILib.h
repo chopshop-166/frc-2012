@@ -56,6 +56,8 @@
 #include "InterruptableSensorBase.h"
 #include "Jaguar.h"
 #include "Joystick.h"
+#include "Kinect.h"
+#include "KinectStick.h"
 #include "NetworkTables/NetworkTable.h"
 #include "Notifier.h"
 #include "PIDController.h"

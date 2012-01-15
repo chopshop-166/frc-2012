@@ -7,7 +7,6 @@
 #include "ADXL345_I2C.h"
 #include "DigitalModule.h"
 #include "I2C.h"
-#include "Utility.h"
 
 const UINT8 ADXL345_I2C::kAddress;
 const UINT8 ADXL345_I2C::kPowerCtlRegister;

@@ -8,7 +8,6 @@
 
 #include "DigitalModule.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 // Allocate each direction separately.
@@ -147,7 +146,11 @@ void Relay::Set(Relay::Value value)
 		}
 		break;
 	case kForward:
-		wpi_assert(m_direction != kReverseOnly);
+		if (m_direction == kReverseOnly)
+		{
+			wpi_setWPIError(IncompatibleMode);
+			break;
+		}
 		if (m_direction == kBothDirections || m_direction == kForwardOnly)
 		{
 			m_module->SetRelayForward(m_channel, true);
@@ -158,7 +161,11 @@ void Relay::Set(Relay::Value value)
 		}
 		break;
 	case kReverse:
-		wpi_assert(m_direction != kForwardOnly);
+		if (m_direction == kForwardOnly)
+		{
+			wpi_setWPIError(IncompatibleMode);
+			break;
+		}
 		if (m_direction == kBothDirections)
 		{
 			m_module->SetRelayForward(m_channel, false);
@@ -168,7 +175,5 @@ void Relay::Set(Relay::Value value)
 			m_module->SetRelayReverse(m_channel, true);
 		}
 		break;
-	default:
-		wpi_assert(false);
 	}
 }

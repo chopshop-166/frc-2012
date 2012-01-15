@@ -22,11 +22,12 @@ void Denial::Encode(Buffer *buffer)
 		buffer->WriteByte(kNetworkTables_DENIAL | std::min(kNetworkTables_DENIAL - 1, i));
 }
 
+// Currently unused
 Denial *Denial::Combine(Denial *a, Denial *b)
 {
-	a->m_count = a->m_count + a->m_count;
+	a->m_count = a->m_count + b->m_count;
 	delete b;
 	return a;
 }
 
-} // namespace
+}
