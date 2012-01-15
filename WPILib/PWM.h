@@ -41,6 +41,8 @@ public:
 	void SetPeriodMultiplier(PeriodMultiplier mult);
 	void EnableDeadbandElimination(bool eliminateDeadband);
 	void SetBounds(INT32 max, INT32 deadbandMax, INT32 center, INT32 deadbandMin, INT32 min);
+	UINT32 GetChannel() {return m_channel;}
+	UINT32 GetModuleNumber();
 
 protected:
 	/**

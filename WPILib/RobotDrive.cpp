@@ -685,6 +685,11 @@ void RobotDrive::SetSafetyEnabled(bool enabled)
 	m_safetyHelper->SetSafetyEnabled(enabled);
 }
 
+void RobotDrive::GetDescription(char *desc)
+{
+	sprintf(desc, "RobotDrive");
+}
+
 void RobotDrive::StopMotor()
 {
 	if (m_frontLeftMotor != NULL) m_frontLeftMotor->Disable();

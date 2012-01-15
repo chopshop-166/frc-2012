@@ -68,6 +68,15 @@ Preferences *Preferences::GetInstance()
 }
 
 /**
+ * Returns a vector of all the keys
+ * @return a vector of the keys
+ */
+std::vector<std::string> Preferences::GetKeys()
+{
+	return m_keys;
+}
+
+/**
  * Returns the string at the given key.  If this table does not have a value
  * for that position, then the given defaultValue will be returned.
  * @param key the key
@@ -434,6 +443,12 @@ void Preferences::ReadTaskRun()
 					comment += buffer;
 				}
 			}
+			else if (value == '[')
+			{
+				// Find the end of the section and the new line after it and throw it away
+				for (; value != ']' && !feof(file); value = fgetc(file));
+				for (; value != '\n' && !feof(file); value = fgetc(file));
+			}
 			else
 			{
 				buffer.clear();
@@ -522,6 +537,7 @@ void Preferences::WriteTaskRun()
 	Priv_SetWriteFileAllowed(1);
 	file = fopen(kFileName, "w");
 
+	fputs("[Preferences]\n", file);
 	std::vector<std::string>::iterator it = m_keys.begin();
 	for (; it != m_keys.end(); it++)
 	{

@@ -6,7 +6,6 @@
 
 #include "Accelerometer.h"
 #include "AnalogModule.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 /**

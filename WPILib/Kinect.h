@@ -4,44 +4,62 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef KINNECT_H
-#define KINNECT_H
+#ifndef __KINECT_H__
+#define __KINECT_H__
 
-#include "ErrorBase.h"
+#include "SensorBase.h"
 #include "Skeleton.h"
 
-class Kinect: public ErrorBase {
-public:
+#include <semLib.h>
 
-	class Point4 {
-	public:
-		Point4() { w = x = y = z = 0.0; }
-		float x, y, z, w;
-		float getX() { return x; }
-		float getY() { return y; }
-		float getZ() { return z; }
-		float getW() { return w; }
-	};
-	
+#define kNumSkeletons 1
+
+class Kinect : public SensorBase
+{
+public:
 	typedef enum {kNotTracked, kPositionOnly, kTracked} SkeletonTrackingState;
 	typedef enum {kClippedRight = 1, kClippedLeft = 2, kClippedTop = 4, kClippedBottom = 8} SkeletonQuality;
-	
-	int getNumberOfPlayers();
-	void getFloorClipPlane(Point4 &point);
-	void getGravityNormal(Point4 &point);
-	void getSkeleton(Skeleton &skeleton, int index = 1);
-	void getPosition(Point4 &point);
-	SkeletonTrackingState getTrackingState();
-	UINT32 getQuality();
+	typedef struct
+	{
+		float x;
+		float y;
+		float z;
+		float w;
+	} Point4;
+
+	int GetNumberOfPlayers();
+	Point4 GetFloorClipPlane();
+	Point4 GetGravityNormal();
+	Skeleton GetSkeleton(int skeletonIndex = 1);
+	Point4 GetPosition(int skeletonIndex = 1);
+	UINT32 GetQuality(int skeletonIndex = 1);
+	SkeletonTrackingState GetTrackingState(int skeletonIndex = 1);
+
+	static Kinect *GetInstance();
 
 private:
-	void updateData();
-	Skeleton m_skeleton;
+	Kinect();
+	~Kinect();
+	void UpdateData();
+
+	DISALLOW_COPY_AND_ASSIGN(Kinect);
+
+	UINT32 m_recentPacketNumber;
+	SEM_ID m_dataLock;
 	int m_numberOfPlayers;
-	UINT32 m_quality;
 	Point4 m_floorClipPlane;
 	Point4 m_gravityNormal;
-	Point4 m_position;
+	Point4 m_position[kNumSkeletons];
+	UINT32 m_quality[kNumSkeletons];
+	SkeletonTrackingState m_trackingState[kNumSkeletons];
+	Skeleton m_skeletons[kNumSkeletons];
+
+	// TODO: Include structs for this data format (would be clearer than 100 magic numbers)
+	char m_rawHeader[46];
+	char m_rawSkeletonExtra[42];
+	char m_rawSkeleton[242];
+
+	static Kinect *_instance;
 };
 
 #endif

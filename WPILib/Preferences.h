@@ -34,6 +34,8 @@ class Preferences : public ErrorBase, public NetworkTableChangeListener
 {
 public:
 	static Preferences *GetInstance();
+
+	std::vector<std::string> GetKeys();
 	std::string GetString(const char *key, const char *defaultValue = "");
 	int GetString(const char *key, char *value, int valueSize, const char *defaultValue = "");
 	int GetInt(const char *key, int defaultValue = 0);

@@ -183,7 +183,7 @@ void CommandGroup::AddParallel(Command *command, double timeout)
 
 	command->SetParent(this);
 
-	m_commands.push_back(CommandGroupEntry(command, CommandGroupEntry::kSequence_BranchChild));
+	m_commands.push_back(CommandGroupEntry(command, CommandGroupEntry::kSequence_BranchChild, timeout));
 	// Iterate through command->GetRequirements() and call Requires() on each required subsystem
 	Command::SubsystemSet requirements = command->GetRequirements();
 	Command::SubsystemSet::iterator iter = requirements.begin();
@@ -302,10 +302,6 @@ void CommandGroup::_End()
 void CommandGroup::_Interrupted()
 {
 	_End();
-}
-
-void CommandGroup::_Cancel()
-{
 }
 
 // Can be overwritten by teams

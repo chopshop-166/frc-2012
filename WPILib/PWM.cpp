@@ -125,6 +125,10 @@ void PWM::SetBounds(INT32 max, INT32 deadbandMax, INT32 center, INT32 deadbandMi
 	m_minPwm = min;
 }
 
+UINT32 PWM::GetModuleNumber()
+{
+	return m_module->GetNumber();
+}
 
 /**
  * Set the PWM value based on a position.

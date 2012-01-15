@@ -4,8 +4,9 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#include "MotorSafetyHelper.h"
 #include "SafePWM.h"
+
+#include "MotorSafetyHelper.h"
 
 /**
  * Initialize a SafePWM object by setting defaults
@@ -95,6 +96,11 @@ void SafePWM::SetSafetyEnabled(bool enabled)
 bool SafePWM::IsSafetyEnabled()
 {
 	return m_safetyHelper->IsSafetyEnabled();
+}
+
+void SafePWM::GetDescription(char *desc)
+{
+	sprintf(desc, "PWM %d on module %d", GetChannel(), GetModuleNumber());
 }
 
 /**

@@ -29,6 +29,7 @@ public:
 	Command *GetDefaultCommand();
 	void SetCurrentCommand(Command *command);
 	Command *GetCurrentCommand();
+	virtual void InitDefaultCommand();
 	
 private:
 	void ConfirmCommand();
@@ -37,6 +38,7 @@ private:
 	Command *m_currentCommand;
 	Command *m_defaultCommand;
 	std::string m_name;
+	bool m_initializedDefaultCommand;
 };
 
 #endif

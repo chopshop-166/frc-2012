@@ -176,7 +176,7 @@ void Connection::ReadTaskRun()
 			if (!m_connected)
 				break;
 
-			if (ConnectionManager::_isServer && ConfirmationsContainsKey(key))
+			if (ConnectionManager::GetInstance()->IsServer() && ConfirmationsContainsKey(key))
 			{
 				if (m_inTransaction)
 					m_denyTransaction = true;
@@ -263,7 +263,7 @@ void Connection::ReadTaskRun()
 				// TransactionStart
 				if (entry == NULL)
 				{
-					if (ConnectionManager::_isServer)
+					if (ConnectionManager::GetInstance()->IsServer())
 					{
 						while (!m_confirmations.empty() && m_confirmations.front() != NULL)
 							m_confirmations.pop_front();
@@ -280,7 +280,7 @@ void Connection::ReadTaskRun()
 							((Entry *)m_transaction->Peek())->GetKey()->GetTable()->ProcessTransaction(true, m_transaction);
 					}
 				}
-				else if (!ConnectionManager::_isServer)
+				else if (!ConnectionManager::GetInstance()->IsServer())
 				{
 					entry->GetKey()->GetTable()->Got(true, entry->GetKey(), std::auto_ptr<Entry>(entry));
 				}
@@ -288,7 +288,7 @@ void Connection::ReadTaskRun()
 		}
 		else if (value >= kNetworkTables_DENIAL)
 		{
-			if (ConnectionManager::_isServer)
+			if (ConnectionManager::GetInstance()->IsServer())
 			{
 				wpi_setWPIErrorWithContext(NetworkTablesCorrupt, "Server can not be denied");
 				Close();
@@ -324,7 +324,7 @@ void Connection::ReadTaskRun()
 		}
 		else if (value == kNetworkTables_TABLE_REQUEST)
 		{
-			if (!ConnectionManager::_isServer)
+			if (!ConnectionManager::GetInstance()->IsServer())
 			{
 				wpi_setWPIErrorWithContext(NetworkTablesCorrupt, "Server requesting table");
 				Close();
@@ -389,6 +389,9 @@ void Connection::ReadTaskRun()
 		}
 		else if (value == kNetworkTables_TRANSACTION)
 		{
+#ifdef DEBUG
+			printf("Transaction Start\n");
+#endif
 			m_inTransaction = !m_inTransaction;
 			// Finishing a transaction
 			if (!m_inTransaction)
@@ -405,6 +408,9 @@ void Connection::ReadTaskRun()
 				}
 				m_denyTransaction = false;
 			}
+#ifdef DEBUG
+			printf("Transaction End\n");
+#endif
 		}
 		else
 		{
@@ -493,7 +499,7 @@ void Connection::Close()
 				table->RemoveConnection(this);
 		}
 
-		ConnectionManager::RemoveConnection(this);
+		ConnectionManager::GetInstance()->RemoveConnection(this);
 	}
 }
 

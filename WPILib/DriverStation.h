@@ -20,7 +20,6 @@ class AnalogChannel;
  */
 class DriverStation : public SensorBase
 {
-	friend class SimpleRobot;
 public:
 	enum Alliance {kRed, kBlue, kInvalid};
 
@@ -53,6 +52,7 @@ public:
 	void WaitForData();
 	double GetMatchTime();
 	float GetBatteryVoltage();
+	UINT16 GetTeamNumber();
 
 	// Get the default dashboard packers. These instances stay around even after
 	// a call to SetHigh|LowPriorityDashboardPackerToUse() changes which packer
@@ -76,6 +76,19 @@ public:
 	void IncrementUpdateNumber() { m_updateNumber++; }
 	SEM_ID GetUserStatusDataSem() { return m_statusDataSemaphore; }
 
+	/** Only to be used to tell the Driver Station what code you claim to be executing
+	 *   for diagnostic purposes only
+	 * @param entering If true, starting disabled code; if false, leaving disabled code */
+	void InDisabled(bool entering) {m_userInDisabled=entering;}
+	/** Only to be used to tell the Driver Station what code you claim to be executing
+	 *   for diagnostic purposes only
+	 * @param entering If true, starting autonomous code; if false, leaving autonomous code */
+	void InAutonomous(bool entering) {m_userInAutonomous=entering;}
+	/** Only to be used to tell the Driver Station what code you claim to be executing
+	 *   for diagnostic purposes only
+	 * @param entering If true, starting teleop code; if false, leaving teleop code */
+	void InOperatorControl(bool entering) {m_userInTeleop=entering;}
+
 protected:
 	DriverStation();
 
@@ -90,9 +103,6 @@ private:
 	static const float kUpdatePeriod = 0.02;
 
 	void Run();
-	void InDisabled(bool entering) {m_userInDisabled=entering;}
-	void InAutonomous(bool entering) {m_userInAutonomous=entering;}
-	void InOperatorControl(bool entering) {m_userInTeleop=entering;}
 
 	struct FRCCommonControlData *m_controlData;
 	UINT8 m_digitalOut;

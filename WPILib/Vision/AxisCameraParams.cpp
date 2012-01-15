@@ -4,15 +4,21 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#include "AxisCameraParams.h"
+#include "Vision/AxisCameraParams.h"
 
-#include "AxisCamera.h"
+#include "Vision/AxisCamera.h"
 #include <inetLib.h>
 #include "pcre.h"
 #include <sockLib.h>
 #include <string.h>
 #include "Synchronized.h"
 #include "Timer.h"
+#include "Utility.h"
+#include "WPIErrors.h"
+
+#if JAVA_CAMERA_LIB != 1
+#include "DriverStation.h"
+#endif
 
 static const char *const kRotationChoices[] = {"0", "180"};
 static const char *const kResolutionChoices[] = {"640x480", "640x360", "320x240", "160x120"};
@@ -25,10 +31,43 @@ static const char *const kWhiteBalanceChoices[] = { "auto", "holdwb", "fixed_out
  */
 AxisCameraParams::AxisCameraParams(const char* ipAddress)
 	: m_paramTask("paramTask", (FUNCPTR) s_ParamTaskFunction)
-	, m_ipAddress (inet_addr((char*)ipAddress))
 	, m_paramChangedSem (NULL)
 	, m_socketPossessionSem (NULL)
+	, m_brightnessParam (NULL)
+	, m_compressionParam (NULL)
+	, m_exposurePriorityParam (NULL)
+	, m_colorLevelParam (NULL)
+	, m_maxFPSParam (NULL)
+	, m_rotationParam (NULL)
+	, m_resolutionParam (NULL)
+	, m_exposureControlParam (NULL)
+	, m_whiteBalanceParam (NULL)
 {
+	if (ipAddress == NULL || strlen(ipAddress) == 0)
+	{
+#if JAVA_CAMERA_LIB == 1
+		wpi_setWPIErrorWithContext(ParameterOutOfRange, "IP Address must be specified");
+		return;
+#else
+		DriverStation *ds = DriverStation::GetInstance();
+		ds->WaitForData();
+		UINT16 teamNumber = ds->GetTeamNumber();
+		char cameraIP[16];
+		snprintf(cameraIP, 16, "10.%d.%d.11", teamNumber / 100, teamNumber % 100);
+		m_ipAddress = inet_addr(cameraIP);
+#endif
+	}
+	else
+	{
+		m_ipAddress = inet_addr((char*)ipAddress);
+	}
+
+	if (m_ipAddress == (u_long)ERROR)
+	{
+		wpi_setErrnoError();
+		return;
+	}
+
 	m_brightnessParam = new IntCameraParameter("ImageSource.I0.Sensor.Brightness=%i",
 			"root.ImageSource.I0.Sensor.Brightness=(.*)", false);
 	m_parameters.push_back(m_brightnessParam);
@@ -324,7 +363,7 @@ Authorization: Basic RlJDOkZSQw==\n\n";
 	sprintf(completedRequest, requestString, param);
 	// Send request
 	int camSocket = CreateCameraSocket(completedRequest);
-	if (camSocket == 0)
+	if (camSocket == ERROR)
 	{
 		printf("UpdateCamParam failed: %s\n", param);
 		return 0;
@@ -347,7 +386,7 @@ Cache-Control: no-cache\n\
 Authorization: Basic RlJDOkZSQw==\n\n";
 
 	int camSocket = CreateCameraSocket(requestString);
-	if (camSocket == 0)
+	if (camSocket == ERROR)
 	{
 		return 0;
 	}
@@ -360,7 +399,7 @@ Authorization: Basic RlJDOkZSQw==\n\n";
 		int bytesRead = recv(camSocket, &readBuffer[totalRead], 1000, 0);
 		if (bytesRead == ERROR)
 		{
-			perror("AxisCameraParams: Failed to read image header");
+			wpi_setErrnoErrorWithContext("Failed to read image header");
 			close(camSocket);
 			return 0;
 		}
@@ -387,7 +426,7 @@ Authorization: Basic RlJDOkZSQw==\n\n";
  * Create a socket connected to camera
  * Used to create a connection to the camera by both AxisCameraParams and AxisCamera.
  * @param requestString The initial request string to send upon successful connection.
- * @return 0 if failed, socket handle if successful.
+ * @return ERROR if failed, socket handle if successful.
  */
 int AxisCameraParams::CreateCameraSocket(const char *requestString)
 {
@@ -397,8 +436,8 @@ int AxisCameraParams::CreateCameraSocket(const char *requestString)
 	/* create socket */
 	if ((camSocket = socket(AF_INET, SOCK_STREAM, 0)) == ERROR)
 	{
-		perror("AxisCameraParams: socket");
-		return 0;
+		wpi_setErrnoErrorWithContext("Failed to create the camera socket");
+		return ERROR;
 	}
 
 	sockAddrSize = sizeof(struct sockaddr_in);
@@ -407,26 +446,24 @@ int AxisCameraParams::CreateCameraSocket(const char *requestString)
 	serverAddr.sin_len = (u_char) sockAddrSize;
 	serverAddr.sin_port = htons(80);
 
-	if ((serverAddr.sin_addr.s_addr = m_ipAddress) == (u_long)ERROR)
-	{
-		perror("AxisCameraParams: invalid IP");
-		close(camSocket);
-		return 0;
-	}
+	serverAddr.sin_addr.s_addr = m_ipAddress;
 
 	/* connect to server */
-	if (connect(camSocket, (struct sockaddr *) &serverAddr, sockAddrSize) == ERROR)
+	struct timeval connectTimeout;
+	connectTimeout.tv_sec = 5;
+	connectTimeout.tv_usec = 0;
+	if (connectWithTimeout(camSocket, (struct sockaddr *) &serverAddr, sockAddrSize, &connectTimeout) == ERROR)
 	{
-		perror("AxisCameraParams: connect");
+		wpi_setErrnoErrorWithContext("Failed to connect to the camera");
 		close(camSocket);
-		return 0;
+		return ERROR;
 	}
 	int sent = send(camSocket, requestString, strlen(requestString), 0);
 	if (sent == ERROR)
 	{
-		perror("AxisCameraParams: send");
+		wpi_setErrnoErrorWithContext("Failed to send a request to the camera");
 		close(camSocket);
-		return 0;
+		return ERROR;
 	}
 	return camSocket;
 }

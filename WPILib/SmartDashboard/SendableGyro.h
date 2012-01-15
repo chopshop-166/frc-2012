@@ -9,11 +9,15 @@
 
 #include "Gyro.h"
 #include "NetworkTables/NetworkTableChangeListener.h"
-#include "Notifier.h"
 #include "SmartDashboard/SmartDashboardData.h"
+#include "Task.h"
 
 class NetworkTable;
 
+/**
+ * The {@link SendableGyro} class behaves exactly the same as a {@link Gyro} except that it
+ * also implements {@link SmartDashboardData} so that it can be sent over to the {@link SmartDashboard}.
+ */
 class SendableGyro : public Gyro, public SmartDashboardData, public NetworkTableChangeListener
 {
 public:
@@ -22,26 +26,34 @@ public:
 	SendableGyro(AnalogChannel* channel);
 	virtual ~SendableGyro();
 
-	double GetAngle();
-	void Reset();
+	// Gyro overrides
+	virtual float GetAngle();
+	virtual void Reset();
+
 	void SetUpdatePeriod(double period);
 	double GetUpdatePeriod();
 	void ResetToAngle(double angle);
 
+	// SmartDashboardData interface
 	virtual std::string GetType() {return "Gyro";}
 	virtual NetworkTable *GetTable();
 
-	// for dealing with the "thread"
 private:
+	// NetworkTableChangeListener interface
 	virtual void ValueChanged(NetworkTable *table, const char *name, NetworkTables_Types type);
 	virtual void ValueConfirmed(NetworkTable *table, const char *name, NetworkTables_Types type) {}
 
-	static void TimerUpdate(void *gyro);
+	void PublishTaskRun();
 
-	Notifier *m_notifier;
+	static int InitPublishTask(SendableGyro *obj) {obj->PublishTaskRun();return 0;}
+
+	/** The angle added to the gyro's value */
 	double m_offset;
+	/** The period (in seconds) between value updates */
 	double m_period;
 	NetworkTable *m_table;
+	Task m_publisher;
+	bool m_runPublisher;
 };
 
 #endif

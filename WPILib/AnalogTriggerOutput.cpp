@@ -6,7 +6,6 @@
 
 #include "AnalogTriggerOutput.h"
 #include "AnalogTrigger.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 /**
@@ -75,15 +74,12 @@ bool AnalogTriggerOutput::GetAnalogTriggerForRouting()
 	return true;
 }
 
-
-
 /**
  * Request interrupts asynchronously on this analog trigger output.
  * TODO: Hardware supports interrupts on Analog Trigger outputs... WPILib should too
  */
 void AnalogTriggerOutput::RequestInterrupts(tInterruptHandler handler, void *param)
 {
-	wpi_assert(false);
 }
 
 /**
@@ -92,6 +88,5 @@ void AnalogTriggerOutput::RequestInterrupts(tInterruptHandler handler, void *par
  */
 void AnalogTriggerOutput::RequestInterrupts()
 {
-	wpi_assert(false);
 }
 

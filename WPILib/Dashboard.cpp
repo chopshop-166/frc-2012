@@ -7,7 +7,6 @@
 #include "Dashboard.h"
 #include "DriverStation.h"
 #include "Synchronized.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 #include <strLib.h>
 

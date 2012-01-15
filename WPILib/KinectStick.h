@@ -4,13 +4,14 @@
 /* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
 /*----------------------------------------------------------------------------*/
 
-#ifndef KINECT_STICK_H
-#define KINECT_STICK_H
+#ifndef __KINECT_STICK_H__
+#define __KINECT_STICK_H__
 
-#include "GenericHID.h"
 #include "ErrorBase.h"
+#include "GenericHID.h"
 
-class KinectStick : public GenericHID, public ErrorBase {
+class KinectStick : public GenericHID, public ErrorBase
+{
 public:
 	explicit KinectStick(int id);
 	virtual float GetX(JoystickHand hand = kRightHand);
@@ -24,25 +25,29 @@ public:
 	virtual bool GetTop(JoystickHand hand = kRightHand);
 	virtual bool GetBumper(JoystickHand hand = kRightHand);
 	virtual bool GetRawButton(UINT32 button);
-private:
-	static const int kJoystickBundleID = 24;
-	static const int kTriggerMask = 1;
-	static const int kTopMask = 2;
 
+private:
 	void GetData();
-	float convertRawToFloat(INT8 charValue);
-	int m_id;
-	union {
-		struct {
+	float ConvertRawToFloat(INT8 charValue);
+
+	typedef union
+	{
+		struct
+		{
 			UINT8 size;
 			UINT8 id;
-			struct {
+			struct
+			{
 				unsigned char axis[6];
 				unsigned short buttons;
 			} rawSticks[2];
 		} formatted;
 		char data[18];
-	} sticks;
+	} KinectStickData;
+
+	int m_id;
+	static UINT32 _recentPacketNumber;
+	static KinectStickData _sticks;
 };
 
 #endif

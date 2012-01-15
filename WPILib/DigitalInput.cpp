@@ -7,7 +7,6 @@
 #include "DigitalInput.h"
 #include "DigitalModule.h"
 #include "Resource.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 // TODO: This is not a good place for this...
@@ -67,6 +66,7 @@ DigitalInput::DigitalInput(UINT8 moduleNumber, UINT32 channel)
  */
 DigitalInput::~DigitalInput()
 {
+	if (StatusIsFatal()) return;
 	if (m_manager != NULL)
 	{
 		delete m_manager;
@@ -82,6 +82,7 @@ DigitalInput::~DigitalInput()
  */
 UINT32 DigitalInput::Get()
 {
+	if (StatusIsFatal()) return 0;
 	return m_module->GetDIO(m_channel);
 }
 
@@ -106,6 +107,7 @@ UINT32 DigitalInput::GetChannelForRouting()
  */
 UINT32 DigitalInput::GetModuleForRouting()
 {
+	if (StatusIsFatal()) return 0;
 	return m_module->GetNumber() - 1;
 }
 
@@ -127,6 +129,7 @@ bool DigitalInput::GetAnalogTriggerForRouting()
  */
 void DigitalInput::RequestInterrupts(tInterruptHandler handler, void *param)
 {
+	if (StatusIsFatal()) return;
 	UINT32 index = interruptsResource->Allocate("Async Interrupt");
 	if (index == ~0ul)
 	{
@@ -157,6 +160,7 @@ void DigitalInput::RequestInterrupts(tInterruptHandler handler, void *param)
  */
 void DigitalInput::RequestInterrupts()
 {
+	if (StatusIsFatal()) return;
 	UINT32 index = interruptsResource->Allocate("Sync Interrupt");
 	if (index == ~0ul)
 	{
@@ -178,8 +182,11 @@ void DigitalInput::RequestInterrupts()
 void DigitalInput::SetUpSourceEdge(bool risingEdge, bool fallingEdge)
 {
 	if (StatusIsFatal()) return;
-
-	wpi_assert(m_interrupt != NULL);
+	if (m_interrupt == NULL)
+	{
+		wpi_setWPIErrorWithContext(NullParameter, "You must call RequestInterrupts before SetUpSourceEdge");
+		return;
+	}
 	tRioStatusCode localStatus = NiFpga_Status_Success;
 	if (m_interrupt != NULL)
 	{

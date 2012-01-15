@@ -10,7 +10,6 @@
 #include "DigitalInput.h"
 #include "DigitalOutput.h"
 #include "Synchronized.h"
-#include "Utility.h"
 #include "WPIErrors.h"
 
 #include <math.h>
