@@ -34,7 +34,7 @@ static bool FailCheck(int Returned, char* Description)
 }
 
 
-int ProcessImage(Image* CameraInput, int DV, float* PixelHeightOfTarget)
+int ProcessImage(Image* CameraInput, int DV, float* HeightOfTarget, float* WidthOfTarget)
 /*	Description: This function takes an image and analyzes it for the target.
 	Return Value:
 		0: failed (seeing too many rectangles or none)
@@ -155,11 +155,23 @@ int ProcessImage(Image* CameraInput, int DV, float* PixelHeightOfTarget)
 				printf("\n\nSome fool put a bad value into M's image processing program!!\n\n");
 			break;
 		}
+		RectangleMatch* TargetRect = RectMPtr + BestDVRectPtr;
 	
 	
 	/* Step 8: Take desired measurements and return number of rectangles seen*/
 	/* Take measurements, return */
-	*PixelHeightOfTarget= 240 -(((RectMPtr+BestDVRectPtr)->corner[0].y + (RectMPtr+BestDVRectPtr)->corner[1].y)/2);
+	*HeightOfTarget= ((TargetRect->corner[0].y + TargetRect->corner[1].y)/2);
+	*WidthOfTarget= TargetRect->corner[0].x - TargetRect->corner[1].x;
+	TPRINTF(LOG_INFO, "TargetRect:\n\t1: %f, %f\n\t2: %f, %f\n\t3: %f, %f\n\t4: %f, %f", 
+			(double) TargetRect->corner[0].x,
+			(double) TargetRect->corner[0].y,
+			(double) TargetRect->corner[1].x,
+			(double) TargetRect->corner[1].y,
+			(double) TargetRect->corner[2].x,
+			(double) TargetRect->corner[2].y,
+			(double) TargetRect->corner[3].x,
+			(double) TargetRect->corner[3].y
+	);
 	return NumRect;
 	
 	
