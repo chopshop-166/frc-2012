@@ -18,10 +18,12 @@
 #include "CameraTask.h"
 #include "Target.h"
 #include "nivision.h"
+#include "Target2.h"
 
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(true)dprintf
 #define TPRINTF if(false)dprintf
+#define M_METHOD (0)
 
 // Sample in memory buffer
 struct abuf
@@ -132,13 +134,12 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	proxy = Proxy::getInstance();
 	DPRINTF(LOG_INFO,"CameraTask got proxy");
 	
-	proxy->add("CanSeeCameraTargets");
-	proxy->add("NormalizedTargetCenter");	
+	proxy->add("WidthOfTarget");
+	proxy->add("HeightOfTarget");	
 	
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
 	
-	WaitForGoAhead(); // THIS IS VERY IMPORTANT
 	
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
@@ -178,20 +179,23 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
  * @return bool success code
  */
 bool CameraTask::FindTargets() {
+
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
 	// get the camera image
 	//Image * image = frcCreateImage(IMAQ_IMAGE_HSL);
 	HSLImage * image = camera.GetImage();
-
+#if M_METHOD
 	// find FRC targets in the image
 	vector<Target> targets = Target::FindTargets(image);
 	
 		if (targets.size()) {
 			DPRINTF(LOG_DEBUG, "targetImage SCORE = %f", targets[0].m_score);
 		}	
+#endif
 		//delete image;
 		delete image;
+#if M_METHOD
 		if (targets.size() == 0) {
 			// no targets found.
 			DPRINTF(LOG_DEBUG, "No target found\n\n");
@@ -217,6 +221,14 @@ bool CameraTask::FindTargets() {
 //			targets[0].Print();
 		}
 		return true;
+#endif
+		
+		float HeightOfTarget;
+		float WidthOfTarget;
+		ProcessMyImage((Image*)image, TOP_MOST, &HeightOfTarget, &WidthOfTarget);
+	    proxy->set("HeightOfTarget", (float) HeightOfTarget);
+	    proxy->set("WidthOfTarget", WidthOfTarget);
+	    return 1;
 }
 
 /**

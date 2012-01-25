@@ -6,6 +6,7 @@
 #include "TrackAPI.h"
 #include "stdlib.h"
 #include "Target2.h"
+#include "Proxy.h"
 
 #define DPRINTF if(false)dprintf                //debugging info
 #define TPRINTF if(true)dprintf                 //testing info
@@ -34,7 +35,7 @@ static bool FailCheck(int Returned, char* Description)
 }
 
 
-int ProcessImage(Image* CameraInput, int DV, float* HeightOfTarget, float* WidthOfTarget)
+int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float* WidthOfTarget)
 /*	Description: This function takes an image and analyzes it for the target.
 	Return Value:
 		0: failed (seeing too many rectangles or none)
@@ -45,6 +46,11 @@ int ProcessImage(Image* CameraInput, int DV, float* HeightOfTarget, float* Width
 
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 
+	
+	/*Step 0: Convert HSL image to usable one
+	 int imaqCast(Image* dest, const Image* source, ImageType type, const float* lookup, int shift); */
+	//imaqCast
+	
 	/*Step 1: Color Threshold 
 	(Red: 0-255, Green: 174-255,  Blue: 210-255)
 	int imaqColorThreshold(Image* dest, const Image* source, int replaceValue, ColorMode mode, const Range* plane1Range, const Range* plane2Range, const Range* plane3Range); */
@@ -160,9 +166,9 @@ int ProcessImage(Image* CameraInput, int DV, float* HeightOfTarget, float* Width
 	
 	/* Step 8: Take desired measurements and return number of rectangles seen*/
 	/* Take measurements, return */
-	*HeightOfTarget= ((TargetRect->corner[0].y + TargetRect->corner[1].y)/2);
-	*WidthOfTarget= TargetRect->corner[0].x - TargetRect->corner[1].x;
-	TPRINTF(LOG_INFO, "TargetRect:\n\t1: %f, %f\n\t2: %f, %f\n\t3: %f, %f\n\t4: %f, %f", 
+	*HeightOfTarget = ((TargetRect->corner[0].y + TargetRect->corner[1].y)/2);
+	*WidthOfTarget = TargetRect->corner[0].x - TargetRect->corner[1].x;
+	TPRINTF(LOG_INFO, "TargetRect:\t1: %f, %f\t2: %f, %f\t3: %f, %f\t4: %f, %f\r", 
 			(double) TargetRect->corner[0].x,
 			(double) TargetRect->corner[0].y,
 			(double) TargetRect->corner[1].x,

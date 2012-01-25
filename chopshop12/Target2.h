@@ -6,4 +6,4 @@ typedef enum {
 	BOTTOM_MOST
 } corner_t;
 
-extern int ProcessImage(Image* CameraInput, corner_t DV/*, outputs*/);
+extern int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float* WidthOfTarget);
