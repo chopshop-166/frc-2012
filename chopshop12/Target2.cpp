@@ -8,8 +8,12 @@
 #include "Target2.h"
 #include "Proxy.h"
 
-#define DPRINTF if(true)dprintf                //debugging info
-#define TPRINTF if(true)dprintf                 //testing info
+#define DPRINTF if(true)dprintf					//debugging info
+#define TPRINTF if(true)dprintf					//testing info
+#define I_SEE_4_TARGETS (false)					
+/* If you have 4 vision targets to look at, set this to true
+ * to enable target selection. Note that the image must contain
+ * at least 4 particles for this to work.*/
 
 
 //M's potential debug checker:
@@ -33,6 +37,13 @@ static bool FailCheck(int Returned, char* Description)
 		return false;
 	}
 }
+static int Countup(Image* ImageToCount)
+{
+	int numParticles;
+	imaqCountParticles(ImageToCount, TRUE, &numParticles);
+	DPRINTF(LOG_INFO, "\t\tnumParticles: %i", numParticles);
+	return numParticles;
+}
 
 
 int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float* WidthOfTarget)
@@ -47,12 +58,6 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 	DPRINTF(LOG_INFO, "\nLOOK HERE\n");
 	
-	/*Step 0: Convert HSL image to usable one
-	 int imaqCast(Image* dest, const Image* source, ImageType type, const float* lookup, int shift); */
-	//imaqCast(ProcessedImage, CameraInput, IMAQ_IMAGE_RGB, NULL, -1); 
-
-
-	
 	/*Step 1: Color Threshold 
 	(Red: 0-255, Green: 174-255,  Blue: 210-255)
 	int imaqColorThreshold(Image* dest, const Image* source, int replaceValue, ColorMode mode, const Range* plane1Range, const Range* plane2Range, const Range* plane3Range); */
@@ -65,9 +70,7 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
 	
-	int numParticles;
-	imaqCountParticles(ProcessedImage, TRUE, &numParticles);
-	DPRINTF(LOG_INFO, "Particles: %i", numParticles);
+	Countup(ProcessedImage);
 	/*Step 2: Basic Morphology Dilation
 	int imaqMorphology(Image* dest, Image* source, MorphologyMethod method, const StructuringElement* structuringElement); */
 	/* Setup for Morphology*/
@@ -80,9 +83,7 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 	if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) {return 0; } else {DPRINTF(LOG_INFO, "Dilated");}
 	free(StructEle.kernel);
 
-	int numParticles2;
-	imaqCountParticles(ProcessedImage, TRUE, &numParticles2);
-	DPRINTF(LOG_INFO, "Particles: %i", numParticles2);
+	Countup(ProcessedImage);
 	/*Step 3: Fill Holes
 	int imaqFillHoles(Image* dest, const Image* source, int connectivity8); */
 	if(FailCheck(imaqFillHoles(ProcessedImage, ProcessedImage, TRUE), "Fill Holes %i")) {return 0; } else {DPRINTF(LOG_INFO, "Holes Filled");}
@@ -100,9 +101,7 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 	int NP;
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT, 1, &OPTS, NULL, &NP), "Filter Particles %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 
-	int numParticles3;
-	imaqCountParticles(ProcessedImage, TRUE, &numParticles3);
-	DPRINTF(LOG_INFO, "Particles: %i", numParticles3);
+	Countup(ProcessedImage);
 	/*Step 5: Convert to 16-bit image, max contrast
 	int imaqLookup(Image* dest, const Image* source, const short* table, const Image* mask); */
 	/* Setup for Lookup Table */
@@ -111,22 +110,20 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 		for(int i=1;i<256;i++) TBL[i]=255;
 	if(FailCheck(imaqLookup(ProcessedImage, ProcessedImage, &TBL[0], NULL), "Lookup Table %i"))  {return 0; } else {DPRINTF(LOG_INFO, "Look up Tabled");}
 
-
-	int numParticles4;
-	imaqCountParticles(ProcessedImage, TRUE, &numParticles4);
-	DPRINTF(LOG_INFO, "Particles: %i", numParticles4);
-	if(!numParticles) return 0;
-	
-	/* Step ALT 6: Particle analysis
-	 * int imaqMeasureParticle(Image* image, int particleNumber, int calibrated, MeasurementType measurement, double* value); 
-	 */
-	if (numParticles<4){
-		int index[4];
+	/* Step 6: Get particle */
+	int DesiredParticleIndex;
+	int NumPart=Countup(ProcessedImage);
+#if (I_SEE_4_TARGETS)
+	/* Step ALT 6: Particle analysis */
+	//Step 6.1: find the index numbers of the 4 targets
+	int index[4];
+	if (NumPart>4)
+	{
 		for (int j=0; j<4; j++) index[j]=0;
 		double measure[4];
 		for (int e=0; e<4; e++) measure[e]=0;
 		
-		for(int i=0; i<numParticles4; i++)
+		for(int i=0; i<NumPart; i++)
 		{
 			double testmeasure;
 			imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_COMPACTNESS_FACTOR, &testmeasure);
@@ -153,61 +150,123 @@ int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float
 				index[3]=i;        measure[3]=testmeasure;
 			}
 		}
-		double BestDVIndex;
-		double BestDV=0;
-		switch (DV)//Find the rectangle with the desired value
-				{
-					case TOP_MOST:
-						for (int i = 0; i < 4; i++) 
-						{
-							double testmeasure;
-							imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_TOP, &testmeasure);
-							if (testmeasure < BestDV)
-							{ BestDV=testmeasure; BestDVIndex = i; }
-						}
-					break;
-					case LEFT_MOST:
-						for (int i = 0; i < 4; i++) 
-							{
-								double testmeasure;
-								imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_RIGHT, &testmeasure);
-								if (testmeasure < BestDV)
-								{ BestDV=testmeasure; BestDVIndex = i; }
-							}
-					break;
-					case RIGHT_MOST:
-						for (int i = 0; i < 4; i++) 
-							{
-								double testmeasure;
-								imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_RIGHT, &testmeasure);
-								if (testmeasure > BestDV)
-								{ BestDV=testmeasure; BestDVIndex = i; }
-							}
-					case BOTTOM_MOST:
-						for (int i = 0; i < 4; i++) 
-							{
-								double testmeasure;
-								imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_TOP, &testmeasure);
-								if (testmeasure > BestDV)
-								{ BestDV=testmeasure; BestDVIndex = i; }
-							}
-					break;
-					default:
-						printf("\n\nSome fool put a bad value into M's image processing program!!\n\n");
-					break;
-				}
 	}
-	else if (numParticles==4)
+	else if (NumPart==4)
 	{
-		//YES YES YES YES YES!!
+		for(int i=0; i<4; i++)
+			index[i]=i;
 	}
-	
-	ParticleAnalysisReport PAR;
-	frcParticleAnalysis(ProcessedImage, 0, &PAR);
-	DPRINTF(LOG_INFO, "Particle Analysis: %f", PAR.center_mass_x_normalized);
-return 0;
+	else
+	{
+		DPRINTF(LOG_INFO, "Cannot see enough!")
+		return 0;
+	}
+	//Step 6.2: Select the desired particle and eliminate all others
+	int BestDVIndex;
+	double BestDV=0;
+	switch (DV)//Find the rectangle with the desired value
+	{
+		case TOP_MOST:
+			for (int i = 0; i < 4; i++) 
+			{
+				double testmeasure;
+				imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_TOP, &testmeasure);
+				if (testmeasure < BestDV)
+				{ BestDV=testmeasure; BestDVIndex = i; }
+			}
+		break;
+		case LEFT_MOST:
+			for (int i = 0; i < 4; i++) 
+				{
+					double testmeasure;
+					imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_RIGHT, &testmeasure);
+					if (testmeasure < BestDV)
+					{ BestDV=testmeasure; BestDVIndex = i; }
+				}
+		break;
+		case RIGHT_MOST:
+			for (int i = 0; i < 4; i++) 
+				{
+					double testmeasure;
+					imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_RIGHT, &testmeasure);
+					if (testmeasure > BestDV)
+					{ BestDV=testmeasure; BestDVIndex = i; }
+				}
+		case BOTTOM_MOST:
+			for (int i = 0; i < 4; i++) 
+				{
+					double testmeasure;
+					imaqMeasureParticle(ProcessedImage, index[i],  0, IMAQ_MT_BOUNDING_RECT_TOP, &testmeasure);
+					if (testmeasure > BestDV)
+					{ BestDV=testmeasure; BestDVIndex = i; }
+				}
+		break;
+		default:
+			printf("\n\nSome fool put a bad value into M's image processing program!!\n\n");
+		break;
+	}
+	//Step 6.3: Magically pick out the one particle we want
+	double Xval;
+	double Yval;
+	imaqMeasureParticle(ProcessedImage, index[BestDVIndex], 0, IMAQ_MT_CENTER_OF_MASS_X, &Xval); 
+	imaqMeasureParticle(ProcessedImage, index[BestDVIndex], 0, IMAQ_MT_CENTER_OF_MASS_Y, &Yval); 
+	Point Coords;
+	Coords.x = (int) Xval;
+	Coords.y = (int) Yval;
+	if(FailCheck(imaqMagicWand(ProcessedImage, ProcessedImage, Coords, 5, TRUE, 255), "Magic Wand %i")){return 0;} else {DPRINTF(LOG_INFO, "MagicWand!");}
+	Countup(ProcessedImage);
+	DesiredParticleIndex=0;
+#endif
 
+#if (!I_SEE_4_TARGETS)
+	//DesiredParticleIndex
+	double BestValSoFar=0;
+	for(int i=0;i<NumPart;i++)
+	{
+		double testmeasure;
+		imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_COMPACTNESS_FACTOR, &testmeasure);
+		if(testmeasure>BestValSoFar) 
+		{
+			DesiredParticleIndex=i; 
+			BestValSoFar=testmeasure;
+		}
+	}
+#endif	
 	
+/* Step 7: Find best particle and analyze */
+	ParticleAnalysisReport PAR;
+	frcParticleAnalysis(ProcessedImage, DesiredParticleIndex, &PAR);
+	DPRINTF(LOG_INFO, "Particle Analysis: %f", PAR.center_mass_x_normalized);
+/*A Particle Analysis Report:
+		int 	imageHeight;
+		int 	imageWidth;
+		double 	imageTimestamp;				
+		int		particleIndex;
+		int 	center_mass_x;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_X 
+		int 	center_mass_y;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_Y 
+		double 	center_mass_x_normalized;  	//Center of mass x value normalized to -1.0 to +1.0 range
+		double 	center_mass_y_normalized;  	//Center of mass y value normalized to -1.0 to +1.0 range
+		double 	particleArea;				// MeasurementType: IMAQ_MT_AREA
+		Rect 	boundingRect;				// left/top/width/height
+			int top;    //Location of the top edge of the rectangle.
+		    int left;   //Location of the left edge of the rectangle.
+		    int height; //Height of the rectangle.
+		    int width;  //Width of the rectangle.
+		double 	particleToImagePercent;		// MeasurementType: IMAQ_MT_AREA_BY_IMAGE_AREA
+		double 	particleQuality;			// MeasurementType: IMAQ_MT_AREA_BY_PARTICLE_AND_HOLES_AREA
+		//particleQuality: Percentage of the particle Area in relation to its Particle and Holes Area
+*/
+	return Countup(ProcessedImage);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 	
 #if 0
 	/* Step 6: Find Rectangles
