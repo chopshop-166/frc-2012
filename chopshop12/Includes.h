@@ -3,7 +3,7 @@
 
 // <<CHANGEME>>
 // Add any #defines for your .h files for each seperate task
-
+#include "CameraTask.h"
 #include "Turret.h"
-
+#include "Drive.h"
 #endif
