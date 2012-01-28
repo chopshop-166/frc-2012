@@ -105,7 +105,7 @@ CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
 	
 	SetDebugFlag ( DEBUG_SCREEN_ONLY  );
 	camera.WriteResolution(AxisCamera::kResolution_320x240);
-	camera.WriteBrightness(15);
+	camera.WriteBrightness(30);
 	int fps = camera.GetMaxFPS();
 	Start((char *)"CameraTask", CAMERA_CYCLE_TIME);
 
@@ -140,6 +140,8 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
 	
+	WaitForGoAhead(); // THIS IS VERY IMPORTANT
+
 	
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
@@ -183,8 +185,8 @@ bool CameraTask::FindTargets() {
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
 	// get the camera image
-	//Image * image = frcCreateImage(IMAQ_IMAGE_HSL);
-	HSLImage * image = camera.GetImage();
+    HSLImage* image1 = camera.GetImage();   
+    Image* image = image1->GetImaqImage();
 #if M_METHOD
 	// find FRC targets in the image
 	vector<Target> targets = Target::FindTargets(image);
@@ -193,8 +195,6 @@ bool CameraTask::FindTargets() {
 			DPRINTF(LOG_DEBUG, "targetImage SCORE = %f", targets[0].m_score);
 		}	
 #endif
-		//delete image;
-		delete image;
 #if M_METHOD
 		if (targets.size() == 0) {
 			// no targets found.
@@ -225,9 +225,11 @@ bool CameraTask::FindTargets() {
 		
 		float HeightOfTarget;
 		float WidthOfTarget;
-		ProcessMyImage((Image*)image, TOP_MOST, &HeightOfTarget, &WidthOfTarget);
+		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, TOP_MOST, &HeightOfTarget, &WidthOfTarget));
 	    proxy->set("HeightOfTarget", (float) HeightOfTarget);
 	    proxy->set("WidthOfTarget", WidthOfTarget);
+		//delete image;
+		imaqDispose(image);
 	    return 1;
 }
 
