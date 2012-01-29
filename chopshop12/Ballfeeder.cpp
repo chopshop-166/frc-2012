@@ -16,7 +16,7 @@
 /*------------------------------------------------------------------------------*/
 
 #include "WPILib.h"
-#include "TaskBallFeeder.h"
+#include "BallFeeder.h"
 
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
@@ -87,7 +87,8 @@ unsigned int BallFeederLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-BallFeeder166::BallFeeder166(void):BallFeed(6)
+BallFeeder166::BallFeeder166(void)
+	:BallFeed(BALLFEEDER_MODULE_NUMBER,BALLFEEDER_CHANNEL_NUMBER)
 {
 	Start((char *)"166BallFeederTask", BALLFEEDER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -122,7 +123,12 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		
+	
+		if(proxy->get("BallCount") == 3) {
+			 BallFeed.Disable();
+		} else {
+     		 BallFeed.SetSpeed(.5);
+	    }
 		sl.PutOne();
 		
 		// Wait for our next lap

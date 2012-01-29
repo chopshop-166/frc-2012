@@ -20,9 +20,8 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define BALLFEEDER_CYCLE_TIME (10) // 10ms
-
-// Rename this, too, or you'll run into collisions
-// <<CHANGEME>>
+#define BALLFEEDER_MODULE_NUMBER (1)
+#define BALLFEEDER_CHANNEL_NUMBER (1)
 class BallFeeder166 : public Team166Task
 {
 	
@@ -42,7 +41,7 @@ private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
-	Victor BallFeed;
+	Victor BallFeed;		  // instance of victor
 	
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
