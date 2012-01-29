@@ -23,6 +23,13 @@
 //#define CAMERA_CYCLE_TIME (20) // ms
 #define CAMERA_CYCLE_TIME (200) // ms
 
+
+#define I_SEE_4_TARGETS (true)					
+/* If you have 4 vision targets to look at, set this to true
+ * to enable target selection. Note that the image must contain
+ * at least 4 particles for this to work.*/
+
+
 /** Private NI function needed to write to the VxWorks target */
 IMAQ_FUNC int Priv_SetWriteFileAllowed(UINT32 enable); 
 
