@@ -134,8 +134,10 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	proxy = Proxy::getInstance();
 	DPRINTF(LOG_INFO,"CameraTask got proxy");
 	
+	/* Changed to a particle analysis report
 	proxy->add("WidthOfTarget");
 	proxy->add("HeightOfTarget");	
+	*/
 	
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
@@ -203,7 +205,7 @@ bool CameraTask::FindTargets() {
 		}
 		else if (targets[0].m_score < MINIMUM_SCORE) {
 			// no good enough targets found
-			DPRINTF(LOG_DEBUG, "No valid targets found, best score: %f ", 
+			DPRINTF(LOG_DEBUG, "No valid targets foxxxund, best score: %f ", 
 						targets[0].m_score);
 			return false;			
 		}
@@ -223,11 +225,39 @@ bool CameraTask::FindTargets() {
 		return true;
 #endif
 		
-		float HeightOfTarget;
-		float WidthOfTarget;
-		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, TOP_MOST, &HeightOfTarget, &WidthOfTarget));
-	    proxy->set("HeightOfTarget", (float) HeightOfTarget);
+#if I_SEE_4_TARGETS
+		ParticleAnalysisReport ParticleReport[4];
+		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0]));
+#endif
+#if !I_SEE_4_TARGETS
+		ParticleAnalysisReport ParticleReport;
+		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport));
+#endif
+		/*
+		proxy->set("HeightOfTarget", (float) HeightOfTarget);
 	    proxy->set("WidthOfTarget", WidthOfTarget);
+	    */
+		
+		/*A Particle Analysis Report contains:
+				int 	imageHeight;
+				int 	imageWidth;
+				double 	imageTimestamp;				
+				int		particleIndex;
+				int 	center_mass_x;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_X 
+				int 	center_mass_y;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_Y 
+				double 	center_mass_x_normalized;  	//Center of mass x value normalized to -1.0 to +1.0 range
+				double 	center_mass_y_normalized;  	//Center of mass y value normalized to -1.0 to +1.0 range
+				double 	particleArea;				// MeasurementType: IMAQ_MT_AREA
+				Rect 	boundingRect;				// left/top/width/height
+					int top;    //Location of the top edge of the rectangle.
+				    int left;   //Location of the left edge of the rectangle.
+				    int height; //Height of the rectangle.
+				    int width;  //Width of the rectangle.
+				double 	particleToImagePercent;		// MeasurementType: IMAQ_MT_AREA_BY_IMAGE_AREA
+				double 	particleQuality;			// MeasurementType: IMAQ_MT_AREA_BY_PARTICLE_AND_HOLES_AREA
+				//particleQuality: Percentage of the particle Area in relation to its Particle and Holes Area
+		*/
+		
 		//delete image;
 		imaqDispose(image);
 	    return 1;

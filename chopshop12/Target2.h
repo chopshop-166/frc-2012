@@ -1,9 +1,9 @@
 typedef enum {
-	UNINITIALIZED=0,
-	TOP_MOST, 
+	TOP_MOST=0, 
 	LEFT_MOST, 
-	RIGHT_MOST,
-	BOTTOM_MOST
+	RIGHT_MOST, 
+	BOTTOM_MOST, 
+	UNINITIALIZED 
 } corner_t;
 
-extern int ProcessMyImage(Image* CameraInput, corner_t DV, float* HeightOfTarget, float* WidthOfTarget);
+extern int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep);
