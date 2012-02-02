@@ -87,7 +87,12 @@ unsigned int BallFeederLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-BallFeeder166::BallFeeder166(void):BallFeed(6)
+BallFeeder166::BallFeeder166(void):
+	BallFeed(6),
+	BallLocation0(BALLLOCATION0),
+	BallLocation1(BALLLOCATION1),
+	BallLocation2(BALLLOCATION2),
+	BallLocation3(BALLLOCATION3)
 {
 	Start((char *)"166BallFeederTask", BALLFEEDER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -119,11 +124,48 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-		
+	proxy->add("BallLocation0");
+	proxy->add("BallLocation1");
+	proxy->add("BallLocation2");
+	proxy->add("BallLocation3");
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		proxy->set("BallLocation0",BallLocation0.Get());
+		proxy->set("BallLocation1",BallLocation1.Get());
+		proxy->set("BallLocation2",BallLocation2.Get());
+		proxy->set("BallLocation3",BallLocation3.Get());
+		 
+		proxy->set("BallCount",(BallLocation1.Get() + BallLocation2.Get() + BallLocation3.Get()));
 		
-		sl.PutOne();
+			//Ball 1, goes to position 3 then stop
+			if((BallLocation0.Get() == true) && (BallLocation3.Get() == false)) 
+			{
+				BallFeed.Set(.5);
+			}
+			else
+			{
+				BallFeed.Set(0);
+			}
+			//Ball 2, goes to position 1, then stop
+			if((BallLocation0.Get() == true) && (BallLocation1.Get() == false))
+			{
+				BallFeed.Set(.5);
+			}
+			else
+			{
+				BallFeed.Set(0);
+			}
+			//Ball 3, push to position 2, then stop
+			if((BallLocation0.Get() == true) && (BallLocation2.Get() == false))
+			{
+				BallFeed.Set(.5);
+			}
+			else
+			{
+				BallFeed.Set(0);
+			}
+		
+		sl.PutOne();		
 		
 		// Wait for our next lap
 		WaitForNextLoop();		
