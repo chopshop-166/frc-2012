@@ -89,9 +89,13 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-Shooter::Shooter(void):ShooterJagTopA(8),ShooterJagTopB(9),ShooterJagBottomA(10),ShooterJagBottomB(11)
+Shooter::Shooter(void):
+	ShooterJagTopA(SHOOTERJAGTOPA),
+	ShooterJagTopB(SHOOTERJAGTOPB),
+	ShooterJagBottomA(SHOOTERJAGBOTTOMA),
+	ShooterJagBottomB(SHOOTERJAGBOTTOMB)
 {
-	Start((char *)"166TemplateTask", TEMPLATE_CYCLE_TIME);
+	Start((char *)"166Templateask", TEMPLATE_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	//Front Left
@@ -146,17 +150,29 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	while (true) {
 		// <<CHANGEME>>
 		// Insert your own logic here
-		
-		speed1 = proxy->get("vo"); //get speed from proxy in feet per second	
-		speed1 = speed1 / 60 * 2.083333333333333; // convert fps to rpm
-		
-		speed2 = speed1 * -1; // set bottom speed to opposite of top
-		speed2 = speed1 * BaskspinFactor; //allows the top and bottom to go at different speeds for goodness
-					
-		ShooterJagTopA.Set(speed1);
-		ShooterJagTopB.Set(speed1);
-		ShooterJagBottomA.Set(speed2);
-		ShooterJagBottomB.Set(speed2);
+			//a switch that takes a ballcount from the proxy, if its 0, 
+			//the motors spin slowly, otherwise, code runs normally.
+	switch (proxy->get ("BallCount") > 0) 
+	{
+		case true:
+			speed1 = proxy->get("vo"); //get speed from proxy in feet per second	
+			speed1 = speed1 / 60 * 2.083333333333333; // convert fps to rpm
+			
+			speed2 = speed1 * -1; // set bottom speed to opposite of top
+			speed2 = speed1 * BaskspinFactor; //allows the top and bottom to go at different speeds for goodness
+						
+			ShooterJagTopA.Set(speed1);
+			ShooterJagTopB.Set(speed1);
+			ShooterJagBottomA.Set(speed2); //set ALL the speeds!
+			ShooterJagBottomB.Set(speed2);
+			break;
+		case false:
+			ShooterJagTopA.Set(1000);
+			ShooterJagTopB.Set(1000);
+			ShooterJagBottomA.Set(10000); //make slow the speeds of the motors 
+			ShooterJagBottomB.Set(1000);
+			break;
+	}
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
