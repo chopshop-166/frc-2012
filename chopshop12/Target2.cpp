@@ -13,13 +13,13 @@
 
 static bool FailCheck(int Returned, char* Description);		//Print out errors
 static int Countup(Image* ImageToCount);					//Print out number of particles
-#if I_SEE_4_TARGETS
+
 static int ReturnReport(
 		Image* ProcessedImage, 
 		int* index, 
 		corner_t DesiredValue, 
 		ParticleAnalysisReport* Report);
-#endif
+
 
 int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 /*	Description: This function takes an image and analyzes it for the target.
@@ -39,7 +39,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 	/* Setup Threshold Values */
 	const Range RR = {0  ,255};
 	const Range GR = {0  ,255};
-	const Range BR = {140,255};
+	const Range BR = {35 ,255};
 	int thresholdcheck;
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
@@ -51,85 +51,47 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 		static int kernelvalues[9] = {1,1,1,1,1,1,1,1,1};
 		const StructuringElement StructEle = {3, 3, FALSE, &kernelvalues[0]};
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) {return 0; } else {DPRINTF(LOG_INFO, "Dilated");}
 	free(StructEle.kernel);
 	Countup(ProcessedImage);
 	
-	/*Step 3: Fill Holes
-	int imaqFillHoles(Image* dest, const Image* source, int connectivity8); */
-	if(FailCheck(imaqFillHoles(ProcessedImage, ProcessedImage, TRUE), "Fill Holes %i")) {return 0; } else {DPRINTF(LOG_INFO, "Holes Filled");}
-	if(FailCheck(imaqLabel2(ProcessedImage, ProcessedImage, TRUE, NULL), "Label")) return 0;
-	if(FailCheck(imaqConvexHull(ProcessedImage, ProcessedImage, TRUE), "Convex Hull")) return 0;
-	
-	
 	/*Step 4: Particle Filter (Area: min.5%, max100% of image)
 	int imaqParticleFilter4(Image* dest, Image* source, const ParticleFilterCriteria2* criteria, int criteriaCount, const ParticleFilterOptions2* options, const ROI* roi, int* numParticles); */
 	/* Setup for Particle Filter */
-	const ParticleFilterCriteria2 CRIT = {IMAQ_MT_AREA_BY_IMAGE_AREA, 1, 100, FALSE, FALSE};
+	const ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_NUMBER_OF_HOLES,    1  , 2  , FALSE, FALSE}, 
+			                                 {IMAQ_MT_COMPACTNESS_FACTOR, 0.2, 0.5, FALSE, FALSE},
+    										 {IMAQ_MT_COMPACTNESS_FACTOR, 0.5, 1.0, FALSE, FALSE}};
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
 	int NP;
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT, 1, &OPTS, NULL, &NP), "Filter Particles %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
 	
-	/*Step 5: Convert to 16-bit image, max contrast
-	int imaqLookup(Image* dest, const Image* source, const short* table, const Image* mask); */
-	/* Setup for Lookup Table */
-	short TBL[256];
-		TBL[0]=0;
-		for(int i=1;i<256;i++) TBL[i]=255;
-	if(FailCheck(imaqLookup(ProcessedImage, ProcessedImage, &TBL[0], NULL), "Lookup Table %i"))  {return 0; } else {DPRINTF(LOG_INFO, "Look up Tabled");}
-	int NumPart=Countup(ProcessedImage);
+	/* Step 5: Fill up holes */
+	if(FailCheck(imaqFillHoles(ProcessedImage, ProcessedImage, TRUE), "Fill Holes %i")) {return 0; } else {DPRINTF(LOG_INFO, "Holes Filled");}
 	
-#if (I_SEE_4_TARGETS)
-	/* Step 6: Get particle(s) that are targets*/
-	int index[4];
-	if (NumPart>4) //we need to sort to find the four with the best value
-	{
-		for (int j=0; j<4; j++) index[j]=0;
-		double measure[4];
-		for (int e=0; e<4; e++) measure[e]=0;
-		
-		for(int i=0; i<NumPart; i++)
-		{
-			double testmeasure;
-			imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_COMPACTNESS_FACTOR, &testmeasure);
-			if (testmeasure>measure[0])
-			{
-				index[3]=index[2]; measure[3]=measure[2];
-				index[2]=index[1]; measure[2]=measure[1];
-				index[1]=index[0]; measure[1]=measure[0];
-				index[0]=i;        measure[0]=testmeasure;
-			}
-			else if (testmeasure>measure[1])
-			{
-				index[3]=index[2]; measure[3]=measure[2];
-				index[2]=index[1]; measure[2]=measure[1];
-				index[1]=i;        measure[1]=testmeasure;
-			}
-			else if (testmeasure>measure[2])
-			{
-				index[3]=index[2]; measure[3]=measure[2];
-				index[2]=i;        measure[2]=testmeasure;
-			}
-			else if (testmeasure>measure[3])
-			{
-				index[3]=i;        measure[3]=testmeasure;
-			}
-		}
-	}
-	else if (NumPart==4)
-	{
-		for(int i=0; i<4; i++)
-			index[i]=i;
-	}
-	else
-	{
-		DPRINTF(LOG_INFO, "Cannot see enough!");
-		return 0;
-	}
+	/* Step 6: Take out the particles that aren't filled in enough */
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	Countup(ProcessedImage);
 	
-	/* Step 7: Return reports*/
+	int index[4]={0, 1, 2, 3};
+	
+	int numParticles=Countup(ProcessedImage);
+	if(numParticles>4 || numParticles==0) return 0;
+	else if (numParticles==3) 
+		index[3]=2;
+	else if (numParticles==2)
+	{
+		index[2]=1;
+		index[3]=1;
+	}
+	else if (numParticles==1)
+	{
+		index[1]=0;
+		index[2]=0;
+		index[3]=0;
+	}
+
+	
 	ReturnReport(ProcessedImage, &index[0], TOP_MOST,    &ParticleRep[TOP_MOST]   );
 	ReturnReport(ProcessedImage, &index[0], LEFT_MOST,   &ParticleRep[LEFT_MOST]  );
 	ReturnReport(ProcessedImage, &index[0], RIGHT_MOST,  &ParticleRep[RIGHT_MOST] );
@@ -140,34 +102,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 	DPRINTF(LOG_INFO, "RIGHT:  %f\t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 	DPRINTF(LOG_INFO, "BOTTOM: %f\t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
 		
-	
-	return Countup(ProcessedImage);
-	
-	
-
-#endif
-
-#if (!I_SEE_4_TARGETS)
-	/* Step 6: find desired particle */
-	int DesiredParticleIndex;
-	double BestValSoFar=0;
-	for(int i=0;i<NumPart;i++)
-	{
-		double testmeasure;
-		imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_COMPACTNESS_FACTOR, &testmeasure);
-		if(testmeasure>BestValSoFar) 
-		{
-			DesiredParticleIndex=i; 
-			BestValSoFar=testmeasure;
-		}
-	}
-	
-/* Step 7: Find best particle and analyze */
-	frcParticleAnalysis(ProcessedImage, DesiredParticleIndex, ParticleRep);
-	DPRINTF(LOG_INFO, "Particle Analysis: %f,\t%f", (*ParticleRep).center_mass_x_normalized, (*ParticleRep).center_mass_y_normalized);
-	return Countup(ProcessedImage);
-	
-#endif
+	return numParticles;
 }
 
 
@@ -200,7 +135,6 @@ static int Countup(Image* ImageToCount)
 	return numParticles;
 }
 
-#if I_SEE_4_TARGETS
 static int ReturnReport(Image* ProcessedImage, int* index, corner_t DesiredValue, ParticleAnalysisReport* Report)
 {
 	int BestDVIndex;
@@ -249,7 +183,6 @@ static int ReturnReport(Image* ProcessedImage, int* index, corner_t DesiredValue
 	frcParticleAnalysis(ProcessedImage, BestDVIndex, Report);
 	return 0;
 }
-#endif
 
 
 

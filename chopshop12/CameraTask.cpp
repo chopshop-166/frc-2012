@@ -225,14 +225,8 @@ bool CameraTask::FindTargets() {
 		return true;
 #endif
 		
-#if I_SEE_4_TARGETS
 		ParticleAnalysisReport ParticleReport[4];
 		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0]));
-#endif
-#if !I_SEE_4_TARGETS
-		ParticleAnalysisReport ParticleReport;
-		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport));
-#endif
 		/*
 		proxy->set("HeightOfTarget", (float) HeightOfTarget);
 	    proxy->set("WidthOfTarget", WidthOfTarget);
