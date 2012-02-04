@@ -17,33 +17,34 @@
 // #define DRIVER_JOYSTICK (1)
 
 //CONTROL Defines
-#define DRIVEJOYSTICK (1)
+#define DRIVE_JOYSTICK_Y		("Joy1Y")
+#define DRIVE_JOYSTICK_X		("Joy1X")
 
 
 //JAGUAR ID's
-#define SHOOTERJAGTOPA		(3)
-#define SHOOTERJAGTOPB		(4)
-#define SHOOTERJAGBOTTOMA	(5)
-#define SHOOTERJAGBOTTOMB	(6)
-#define TURRETJAG			(7)
+#define SHOOTER_JAG_TOP_A		(3)
+#define SHOOTER_JAG_TOP_B		(4)
+#define SHOOTER_JAG_BOTTOM_A	(5)
+#define SHOOTER_JAG_BOTTOM_B	(6)
+#define TURRET_JAG				(7)
 
 //VICTORS ID's
-#define DRIVEFRONTLEFT		(1)
-#define DRIVEFRONTRIGH		(2)
-#define DRIVEREARLEFT		(3)
-#define DRIVEREARRIGHT		(4)
-#define BALLJAGUAR			(6)
-#define BALLCOLLECTOR		(7)
-#define BRIDGEMANIPULATOR	(8)
-#define BALLFEED			(9)
+#define DRIVE_FRONT_LEFT		(1)
+#define DRIVE_FRONT_RIGHT		(2)
+#define DRIVE_REAR_LEFT			(3)
+#define DRIVE_REAR_RIGHT		(4)
+#define BALL_JAGUAR				(6)
+#define BALL_COLLECTOR			(7)
+#define BRIDGE_MANIPULATOR		(8)
+#define BALL_FEED				(9)
 
 //DIGITAL INPUTS
-#define TURRETLEFTLIMIT		(1)
-#define TURRETRIGHTLIMIT	(2)
-#define BALLLOCATION0		(3)
-#define BALLLOCATION1		(4)
-#define BALLLOCATION2		(5)
-#define BALLLOCATION3		(6)
+#define TURRET_LEFT_LIMIT		(1)
+#define TURRET_RIGHT_LIMIT		(2)
+#define BALL_LOCATION_0			(3)
+#define BALL_LOCATION_1			(4)
+#define BALL_LOCATION_2			(5)
+#define BALL_LOCATION_3			(6)
 
 //ANALOG INPUTS
-#define TURRETPOT			(1)
+#define TURRET_POT			(1)

@@ -6,4 +6,5 @@
 #include "CameraTask.h"
 #include "Turret.h"
 #include "Drive.h"
+#include "Shooter.h"
 #endif

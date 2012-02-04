@@ -88,11 +88,11 @@ unsigned int BallFeederLog::DumpBuffer(char *nptr, FILE *ofile)
 
 // task constructor
 BallFeeder166::BallFeeder166(void):
-	BallFeed(6),
-	BallLocation0(BALLLOCATION0),
-	BallLocation1(BALLLOCATION1),
-	BallLocation2(BALLLOCATION2),
-	BallLocation3(BALLLOCATION3)
+	BallFeed(BALL_FEED),
+	BallLocation0(BALL_LOCATION_0),
+	BallLocation1(BALL_LOCATION_1),
+	BallLocation2(BALL_LOCATION_2),
+	BallLocation3(BALL_LOCATION_3)
 {
 	Start((char *)"166BallFeederTask", BALLFEEDER_CYCLE_TIME);
 	// ^^^ Rename those ^^^

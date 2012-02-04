@@ -88,7 +88,7 @@ unsigned int DriveLog::DumpBuffer(char *nptr, FILE *ofile)
 
 // task constructor
 Drive166::Drive166(void):
-	FrontLeft(DRIVEFRONTLEFT), FrontRight(DRIVEFRONTRIGH), RearLeft(DRIVEREARLEFT), RearRight(DRIVEREARRIGHT),
+	FrontLeft(DRIVE_FRONT_LEFT), FrontRight(DRIVE_FRONT_RIGHT), RearLeft(DRIVE_REAR_LEFT), RearRight(DRIVE_REAR_RIGHT),
 	Drive(FrontRight,RearRight,FrontLeft,RearLeft)
 {
 	Start((char *)"166DriveTask", DRIVE_CYCLE_TIME);
@@ -121,11 +121,10 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	Joystick stick(DRIVEJOYSTICK);
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
-		Drive.ArcadeDrive(stick,0);
+		Drive.ArcadeDrive(proxy->get(DRIVE_JOYSTICK_Y), proxy->get(DRIVE_JOYSTICK_X),0);
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
