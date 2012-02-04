@@ -23,7 +23,7 @@
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(true)dprintf
 #define TPRINTF if(false)dprintf
-#define M_METHOD (0)
+#define M_METHOD (false)
 
 // Sample in memory buffer
 struct abuf
@@ -105,7 +105,7 @@ CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
 	
 	SetDebugFlag ( DEBUG_SCREEN_ONLY  );
 	camera.WriteResolution(AxisCamera::kResolution_320x240);
-	camera.WriteBrightness(30);
+	camera.WriteBrightness(10);
 	int fps = camera.GetMaxFPS();
 	Start((char *)"CameraTask", CAMERA_CYCLE_TIME);
 
@@ -135,9 +135,9 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	DPRINTF(LOG_INFO,"CameraTask got proxy");
 	
 	/* Changed to a particle analysis report
-	proxy->add("WidthOfTarget");
-	proxy->add("HeightOfTarget");	
-	*/
+	proxy->add("WidthOfTarget");*/
+	proxy->add("CameraX");	
+	
 	
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
@@ -156,12 +156,14 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	while (true) {				
 		// Wait for our next lap
 		WaitForNextLoop();
-		
+#if SAVE_IMAGES
 		/* Store a picture to cRIO */
 		TakeSnapshot("cRIOimage.jpg");
+#endif
 		
 		/* Look for target */
-		found = FindTargets();
+		dprintf(LOG_INFO, "\n\nLOOP\n\n");
+		found = CameraTask::FindTargets();
         found = false;
 	    // Logging values if a valid target found
 		if (found) {
@@ -191,16 +193,14 @@ bool CameraTask::FindTargets() {
     Image* image = image1->GetImaqImage();
 #if M_METHOD
 	// find FRC targets in the image
-	vector<Target> targets = Target::FindTargets(image);
+	vector<Target> targets = Target::FindTargets(image1);
 	
 		if (targets.size()) {
 			DPRINTF(LOG_DEBUG, "targetImage SCORE = %f", targets[0].m_score);
 		}	
-#endif
-#if M_METHOD
 		if (targets.size() == 0) {
 			// no targets found.
-			DPRINTF(LOG_DEBUG, "No target found\n\n");
+			DPRINTF(LOG_DEBUG, "No target foxxxund\n\n");
 			return false;			
 		}
 		else if (targets[0].m_score < MINIMUM_SCORE) {
@@ -227,8 +227,9 @@ bool CameraTask::FindTargets() {
 		
 		ParticleAnalysisReport ParticleReport[4];
 		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0]));
+		
+		proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
 		/*
-		proxy->set("HeightOfTarget", (float) HeightOfTarget);
 	    proxy->set("WidthOfTarget", WidthOfTarget);
 	    */
 		
