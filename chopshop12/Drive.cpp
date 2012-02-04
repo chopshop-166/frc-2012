@@ -96,6 +96,8 @@ Drive166::Drive166(void):
 	// <<CHANGEME>>
 	// Register the proxy
 	proxy = Proxy::getInstance();
+	opposite = 0;
+	slow = 0;
 	return;
 };
 	
@@ -122,9 +124,27 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
     // General main loop (while in Autonomous or Tele mode)
+	proxy->TrackNewpress("joy1b2");
+	proxy->TrackNewpress("joy1b3");
 	while (true) {
 		
-		Drive.ArcadeDrive(proxy->get(DRIVE_JOYSTICK_Y), proxy->get(DRIVE_JOYSTICK_X),0);
+		y = proxy->get(DRIVE_JOYSTICK_Y);
+		x = proxy->get(DRIVE_JOYSTICK_X);
+		
+		if(proxy->get("joy1b2n"))
+			opposite = !opposite;
+		if(opposite) {
+			x = x * -1;
+			y = y * -1;
+		}
+		
+		if(proxy->get("joy1b3n"))
+			slow = !slow;
+		if(slow) {
+			x = x / 4;
+			y = y / 4;
+		}	
+			Drive.ArcadeDrive(x,y,0);
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
