@@ -74,13 +74,20 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
 	
+	/* Step 7.0: Check particles */
+	int numP = Countup(ProcessedImage);
+	ParticleAnalysisReport PARTest[numP];
+	for (int h=0; h<numP; h++)
+	{
+		frcParticleAnalysis(ProcessedImage, h, &PARTest[h]);
+		TPRINTF(LOG_INFO, "Particle: %i   \t%i", PARTest[h].center_mass_x, PARTest[h].center_mass_y);
+	}
 	
+	/* Step 7: Apply logic */
 	int numParticles=Countup(ProcessedImage);
 	TPRINTF(LOG_INFO, "Number particles found: %i", numParticles);
 	if(numParticles>4 || numParticles==0) return 0;
 	
-	
-
 	ReturnReport(ProcessedImage, numParticles, TOP_MOST,    &ParticleRep[TOP_MOST]   );
 	ReturnReport(ProcessedImage, numParticles, LEFT_MOST,   &ParticleRep[LEFT_MOST]  );
 	ReturnReport(ProcessedImage, numParticles, RIGHT_MOST,  &ParticleRep[RIGHT_MOST] );
@@ -90,7 +97,12 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
 	TPRINTF(LOG_INFO, "LEFT:   %f   \t%f", ParticleRep[LEFT_MOST].center_mass_x_normalized,   ParticleRep[LEFT_MOST].center_mass_y_normalized);
 	TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 	TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
-		
+
+	TPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
+	TPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
+	TPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
+	TPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
+	
 	return numParticles;
 }
 
@@ -127,10 +139,11 @@ static int Countup(Image* ImageToCount)
 static int ReturnReport(Image* ProcessedImage, int numParticles, corner_t DesiredValue, ParticleAnalysisReport* Report)
 {
 	int BestDVIndex;
-	double BestDV=0;
+	double BestDV;
 	switch (DesiredValue)//Find the rectangle with the desired value
 	{
 		case TOP_MOST:
+			BestDV=1000;
 			for (int i = 0; i < numParticles; i++) 
 			{
 				double testmeasure;
@@ -140,6 +153,7 @@ static int ReturnReport(Image* ProcessedImage, int numParticles, corner_t Desire
 			}
 		break;
 		case LEFT_MOST:
+			BestDV=1000;
 			for (int i = 0; i < numParticles; i++) 
 			{
 				double testmeasure;
@@ -149,6 +163,7 @@ static int ReturnReport(Image* ProcessedImage, int numParticles, corner_t Desire
 			}
 		break;
 		case RIGHT_MOST:
+			BestDV=0;
 			for (int i = 0; i < numParticles; i++) 
 			{
 				double testmeasure;
@@ -156,7 +171,9 @@ static int ReturnReport(Image* ProcessedImage, int numParticles, corner_t Desire
 				if (testmeasure > BestDV)
 				{ BestDV=testmeasure; BestDVIndex = i; }
 			}
+			break;
 		case BOTTOM_MOST:
+			BestDV=0;
 			for (int i = 0; i < numParticles; i++) 
 			{
 				double testmeasure;
