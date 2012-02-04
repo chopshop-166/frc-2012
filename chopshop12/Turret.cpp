@@ -87,7 +87,7 @@ unsigned int TurretLog::DumpBuffer(char *nptr, FILE *ofile)
 	
 	
 // task constructor
-Turret166::Turret166(void):turretpot(3),rotateturret(2),leftlimit(10),rightlimit(11)
+Turret166::Turret166(void):turretpot(TURRET_POT),rotateturret(TURRET_JAG),leftlimit(TURRET_LEFT_LIMIT),rightlimit(TURRET_RIGHT_LIMIT)
 {	
 	Start((char *)"166TurretTask", TURRET_CYCLE_TIME);
 	// ^^^ Rename those ^^^
