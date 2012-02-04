@@ -15,3 +15,36 @@
 // Place any #defines for things you want to enable in multiple tasks, simply, here
 // For example,
 // #define DRIVER_JOYSTICK (1)
+
+//CONTROL Defines
+#define DRIVE_JOYSTICK_Y		("Joy1Y")
+#define DRIVE_JOYSTICK_X		("Joy1X")
+
+
+//JAGUAR ID's
+#define SHOOTER_JAG_TOP_A		(3)
+#define SHOOTER_JAG_TOP_B		(4)
+#define SHOOTER_JAG_BOTTOM_A	(5)
+#define SHOOTER_JAG_BOTTOM_B	(6)
+#define TURRET_JAG				(7)
+
+//VICTORS ID's
+#define DRIVE_FRONT_LEFT		(1)
+#define DRIVE_FRONT_RIGHT		(2)
+#define DRIVE_REAR_LEFT			(3)
+#define DRIVE_REAR_RIGHT		(4)
+#define BALL_JAGUAR				(6)
+#define BALL_COLLECTOR			(7)
+#define BRIDGE_MANIPULATOR		(8)
+#define BALL_FEED				(9)
+
+//DIGITAL INPUTS
+#define TURRET_LEFT_LIMIT		(1)
+#define TURRET_RIGHT_LIMIT		(2)
+#define BALL_LOCATION_0			(3)
+#define BALL_LOCATION_1			(4)
+#define BALL_LOCATION_2			(5)
+#define BALL_LOCATION_3			(6)
+
+//ANALOG INPUTS
+#define TURRET_POT			(1)
