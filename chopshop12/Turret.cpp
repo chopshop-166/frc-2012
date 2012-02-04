@@ -130,17 +130,21 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		// <<CHANGEME>>
 		// Insert your own logic here
 		
-		rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")); //joystick speed squared
-		
+		//joystick speed squared
+		rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")); 
+		//trigger reverses speed
 		if(proxy->get("Joy1b1"))
-			rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")*-1); //trigger reverses speed
-		if(proxy->get("Joy1b2"))		//stop
+			rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")*-1); 
+		//button 2 for stop
+		if(proxy->get("Joy1b2"))		
 			rspeed=0;
-		if (leftlimit.Get())	
+		//if limit switches are pressed stops
+		if(leftlimit.Get())	
         	rspeed = 0;
-        if (rightlimit.Get())
+        if(rightlimit.Get())
         	rspeed = 0;
-        rotateturret.Set(rspeed)	;		//motor = joystick speed
+        //motor = joystick speed
+        rotateturret.Set(rspeed)	;		
 		
         volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
         printf("pot voltage: %f\r",volt);	//shows volts
@@ -157,5 +161,3 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	return (0);
 	
 };	
-	
-	
