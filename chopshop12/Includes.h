@@ -3,6 +3,8 @@
 
 // <<CHANGEME>>
 // Add any #defines for your .h files for each seperate task
-#include "ballCollector.h"
-
+#include "CameraTask.h"
+#include "Turret.h"
+#include "Drive.h"
+#include "Shooter.h"
 #endif
