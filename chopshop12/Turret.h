@@ -20,7 +20,9 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define TURRET_CYCLE_TIME (10) // 10ms
-	
+#define THRESHOLD (5)
+#define CENTERVOLTAGE (2.5)
+#define STRINGEXCESS (0.3)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Turret166 : public Team166Task
@@ -49,7 +51,8 @@ private:
 	float rspeed;
 	float volt;
 	float angle;
-	
+	float CameraX;
+	float centeroffset;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };	

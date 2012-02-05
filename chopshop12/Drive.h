@@ -50,4 +50,8 @@ private:
 	RobotDrive Drive;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
+	float y;
+	float x;
+	float opposite;
+	float slow;
 };
