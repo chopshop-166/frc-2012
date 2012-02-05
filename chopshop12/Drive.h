@@ -41,13 +41,19 @@ private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handleCANJaguar FrontLeft;
-	//Declar Victors for drive
+	//Declare Victors for drive
 	Victor FrontLeft;
 	Victor FrontRight;
 	Victor RearLeft;
 	Victor RearRight;
 	
 	RobotDrive Drive;
+	
+	int opposite; //used for inverting the code
+	int slow; //used for initializing creep mode
+	
+	float x; //speeds for jags
+	float y; //speeds for jags
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
