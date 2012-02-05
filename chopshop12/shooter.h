@@ -47,10 +47,15 @@ private:
 	float speed1; //new speed for bottom
 	float speed2; //new speed for bottom
 	
-	float CurrentSpeed; //speed that motor is currently running at
 	float BackspinFactor; // assign a value to this to differentiate top and bottom speed
-	CANJaguar ShooterJagTopA, ShooterJagTopB, ShooterJagBottomA, ShooterJagBottomB;
-	float P, I, D;
+	//Jags for the shooter
+	CANJaguar ShooterJagTopA;
+	CANJaguar ShooterJagTopB; 
+	CANJaguar ShooterJagBottomA;
+	CANJaguar ShooterJagBottomB;
+	float P;//Proportianl value
+	float I;//Integral value
+	float D;//Derivative value
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
