@@ -147,8 +147,34 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         rotateturret.Set(rspeed)	;		
 		
         volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
+        centeroffset=volt-CENTERVOLTAGE;
         printf("pot voltage: %f\r",volt);	//shows volts
         printf("speed: %f\r",rspeed);
+        
+        if (CameraX < -.5) 
+        	rspeed = 1;
+        if (CameraX < 0) 
+            rspeed = 0.5;
+        if (CameraX = 0) 
+            rspeed = 0;
+        {
+        	printf("CENTERED");
+        }
+        if (CameraX > 0) 
+            rspeed = -.5;
+        if (CameraX > .5)
+        	rspeed = 1;
+        
+        if (centeroffset <THRESHOLD)
+        rspeed = 1;
+        if (centeroffset >THRESHOLD)
+           rspeed = 0.5;
+        if (centeroffset = 0)
+        	rspeed = 0;
+        if (centeroffset <-THRESHOLD)
+           rspeed = -1;
+        if (centeroffset >-THRESHOLD)
+           rspeed= -0.5;
         
         // Logging any values
 		// <<CHANGEME>>
