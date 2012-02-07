@@ -16,7 +16,6 @@
 #include "WPILib.h"
 #include "Robot.h"
 #include "CameraTask.h"
-#include "Target.h"
 #include "nivision.h"
 #include "Target2.h"
 #include "TargetingInfo.h"
