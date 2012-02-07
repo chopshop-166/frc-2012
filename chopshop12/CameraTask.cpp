@@ -19,6 +19,9 @@
 #include "Target.h"
 #include "nivision.h"
 #include "Target2.h"
+#include "TargetingInfo.h"
+
+
 
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(true)dprintf
@@ -224,16 +227,25 @@ bool CameraTask::FindTargets() {
 		}
 		return true;
 #endif
+		int BTN_INPUT = 0;
+		
 		
 		ParticleAnalysisReport ParticleReport[4];
-		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0]));
+		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0], BTN_INPUT));
 		
 		proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+		/*
+		Ballistics(ParticleReport[TOP_MOST], 
+				   ParticleReport[LEFT_MOST], 
+				   ParticleReport[RIGHT_MOST], 
+				   ParticleReport[BOTTOM_MOST], 
+				   BTN_INPUT);*/
 		/*
 	    proxy->set("WidthOfTarget", WidthOfTarget);
 	    */
 		
 		/*A Particle Analysis Report contains:
+		 *
 				int 	imageHeight;
 				int 	imageWidth;
 				double 	imageTimestamp;				
