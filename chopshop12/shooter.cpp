@@ -27,8 +27,8 @@
 struct abuf
 {
 	struct timespec tp;               // Time of snapshot
-	// Any values that need to be logged go here
-	// <<CHANGEME>>
+	float top_jaguar_speed;           // Speed of top Jaguars
+	float bottom_jaguar_speed;        // Speed of bottom Jaguars
 };
 
 //  Memory Log
@@ -47,12 +47,12 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 	// <<CHANGEME>>
-	unsigned int PutOne(void);     // Log the values needed-add in arguments
+	unsigned int PutOne(float s1, float s2);     // Log the values needed-add in arguments
 };
 
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int ShooterLog::PutOne(void)
+unsigned int ShooterLog::PutOne(float speed1, float speed2)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -61,8 +61,8 @@ unsigned int ShooterLog::PutOne(void)
 		
 		// Fill it in.
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
-		// Add any values to be logged here
-		// <<CHANGEME>>
+		ob->top_jaguar_speed = speed1;
+		ob->bottom_jaguar_speed = speed2;
 		return (sizeof(struct abuf));
 	}
 	
@@ -76,13 +76,12 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u,%4.5f\n",
+	fprintf(ofile, "%u,%u, %4.5f, %4.5f, %4.5f\n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
-			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.))
-			// Add values here
-			// <<CHANGEME>>
+			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
+			ab->top_jaguar_speed,
+			ab->bottom_jaguar_speed
 	);
-	
 	// Done
 	return (sizeof(struct abuf));
 }
@@ -142,13 +141,13 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	//P Change
+	//Proportianal Change
 	proxy->TrackNewpress("joy1b6");
 	proxy->TrackNewpress("joy1b7");
-	//I Change
+	//Integral Change
 	proxy->TrackNewpress("joy1b3");
 	proxy->TrackNewpress("joy1b2");
-	//D Change
+	//Derivative Change
 	proxy->TrackNewpress("joy1b11");
 	proxy->TrackNewpress("joy1b10");
 	//Change Incremental Value
@@ -161,21 +160,25 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	float changevalue;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		//set speed
 		if(proxy->get("joy1b8")) {
 			changevalue+=0.01;
 		} else if(proxy->get("joy1b9")){
 			changevalue-=0.01;
 		}
+		//Set Proportional
 		if(proxy->get("joy1b6n")) {
 			P-=changevalue;
 		} else if(proxy->get("joy1b7n")){
 			P+=changevalue;
 		}
+		//Set Integral
 		if(proxy->get("joy1b3n")) {
 			I-=changevalue;
 		} else if(proxy->get("joy1b2n")){
 			I+=changevalue;
 		}
+		//Set Derivative
 		if(proxy->get("joy1b611n")) {
 			D-=changevalue;
 		} else if(proxy->get("joy1b10n")){
@@ -189,11 +192,13 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			ShooterJagBottomA.SetPID(P,I,D);
 			ShooterJagBottomA.EnableControl(0);
 		}
+		//Set Speed
 		if(proxy->get("joy1b4n")) {
 			Speed+=100;
 		} else if(proxy->get("joy1b5n")) {
 			Speed-=100;
 		}
+		//Press trigger to make motors go
 		if(proxy->get("joy2b1")) {
 			ShooterJagTopA.Set(Speed);
 			ShooterJagBottomA.Set(Speed);
@@ -224,7 +229,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	}
 	*/
 		// Make this match the declaraction above
-		sl.PutOne();
+		sl.PutOne(speed1, speed2);
 		
 		// Wait for our next lap
 		WaitForNextLoop();		

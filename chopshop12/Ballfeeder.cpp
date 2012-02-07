@@ -88,7 +88,8 @@ unsigned int BallFeederLog::DumpBuffer(char *nptr, FILE *ofile)
 
 // task constructor
 BallFeeder166::BallFeeder166(void):
-	BallFeed(BALL_FEED),
+	BallFeed(BALL_FEED),//victor controlling feeder
+	//digital inputs for ball locations
 	BallLocation0(BALL_LOCATION_0),
 	BallLocation1(BALL_LOCATION_1),
 	BallLocation2(BALL_LOCATION_2),
@@ -124,6 +125,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
+	//send ball location digital inputs to the proxy
 	proxy->add("BallLocation0");
 	proxy->add("BallLocation1");
 	proxy->add("BallLocation2");
@@ -134,7 +136,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		proxy->set("BallLocation1",BallLocation1.Get());
 		proxy->set("BallLocation2",BallLocation2.Get());
 		proxy->set("BallLocation3",BallLocation3.Get());
-		 
+		 //BallCount = number of balls the robot has
 		proxy->set("BallCount",(BallLocation1.Get() + BallLocation2.Get() + BallLocation3.Get()));
 		
 			//Ball 1, goes to position 3 then stop
