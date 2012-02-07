@@ -88,7 +88,11 @@ unsigned int DriveLog::DumpBuffer(char *nptr, FILE *ofile)
 
 // task constructor
 Drive166::Drive166(void):
-	FrontLeft(DRIVE_FRONT_LEFT), FrontRight(DRIVE_FRONT_RIGHT), RearLeft(DRIVE_REAR_LEFT), RearRight(DRIVE_REAR_RIGHT),
+	FrontLeft(DRIVE_FRONT_LEFT), 
+	FrontRight(DRIVE_FRONT_RIGHT), 
+	RearLeft(DRIVE_REAR_LEFT), 
+	RearRight(DRIVE_REAR_RIGHT),
+	
 	Drive(FrontRight,RearRight,FrontLeft,RearLeft)
 {
 	Start((char *)"166DriveTask", DRIVE_CYCLE_TIME);
@@ -130,14 +134,14 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		
 		y = proxy->get(DRIVE_JOYSTICK_Y);
 		x = proxy->get(DRIVE_JOYSTICK_X);
-		
+		//if button 2 is pressed, inverts controls, input * -1
 		if(proxy->get("joy1b2n"))
 			opposite = !opposite;
 		if(opposite) {
 			x = x * -1;
 			y = y * -1;
 		}
-		
+		//if button 3 is pressed, creep mode enabled, input / 4
 		if(proxy->get("joy1b3n"))
 			slow = !slow;
 		if(slow) {

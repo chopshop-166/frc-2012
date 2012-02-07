@@ -42,12 +42,12 @@ private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
-	Victor BallFeed;
-	DigitalInput BallLocation0;
-	DigitalInput BallLocation1;
-	DigitalInput BallLocation2;
-	DigitalInput BallLocation3;
-	int BallCount;
+	Victor BallFeed;//victor to control feeder
+	DigitalInput BallLocation0;//digital ball sensor below fall feeder
+	DigitalInput BallLocation1;//bottom digital ball sensor
+	DigitalInput BallLocation2;//middle digital ball sensor
+	DigitalInput BallLocation3;//top digital ball sensor
+	int BallCount;//number of balls the robot has
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
