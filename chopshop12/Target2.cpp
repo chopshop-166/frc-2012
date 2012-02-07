@@ -1,12 +1,12 @@
-#include "WPILib.h"
-#include "Robot.h"
-#include "CameraTask.h"
-#include "nivision.h"
+
 #include "VisionAPI.h"
 #include "TrackAPI.h"
 #include "stdlib.h"
-#include "Target2.h"
 #include "Proxy.h"
+#include "WPILib.h"
+#include "Robot.h"
+#include "nivision.h"
+#include "Target2.h"
 
 #define DPRINTF if(false)dprintf								//debugging info
 #define TPRINTF if(true)dprintf								//testing info
@@ -21,7 +21,7 @@ static int ReturnReport(
 		ParticleAnalysisReport* Report);
 
 
-int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep)
+int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int btnInput)
 /*	Description: This function takes an image and analyzes it for the target.
 	Return Value:
 		0: failed (seeing too many rectangles or none)
