@@ -18,10 +18,18 @@
 #include "WPILib.h"
 #include "TargetingInfo.h"
 #include "nivision.h"
+/*
+ * 
+ * MATT
+ * 
+ * I couldn't think of a way to test without editing your code. Sorry. If you want to see
+ * the changes I made, just do a visual diff with revision 43. 
+ * 
+ */
 
 float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,ParticleAnalysisReport right,ParticleAnalysisReport bottom,int button)
 {
-	float imageheight; //obtain from M's function
+	float imageheight ; //obtain from M's function
 	float targetheight; //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
