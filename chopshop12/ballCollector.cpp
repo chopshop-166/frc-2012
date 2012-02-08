@@ -119,9 +119,14 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-		
+	
+	state = BC_ROLL_INWARD;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		
+		if (proxy->get("matchTimer")>=117) {
+			state = BC_ROLL_OUTWARD;
+		}
 		
 		switch(state){
 			case(BC_ROLL_INWARD):
@@ -137,18 +142,11 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 					state = BC_ROLL_INWARD;
 				break;
 		}
-		
-		}
-		float num = ballCollector.Get();
-		if(proxy->get("joy1t")){
-			printf("%f", num);
-		}
-		
 		sl.PutOne();
 		
 		// Wait for our next lap
 		WaitForNextLoop();		
-	
+	}
 	return(0);
 	
 }
