@@ -25,6 +25,10 @@
 struct abuf
 {	
 	struct timespec tp;               // Time of snapshot
+	float volt; 						// volt of ...
+	bool leftlimit;
+	bool rightlimit;
+	
 	// Any values that need to be logged go here
 	// <<CHANGEME>>
 };	
@@ -36,7 +40,7 @@ class TurretLog : public MemoryLog
 public:
 	TurretLog() : MemoryLog(
 			sizeof(struct abuf), TURRET_CYCLE_TIME, "template",
-			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
+			"Seconds,Nanoseconds,Elapsed Time,Leftlimit,Rightlimit,Volt\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
 	};
@@ -45,12 +49,12 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 	// <<CHANGEME>>
-	unsigned int PutOne(void);     // Log the values needed-add in arguments
+	unsigned int PutOne(float volt, bool leftlimit, bool rightlimit);     // Log the values needed-add in arguments
 };	
 	
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int TurretLog::PutOne(void)
+unsigned int TurretLog::PutOne(float volt,bool leftlimit,bool rightlimit)
 {	
 	struct abuf *ob;               // Output buffer
 	
@@ -59,6 +63,9 @@ unsigned int TurretLog::PutOne(void)
 		
 		// Fill it in.
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
+		ob->leftlimit = leftlimit;
+		ob->rightlimit = rightlimit;
+		ob->volt = volt;
 		// Add any values to be logged here
 		// <<CHANGEME>>
 		return (sizeof(struct abuf));
@@ -74,9 +81,12 @@ unsigned int TurretLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u,%4.5f\n",
+	fprintf(ofile, "%u,%u,%4.5f,%d,%d,%2.5f\n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
-			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.))
+			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
+			ab->leftlimit,
+			ab->rightlimit,
+			ab->volt
 			// Add values here
 			// <<CHANGEME>>
 	);
@@ -179,7 +189,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
-		sl.PutOne();
+		sl.PutOne(rotateturret.GetForwardLimitOK(),rotateturret.GetReverseLimitOK(),volt);
 		
 		// Wait for our next lap
 		WaitForNextLoop();		

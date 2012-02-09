@@ -45,7 +45,7 @@ private:
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
 	AnalogChannel turretpot;
-	Victor rotateturret;
+	CANJaguar rotateturret;
 	DigitalInput leftlimit, rightlimit;
 	
 	float rspeed;
