@@ -9,7 +9,8 @@
 #include "Target2.h"
 
 #define DPRINTF if(false)dprintf								//debugging info
-#define TPRINTF if(true)dprintf								//testing info
+#define TPRINTF if(false)dprintf								//testing info
+#define GPRINTF if(true)dprintf								//Let's GO!
 
 static bool FailCheck(int Returned, char* Description);		//Print out errors
 static int Countup(Image* ImageToCount);					//Print out number of particles
@@ -179,7 +180,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 #endif
 	/* Step 7: Apply logic */
 	int numParticles=Countup(ProcessedImage);
-	TPRINTF(LOG_INFO, "Number particles found: %i", numParticles);
+	GPRINTF(LOG_INFO, "Number particles found: %i", numParticles);
 	if(numParticles==0) return 0;
 	else if(numParticles==1 || numParticles==2 || numParticles==3 || numParticles==4)
 	{
@@ -192,17 +193,18 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		TPRINTF(LOG_INFO, "LEFT:   %f   \t%f", ParticleRep[LEFT_MOST].center_mass_x_normalized,   ParticleRep[LEFT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
-	
-		TPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
+
+		GPRINTF(LOG_INFO, "Image:  %i   \t%i", IMAQwidth, IMAQheight);
+		GPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
 	}
 	else if(numParticles>4)
 	{
 		int BestDVIndex;
 		double BestDV=0;
-		TPRINTF(LOG_INFO, "More than 4 found!");
+		GPRINTF(LOG_INFO, "More than 4 found!");
 		Countup(ProcessedImage);
 		for (int i = 0; i < numParticles; i++) 
 		{
@@ -225,10 +227,11 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
 	
-		TPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
-		TPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "Image:  %i   \t%i", IMAQwidth, IMAQheight);
+		GPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
+		GPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
 	
 	}
 	
