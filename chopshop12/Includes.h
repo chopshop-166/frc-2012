@@ -7,4 +7,7 @@
 #include "Turret.h"
 #include "Drive.h"
 #include "Shooter.h"
+#include "bridgeManipulator.h"
+#include "ballCollector.h"
+
 #endif

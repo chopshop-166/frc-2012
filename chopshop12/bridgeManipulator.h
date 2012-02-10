@@ -1,9 +1,9 @@
 /*******************************************************************************
-*  Project   		: Framework
-*  File Name  		: TaskDrive.h     
+*  Project   		: Chopshop12
+*  File Name  		: TaskbridgeManipulator.h     
 *  Owner		   	: Software Group (FIRST Chopshop Team 166)
 *  Creation Date	: January 18, 2010
-*  File Description	: Drive header file for tasks, with template functions
+*  File Description	: bridgeManipulator header file for tasks, with bridgeManipulator functions
 *******************************************************************************/ 
 /*----------------------------------------------------------------------------*/
 /*  Copyright (c) MHS Chopshop Team 166, 2010.  All Rights Reserved.          */
@@ -19,19 +19,20 @@
 // of miliseconds. Max allowed time is 999 miliseconds.
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
-#define DRIVE_CYCLE_TIME (10) // 10ms
+#define bridgeManipulator_CYCLE_TIME (10) // 10ms
+
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
-class Drive166 : public Team166Task
+class bridgeManipulator166 : public Team166Task
 {
 	
 public:
 	
 	// task constructor
-	Drive166(void);
+	bridgeManipulator166(void);
 
 	// task destructor
-	virtual ~Drive166(void);
+	virtual ~bridgeManipulator166(void);
 
 	// Main function of the task
 	virtual int Main(int a2, int a3, int a4, int a5,
@@ -40,24 +41,11 @@ public:
 private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
-	Robot *lHandle;            // Local handleCANJaguar FrontLeft;
-	//Declare Victors for drive
-	Victor FrontLeft;
-	Victor FrontRight;
-	Victor RearLeft;
-	Victor RearRight;
-	
-	RobotDrive Drive;
-	
-	int opposite; //used for inverting the code
-	int slow; //used for initializing creep mode
-	
-	float x; //speeds for jags
-	float y; //speeds for jags
+	Robot *lHandle;            // Local handle
+	enum {BM_BUTTON_PUSHED,BM_BUTTON_RELEASED} state;
+	Victor bridgeManipulator;
+	DigitalInput bottomLimit;
+	DigitalInput topLimit;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
-	float y;
-	float x;
-	float opposite;
-	float slow;
 };

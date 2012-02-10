@@ -20,7 +20,7 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define BALLFEEDER_CYCLE_TIME (10) // 10ms
-
+#define BALLFEED (.25)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class BallFeeder166 : public Team166Task
@@ -48,6 +48,7 @@ private:
 	DigitalInput BallLocation2;//middle digital ball sensor
 	DigitalInput BallLocation3;//top digital ball sensor
 	int BallCount;//number of balls the robot has
+	float feedspeed;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
