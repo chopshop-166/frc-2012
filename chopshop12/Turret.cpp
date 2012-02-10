@@ -174,7 +174,8 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
             rspeed = -.5;
         if (CameraX > .5)
         	rspeed = 1;
-        
+        if (CameraX = 2)
+        {
         if (centeroffset <THRESHOLD)
         rspeed = 1;
         if (centeroffset >THRESHOLD)
@@ -185,7 +186,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
            rspeed = -1;
         if (centeroffset >-THRESHOLD)
            rspeed= -0.5;
-        
+        }
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
