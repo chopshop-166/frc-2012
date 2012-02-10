@@ -18,13 +18,16 @@
 #include "WPILib.h"
 #include "TargetingInfo.h"
 #include "nivision.h"
+#include "proxy.h"
 
 float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,ParticleAnalysisReport right,ParticleAnalysisReport bottom,int button)
 {
 	float imageheight; //obtain from M's function
 	float targetheight; //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
+	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
+	float tangle; //angle the turret needs to turn after all caluclations are performed
 	float calctargetwidth; //width of the vision target on the image if the robot was looking at it head on
 	float realtargetwidth; //width of the vision target in the image
 	float deltax; //diagonal distance to the hoop, i.e. line of sight
@@ -35,13 +38,15 @@ float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,Particle
 	float vfy; //final vertical velocity component
 	float eangle; //entry angle
 	
-	//This section claculates the distance from the target (parallel to the ground)
+	//This section claculates the distance from the target (parallel to the ground) and the turret angle
 	normaldistance=(DISTANCECALIBRATION*imageheight/targetheight);
 	calctargetwidth=targetheight*24/18; //24/18 is ratio of width to height of vision target
 	realtargetwidth=54;//TEMPORARY!!!!!!!
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
-	deltax=normaldistance/(sin(angle));
-	
+	pdistance=normaldistance*(tan(angle));
+	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
+	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
+	tangle=tangle*180/PI;
 	
 	
 	
@@ -64,5 +69,11 @@ float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,Particle
 	{
 		cout<<"Not safe to launch";
 	}
+	
+	
+	
+	//sending values to the proxy
+	//proxy->set("turret_angle",tangle);
+	//proxy->set("initial_velocity",vo);
 	return (0);
 }

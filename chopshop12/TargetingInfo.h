@@ -18,6 +18,7 @@
 #define PI 3.14159265358979
 #define TOPDELTAY 5 //THIS IS TEMPORARY! NOT THE ACTUAL VALUE!vertical distance from launcher to top hoop
 #define LANGLE 0.872664626 //launch angle = 50 degrees
+#define HOOP 1//THIS IS TEMPORARY! distance between hoop and vision target
 
 
 

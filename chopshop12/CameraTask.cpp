@@ -138,7 +138,9 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	
 	/* Changed to a particle analysis report
 	proxy->add("WidthOfTarget");*/
-	proxy->add("CameraX");	
+	proxy->add("CameraX");
+	proxy->add("turret_angle");
+	proxy->add("initial_velocity");
 	
 	
 	// Let the world know we're in
