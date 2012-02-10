@@ -1,22 +1,22 @@
 /*******************************************************************************
 *  Project   		: Chopshop12
-*  File Name  		: ballCollector.cpp     
+*  File Name  		: bridgeManipulator.cpp     
 *  Owner		   	: Software Group (FIRST Chopshop Team 166)
 *  Creation Date	: January 18, 2010
-*  File Description	: ballCollector source file for tasks, with ballCollector functions
+*  File Description	: bridgeManipulator source file for tasks, with bridgeManipulator functions
 *******************************************************************************/ 
 /*----------------------------------------------------------------------------*/
 /*  Copyright (c) MHS Chopshop Team 166, 2010.  All Rights Reserved.          */
 /*----------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------------*/
-/* Find & Replace "ballCollector" with the name you would like to give this task     */
-/* Find & Replace "ballCollector" with the name you would like to give this task      */
-/* Find & Replace "ballCollector" with the name you would like to give this task */
+/* Find & Replace "bridgeManipulator" with the name you would like to give this task     */
+/* Find & Replace "Testing" with the name you would like to give this task      */
+/* Find & Replace "bridgeManipulator" with the name you would like to give this task */
 /*------------------------------------------------------------------------------*/
 
 #include "WPILib.h"
-#include "ballCollector.h"
+#include "bridgeManipulator.h"
 
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
@@ -31,16 +31,16 @@ struct abuf
 
 //  Memory Log
 // <<CHANGEME>>
-class ballCollectorLog : public MemoryLog
+class bridgeManipulatorLog : public MemoryLog
 {
 public:
-	ballCollectorLog() : MemoryLog(
-			sizeof(struct abuf), ballCollector_CYCLE_TIME, "ballCollector",
+	bridgeManipulatorLog() : MemoryLog(
+			sizeof(struct abuf), bridgeManipulator_CYCLE_TIME, "bridgeManipulator",
 			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
 	};
-	~ballCollectorLog() {return;};
+	~bridgeManipulatorLog() {return;};
 	unsigned int DumpBuffer(          // Dump the next buffer into the file
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
@@ -50,7 +50,7 @@ public:
 
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int ballCollectorLog::PutOne(void)
+unsigned int bridgeManipulatorLog::PutOne(void)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -69,7 +69,7 @@ unsigned int ballCollectorLog::PutOne(void)
 }
 
 // Format the next buffer for file output
-unsigned int ballCollectorLog::DumpBuffer(char *nptr, FILE *ofile)
+unsigned int bridgeManipulatorLog::DumpBuffer(char *nptr, FILE *ofile)
 {
 	struct abuf *ab = (struct abuf *)nptr;
 	
@@ -87,9 +87,9 @@ unsigned int ballCollectorLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-ballCollector166::ballCollector166(void): ballCollector (1)
+bridgeManipulator166::bridgeManipulator166(void):bridgeManipulator(8),bottomLimit(1),topLimit(2)
 {
-	Start((char *)"166ballCollectorTask", ballCollector_CYCLE_TIME);
+	Start((char *)"166bridgeManipulatorTask", bridgeManipulator_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	// Register the proxy
@@ -98,19 +98,19 @@ ballCollector166::ballCollector166(void): ballCollector (1)
 };
 	
 // task destructor
-ballCollector166::~ballCollector166(void)
+bridgeManipulator166::~bridgeManipulator166(void)
 {
 	return;
 };
 	
 // Main function of the task
-int ballCollector166::Main(int a2, int a3, int a4, int a5,
+int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 			int a6, int a7, int a8, int a9, int a10)
 {
-	ballCollectorLog sl;                   // log
+	bridgeManipulatorLog sl;                   // log
 	
 	// Let the world know we're in
-	DPRINTF(LOG_DEBUG,"In the 166 ballCollector task\n");
+	DPRINTF(LOG_DEBUG,"In the 166 bridgeManipulator task\n");
 	
 	// Wait for Robot go-ahead (e.g. entering Autonomous or Tele-operated mode)
 	// lHandle = Robot::getInstance() MUST go after this, otherwise code breaks
@@ -119,27 +119,27 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	
-	state = BC_ROLL_INWARD;
+		
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
-		if (proxy->get("matchTimer")>=117) {
-			state = BC_ROLL_OUTWARD;
-		}
-		
-		switch(state){
-			case(BC_ROLL_INWARD):
-				if(proxy->get("ballcount") < 3)
-					ballCollector.Set(.5);
-				else
-					state = BC_ROLL_OUTWARD;
+		switch (state){
+			case(BM_BUTTON_RELEASED):
+				if(!topLimit.Get())
+				    bridgeManipulator.Set(.5);
+				if(topLimit.Get())
+					bridgeManipulator.Set(0);
+				else if (proxy-> get("joy2b2"))
+					state = BM_BUTTON_PUSHED;
 				break;
-			case(BC_ROLL_OUTWARD):
-				if(proxy->get("ballcount") >= 3)
-					ballCollector.Set(-.5);
-				else
-					state = BC_ROLL_INWARD;
+					
+			case(BM_BUTTON_PUSHED):
+				if(!bottomLimit.Get())
+					bridgeManipulator.Set(-.5);
+				if(bottomLimit.Get())
+					bridgeManipulator.Set(0);
+				else if (!proxy -> get("joy2b2"))
+					state = BM_BUTTON_RELEASED;
 				break;
 		}
 		sl.PutOne();
@@ -147,6 +147,6 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
-	return(0);
+	return (0);
 	
-}
+};
