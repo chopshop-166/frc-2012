@@ -23,8 +23,9 @@
 
 
 // To locally enable debug printing: set true, to disable false
-#define DPRINTF if(true)dprintf
+#define DPRINTF if(false)dprintf
 #define TPRINTF if(false)dprintf
+#define MPRINTF if(true)dprintf
 #define M_METHOD (false)
 
 // Sample in memory buffer
@@ -164,7 +165,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 #endif
 		
 		/* Look for target */
-		dprintf(LOG_INFO, "\n\nLOOP\n\n");
+		MPRINTF(LOG_INFO, "\n\nLOOP\n\n");
 		found = CameraTask::FindTargets();
         found = false;
 	    // Logging values if a valid target found
@@ -174,7 +175,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		Wait(10.0);
+		Wait(3.0);
 	}
 	return (0);
 	
@@ -230,15 +231,19 @@ bool CameraTask::FindTargets() {
 		
 		
 		ParticleAnalysisReport ParticleReport[4];
-		dprintf(LOG_INFO, "RETURNED: %i", ProcessMyImage(image, &ParticleReport[0], BTN_INPUT));
-		
-		proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
-		/*
-		Ballistics(ParticleReport[TOP_MOST], 
-				   ParticleReport[LEFT_MOST], 
-				   ParticleReport[RIGHT_MOST], 
-				   ParticleReport[BOTTOM_MOST], 
-				   BTN_INPUT);*/
+		int returnedval = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
+		MPRINTF(LOG_INFO, "RETURNED: %i", returnedval);
+		if(returnedval!=0)
+		{
+			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+			MPRINTF(LOG_INFO, "CameraX= %f", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+		}
+		else
+		{
+			proxy->set("CameraX", (float) 2);
+		}
+			
+		Ballistics(&ParticleReport[0], BTN_INPUT);
 		/*
 	    proxy->set("WidthOfTarget", WidthOfTarget);
 	    */
