@@ -97,7 +97,7 @@ unsigned int CameraLog::DumpBuffer(char *nptr, FILE *ofile)
 CameraTask *CameraTask::myHandle = NULL;
 
 // task constructor
-CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
+CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
 {
 	myHandle = this;
 	printf("This is the Camera constructor\n");
