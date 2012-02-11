@@ -132,24 +132,25 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b3");
 	while (true) {
 		
-		y = proxy->get(DRIVE_JOYSTICK_Y);
-		x = proxy->get(DRIVE_JOYSTICK_X);
+		DriveSpeed2 = proxy->get(DRIVE_JOYSTICK_Y);
+		DriveSpeed1 = proxy->get(DRIVE_JOYSTICK_X);
 		//if button 2 is pressed, inverts controls, input * -1
-		if(proxy->get("joy1b2n"))
+		if(proxy->get("DRIVE_OPPOSITE_BUTTON"))
 			opposite = !opposite;
 		if(opposite) {
-			x = x * -1;
-			y = y * -1;
+			DriveSpeed1 = DriveSpeed1 * -1;
+			DriveSpeed2 = DriveSpeed2 * -1;
 		}
 		//if button 3 is pressed, creep mode enabled, input / 4
-		if(proxy->get("joy1b3n"))
+		if(proxy->get("DRIVE_CREEP_BUTTON"))
 			slow = !slow;
 		if(slow) {
-			x = x / 4;
-			y = y / 4;
+			DriveSpeed1 = DriveSpeed1 / 4;
+			DriveSpeed2 = DriveSpeed2 / 4;
 		}	
-			Drive.ArcadeDrive(x,y,0);
-        // Logging any values
+			Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);
+       
+			// Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
 		sl.PutOne();
@@ -158,5 +159,4 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		WaitForNextLoop();		
 	}
 	return (0);
-	
 };

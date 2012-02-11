@@ -52,8 +52,8 @@ private:
 	int opposite; //used for inverting the code
 	int slow; //used for initializing creep mode
 	
-	float x; //speeds for jags
-	float y; //speeds for jags
+	float DriveSpeed1; //speeds for jags
+	float DriveSpeed2; //speeds for jags
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
