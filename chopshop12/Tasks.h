@@ -9,6 +9,6 @@
 bridgeManipulator166 bridgeManipulator;	
 //Turret166 TurretObject;
 //Shooter ShooterObject;
-//CameraTask CameraObject;
+CameraTask CameraObject;
 //BallCameraTask BallCameraObject;
 //Drive166 DriveObject;
