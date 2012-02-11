@@ -56,8 +56,4 @@ private:
 	float y; //speeds for jags
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
-	float y;
-	float x;
-	float opposite;
-	float slow;
 };
