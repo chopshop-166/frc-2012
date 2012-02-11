@@ -16,12 +16,17 @@
 #include "WPILib.h"
 #include "Robot.h"
 #include "CameraTask.h"
-#include "Target.h"
 #include "nivision.h"
+#include "Target2.h"
+#include "TargetingInfo.h"
+
+
 
 // To locally enable debug printing: set true, to disable false
-#define DPRINTF if(true)dprintf
+#define DPRINTF if(false)dprintf
 #define TPRINTF if(false)dprintf
+#define MPRINTF if(true)dprintf
+#define M_METHOD (false)
 
 // Sample in memory buffer
 struct abuf
@@ -103,7 +108,7 @@ CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
 	
 	SetDebugFlag ( DEBUG_SCREEN_ONLY  );
 	camera.WriteResolution(AxisCamera::kResolution_320x240);
-	camera.WriteBrightness(15);
+	camera.WriteBrightness(10);
 	int fps = camera.GetMaxFPS();
 	Start((char *)"CameraTask", CAMERA_CYCLE_TIME);
 
@@ -132,13 +137,18 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	proxy = Proxy::getInstance();
 	DPRINTF(LOG_INFO,"CameraTask got proxy");
 	
-	proxy->add("CanSeeCameraTargets");
-	proxy->add("NormalizedTargetCenter");	
+	/* Changed to a particle analysis report
+	proxy->add("WidthOfTarget");*/
+	proxy->add("CameraX");
+	proxy->add("turret_angle");
+	proxy->add("initial_velocity");
+	
 	
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
 	
 	WaitForGoAhead(); // THIS IS VERY IMPORTANT
+
 	
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
@@ -151,12 +161,14 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	while (true) {				
 		// Wait for our next lap
 		WaitForNextLoop();
-		
+#if SAVE_IMAGES
 		/* Store a picture to cRIO */
 		TakeSnapshot("cRIOimage.jpg");
+#endif
 		
 		/* Look for target */
-		found = FindTargets();
+		MPRINTF(LOG_INFO, "\n\nLOOP\n\n");
+		found = CameraTask::FindTargets();
         found = false;
 	    // Logging values if a valid target found
 		if (found) {
@@ -165,7 +177,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		Wait(10.0);
+		Wait(3.0);
 	}
 	return (0);
 	
@@ -178,28 +190,27 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
  * @return bool success code
  */
 bool CameraTask::FindTargets() {
+
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
 	// get the camera image
-	//Image * image = frcCreateImage(IMAQ_IMAGE_HSL);
-	HSLImage * image = camera.GetImage();
-
+    HSLImage* image1 = camera.GetImage();   
+    Image* image = image1->GetImaqImage();
+#if M_METHOD
 	// find FRC targets in the image
-	vector<Target> targets = Target::FindTargets(image);
+	vector<Target> targets = Target::FindTargets(image1);
 	
 		if (targets.size()) {
 			DPRINTF(LOG_DEBUG, "targetImage SCORE = %f", targets[0].m_score);
 		}	
-		//delete image;
-		delete image;
 		if (targets.size() == 0) {
 			// no targets found.
-			DPRINTF(LOG_DEBUG, "No target found\n\n");
+			DPRINTF(LOG_DEBUG, "No target foxxxund\n\n");
 			return false;			
 		}
 		else if (targets[0].m_score < MINIMUM_SCORE) {
 			// no good enough targets found
-			DPRINTF(LOG_DEBUG, "No valid targets found, best score: %f ", 
+			DPRINTF(LOG_DEBUG, "No valid targets foxxxund, best score: %f ", 
 						targets[0].m_score);
 			return false;			
 		}
@@ -217,6 +228,52 @@ bool CameraTask::FindTargets() {
 //			targets[0].Print();
 		}
 		return true;
+#endif
+		int BTN_INPUT = 0;
+		
+		
+		ParticleAnalysisReport ParticleReport[4];
+		int returnedval = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
+		MPRINTF(LOG_INFO, "RETURNED: %i", returnedval);
+		if(returnedval!=0)
+		{
+			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+			MPRINTF(LOG_INFO, "CameraX= %f", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+		}
+		else
+		{
+			proxy->set("CameraX", (float) 2);
+		}
+			
+		Ballistics(&ParticleReport[0], BTN_INPUT);
+		/*
+	    proxy->set("WidthOfTarget", WidthOfTarget);
+	    */
+		
+		/*A Particle Analysis Report contains:
+		 *
+				int 	imageHeight;
+				int 	imageWidth;
+				double 	imageTimestamp;				
+				int		particleIndex;
+				int 	center_mass_x;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_X 
+				int 	center_mass_y;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_Y 
+				double 	center_mass_x_normalized;  	//Center of mass x value normalized to -1.0 to +1.0 range
+				double 	center_mass_y_normalized;  	//Center of mass y value normalized to -1.0 to +1.0 range
+				double 	particleArea;				// MeasurementType: IMAQ_MT_AREA
+				Rect 	boundingRect;				// left/top/width/height
+					int top;    //Location of the top edge of the rectangle.
+				    int left;   //Location of the left edge of the rectangle.
+				    int height; //Height of the rectangle.
+				    int width;  //Width of the rectangle.
+				double 	particleToImagePercent;		// MeasurementType: IMAQ_MT_AREA_BY_IMAGE_AREA
+				double 	particleQuality;			// MeasurementType: IMAQ_MT_AREA_BY_PARTICLE_AND_HOLES_AREA
+				//particleQuality: Percentage of the particle Area in relation to its Particle and Holes Area
+		*/
+		
+		//delete image;
+		imaqDispose(image);
+	    return 1;
 }
 
 /**
