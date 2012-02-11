@@ -123,12 +123,11 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
-	proxy->add(BM_BUTTON);
 	proxy->TrackNewpress(BM_BUTTON);
 	ManipulatorSpeed = .5;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		if(proxy->get(BM_BUTTON))
+		if(proxy->get(BM_BUTTON_N))
 			ManipulatorState = !ManipulatorState;
 			ManipulatorSpeed = ManipulatorSpeed * -1;	
 			
@@ -136,7 +135,6 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 			ManipulatorSpeed = 0;
 		
 		bridgeManipulator.Set(ManipulatorSpeed);
-		
 		
 		//commented out code
 		/*

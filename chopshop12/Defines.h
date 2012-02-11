@@ -19,9 +19,10 @@
 //CONTROL Defines
 #define DRIVE_JOYSTICK_Y		("Joy1Y")
 #define DRIVE_JOYSTICK_X		("Joy1X")
-#define BM_BUTTON				("joy1bn2")
-#define DRIVE_OPPOSITE_BUTTON   ("joy1bn3")
-#define DRIVE_CREEP_BUTTON      ("joy1bn4")
+#define BM_BUTTON				("joy1b2")
+#define BM_BUTTON_N				("joy1b2n")
+#define DRIVE_OPPOSITE_BUTTON   ("joy1b3n")
+#define DRIVE_CREEP_BUTTON      ("joy1b4n")
 
 
 //JAGUAR ID's
