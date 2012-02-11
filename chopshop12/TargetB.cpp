@@ -18,13 +18,14 @@ double ProcessMyImageForBalls(Image* CameraSource)
 		HR.minValue=5  ; HR.maxValue= 14;
 		SR.minValue=131; SR.maxValue=200;
 		LR.minValue= 86; LR.maxValue=153;
-	imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_HSL, &HR, &SR, &LR); 
+	if(FailCheck(imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_HSL, &HR, &SR, &LR), "ColorThresholdBalls")) return 2; 
 	
 	/*Step 2: Smooth out bits (clean up)*/
 	StructuringElement StructEle;
 		StructEle.matrixCols = 3; StructEle.matrixRows = 3; StructEle.hexa = FALSE;
 		StructEle.kernel = (int*) malloc(9 * sizeof(int));
 		for(int s=0;s<9;s++) StructEle.kernel[s] = 1;
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	free(StructEle.kernel);
@@ -34,7 +35,7 @@ double ProcessMyImageForBalls(Image* CameraSource)
 	int IMAQheight;
 	int IMAQwidth;
 	imaqGetImageSize(ProcessedImage, &IMAQwidth, &IMAQheight);
-	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA,             1000  , IMAQwidth*IMAQheight, FALSE, FALSE}, 
+	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA,             1000  , 76800, FALSE, FALSE}, 
 			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.4, FALSE, FALSE},
     								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.6, 1.0, FALSE, FALSE}};
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};

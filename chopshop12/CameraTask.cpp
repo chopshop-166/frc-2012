@@ -246,30 +246,6 @@ bool CameraTask::FindTargets() {
 		}
 			
 		Ballistics(&ParticleReport[0], BTN_INPUT);
-		/*
-	    proxy->set("WidthOfTarget", WidthOfTarget);
-	    */
-		
-		/*A Particle Analysis Report contains:
-		 *
-				int 	imageHeight;
-				int 	imageWidth;
-				double 	imageTimestamp;				
-				int		particleIndex;
-				int 	center_mass_x;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_X 
-				int 	center_mass_y;  			// MeasurementType: IMAQ_MT_CENTER_OF_MASS_Y 
-				double 	center_mass_x_normalized;  	//Center of mass x value normalized to -1.0 to +1.0 range
-				double 	center_mass_y_normalized;  	//Center of mass y value normalized to -1.0 to +1.0 range
-				double 	particleArea;				// MeasurementType: IMAQ_MT_AREA
-				Rect 	boundingRect;				// left/top/width/height
-					int top;    //Location of the top edge of the rectangle.
-				    int left;   //Location of the left edge of the rectangle.
-				    int height; //Height of the rectangle.
-				    int width;  //Width of the rectangle.
-				double 	particleToImagePercent;		// MeasurementType: IMAQ_MT_AREA_BY_IMAGE_AREA
-				double 	particleQuality;			// MeasurementType: IMAQ_MT_AREA_BY_PARTICLE_AND_HOLES_AREA
-				//particleQuality: Percentage of the particle Area in relation to its Particle and Holes Area
-		*/
 		
 		//delete image;
 		imaqDispose(image);
