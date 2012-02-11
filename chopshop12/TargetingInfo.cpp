@@ -27,14 +27,17 @@
 
 float Ballistics(ParticleAnalysisReport* Target,int button)
 {
-	float imageheight= Target[TOP_MOST].imageWidth; //obtain from M's function
-	float targetheight= abs((120)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	Proxy *proxy2;
+	proxy2 = Proxy::getInstance();
+	float imageheight= Target[TOP_MOST].imageHeight; //obtain from M's function
+	float targetheight= abs((imageheight/2)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
 	TPRINTF(LOG_INFO, "targetheight= %i", targetheight);
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
 	float tangle; //angle the turret needs to turn after all caluclations are performed
 	float calctargetwidth; //width of the vision target on the image if the robot was looking at it head on
+	float particleheight=Target[TOP_MOST].boundingRect.height; //height of the particle
 	float realtargetwidth = Target[TOP_MOST].boundingRect.width; //width of the vision target in the image
 	float deltax; //diagonal distance to the hoop, i.e. line of sight
 	float vo; //launch velocity, ft/s
@@ -45,10 +48,9 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	float eangle; //entry angle
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
-	normaldistance=(DISTANCECALIBRATION*imageheight/targetheight);
+	normaldistance=(DISTANCECALIBRATION*targetheight/TARGET_HEIGHT_CALIBRATION);
 	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
-	calctargetwidth=targetheight*24/18; //24/18 is ratio of width to height of vision target
-	realtargetwidth=54;//TEMPORARY!!!!!!!
+	calctargetwidth=particleheight*24/18; //24/18 is ratio of width to height of vision target
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
 	pdistance=normaldistance*(tan(angle));
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
@@ -80,7 +82,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	
 	
 	//sending values to the proxy
-	//proxy->set("turret_angle",tangle);
-	//proxy->set("initial_velocity",vo);
+	proxy2->set("turret_angle",tangle);
+	proxy2->set("initial_velocity",vo);
 	return (0);
 }
