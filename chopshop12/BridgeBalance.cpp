@@ -1,22 +1,22 @@
 /*******************************************************************************
 *  Project   		: Chopshop12
-*  File Name  		: bridgeManipulator.cpp     
+*  File Name  		: BridgeBalance.cpp     
 *  Owner		   	: Software Group (FIRST Chopshop Team 166)
 *  Creation Date	: January 18, 2010
-*  File Description	: bridgeManipulator source file for tasks, with bridgeManipulator functions
+*  File Description	: Code for balancing on the bridge
 *******************************************************************************/ 
 /*----------------------------------------------------------------------------*/
 /*  Copyright (c) MHS Chopshop Team 166, 2010.  All Rights Reserved.          */
 /*----------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------------*/
-/* Find & Replace "bridgeManipulator" with the name you would like to give this task     */
+/* Find & Replace "Template" with the name you would like to give this task     */
 /* Find & Replace "Testing" with the name you would like to give this task      */
-/* Find & Replace "bridgeManipulator" with the name you would like to give this task */
+/* Find & Replace "TaskTemplate" with the name you would like to give this task */
 /*------------------------------------------------------------------------------*/
 
 #include "WPILib.h"
-#include "bridgeManipulator.h"
+#include "BridgeBalance.h"
 
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
@@ -31,16 +31,16 @@ struct abuf
 
 //  Memory Log
 // <<CHANGEME>>
-class bridgeManipulatorLog : public MemoryLog
+class BridgeBalanceLog : public MemoryLog
 {
 public:
-	bridgeManipulatorLog() : MemoryLog(
-			sizeof(struct abuf), bridgeManipulator_CYCLE_TIME, "bridgeManipulator",
+	BridgeBalanceLog() : MemoryLog(
+			sizeof(struct abuf), BridgeBalance_CYCLE_TIME, "BridgeBalance",
 			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
 	};
-	~bridgeManipulatorLog() {return;};
+	~BridgeBalanceLog() {return;};
 	unsigned int DumpBuffer(          // Dump the next buffer into the file
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
@@ -50,7 +50,7 @@ public:
 
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int bridgeManipulatorLog::PutOne(void)
+unsigned int BridgeBalanceLog::PutOne(void)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -69,7 +69,7 @@ unsigned int bridgeManipulatorLog::PutOne(void)
 }
 
 // Format the next buffer for file output
-unsigned int bridgeManipulatorLog::DumpBuffer(char *nptr, FILE *ofile)
+unsigned int BridgeBalanceLog::DumpBuffer(char *nptr, FILE *ofile)
 {
 	struct abuf *ab = (struct abuf *)nptr;
 	
@@ -87,12 +87,10 @@ unsigned int bridgeManipulatorLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-bridgeManipulator166::bridgeManipulator166(void):
-	bridgeManipulator(BRIDGE_MANIPULATOR),
-	bottomLimit(BRIDGE_BOTTOM_LIMIT),
-	topLimit(BRIDGE_TOP_LIMIT)
-{
-	Start((char *)"166bridgeManipulatorTask", bridgeManipulator_CYCLE_TIME);
+BridgeBalance166::BridgeBalance166(void):
+	Balance(INCLINOMETER_CHANNEL_A, INCLINOMETER_CHANNEL_B)
+	{
+	Start((char *)"166BridgeBalanceTask", BridgeBalance_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	// Register the proxy
@@ -101,19 +99,19 @@ bridgeManipulator166::bridgeManipulator166(void):
 };
 	
 // task destructor
-bridgeManipulator166::~bridgeManipulator166(void)
+BridgeBalance166::~BridgeBalance166(void)
 {
 	return;
 };
 	
 // Main function of the task
-int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
+int BridgeBalance166::Main(int a2, int a3, int a4, int a5,
 			int a6, int a7, int a8, int a9, int a10)
 {
-	bridgeManipulatorLog sl;                   // log
+	BridgeBalanceLog sl;                   // log
 	
 	// Let the world know we're in
-	DPRINTF(LOG_DEBUG,"In the 166 bridgeManipulator task\n");
+	DPRINTF(LOG_DEBUG,"In the 166 BridgeBalance task\n");
 	
 	// Wait for Robot go-ahead (e.g. entering Autonomous or Tele-operated mode)
 	// lHandle = Robot::getInstance() MUST go after this, otherwise code breaks
@@ -123,31 +121,24 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
-	proxy->add(BM_BUTTON);
-		
+	proxy->add("RobotAngle");
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		// <<CHANGEME>>
+		// Insert your own logic here
+		TempAngle = Balance.Get();
+		proxy->set("RobotAngle",TempAngle);
 		
-		switch (state){
-			case(BM_BUTTON_RELEASED):
-				if(!topLimit.Get())
-				    bridgeManipulator.Set(.5);
-				if(topLimit.Get())
-					bridgeManipulator.Set(0);
-				else if (proxy-> get(BM_BUTTON))
-					state = BM_BUTTON_PUSHED;
-				break;
+		if(TempAngle>10)
+			//robotgoforward
 			
-			case(BM_BUTTON_PUSHED):
-				if(!bottomLimit.Get())
-					bridgeManipulator.Set(-.5);
-				if(bottomLimit.Get())
-					bridgeManipulator.Set(0);
-				else if (!proxy -> get(BM_BUTTON))
-					state = BM_BUTTON_RELEASED;
-				break;
-		}
-		//printf("bottomLimit:%d,topLimit:%d\n",bottomLimit.Get(),topLimit.Get());
+		if(TempAngle<10)
+			//robotgobackward
+			
+			
+        // Logging any values
+		// <<TODO>>
+		// Make this match the declaraction above
 		sl.PutOne();
 		
 		// Wait for our next lap
