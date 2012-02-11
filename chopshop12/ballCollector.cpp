@@ -25,6 +25,7 @@
 struct abuf
 {
 	struct timespec tp;               // Time of snapshot
+	int state;
 	// Any values that need to be logged go here
 	// <<CHANGEME>>
 };
@@ -36,7 +37,7 @@ class ballCollectorLog : public MemoryLog
 public:
 	ballCollectorLog() : MemoryLog(
 			sizeof(struct abuf), ballCollector_CYCLE_TIME, "ballCollector",
-			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
+			"Seconds,Nanoseconds,Elapsed Time,state\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
 	};
@@ -45,12 +46,12 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 	// <<CHANGEME>>
-	unsigned int PutOne(void);     // Log the values needed-add in arguments
+	unsigned int PutOne(int state);     // Log the values needed-add in arguments
 };
 
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int ballCollectorLog::PutOne(void)
+unsigned int ballCollectorLog::PutOne(int state)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -59,8 +60,7 @@ unsigned int ballCollectorLog::PutOne(void)
 		
 		// Fill it in.
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
-		// Add any values to be logged here
-		// <<CHANGEME>>
+		ob -> state = state;
 		return (sizeof(struct abuf));
 	}
 	
@@ -74,11 +74,11 @@ unsigned int ballCollectorLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u,%4.5f\n",
+	fprintf(ofile, "%u,%u,%4.5f,%d\n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
-			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.))
-			// Add values here
-			// <<CHANGEME>>
+			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
+			ab -> state
+			
 	);
 	
 	// Done
@@ -87,8 +87,9 @@ unsigned int ballCollectorLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-ballCollector166::ballCollector166(void): ballCollector (1)
+ballCollector166::ballCollector166(void): ballCollector (BALL_COLLECTOR)
 {
+	printf("in constructor\n");
 	Start((char *)"166ballCollectorTask", ballCollector_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
@@ -111,6 +112,7 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	
 	// Let the world know we're in
 	DPRINTF(LOG_DEBUG,"In the 166 ballCollector task\n");
+	printf("in main task\n");
 	
 	// Wait for Robot go-ahead (e.g. entering Autonomous or Tele-operated mode)
 	// lHandle = Robot::getInstance() MUST go after this, otherwise code breaks
@@ -119,31 +121,33 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	
+	int pcounter = 0;
 	state = BC_ROLL_INWARD;
+	proxy->TrackNewpress("joy1b3");
     // General main loop (while in Autonomous or Tele mode)
-	while (true) {
+	while (true) {  //infinite while loop
+		if (!(pcounter++ % 5))
+			printf("Current state; %d\n", state);
 		
-		if (proxy->get("matchTimer")>=117) {
+		if (proxy->get("matchTimer")>=117) { //once purge mode is active the state changes to outward
 			state = BC_ROLL_OUTWARD;
 		}
 		
-		switch(state){
-			case(BC_ROLL_INWARD):
-				if(proxy->get("ballcount") < 3)
-					ballCollector.Set(.5);
-				else
+		switch(state){ // switches between inward and outward
+			case(BC_ROLL_INWARD): 
+				if(proxy->get("joy1b3n"))// < 3) // if the ballcount is less then three it sets the motor to go forward at halfspeed
 					state = BC_ROLL_OUTWARD;
+				else
+					ballCollector.Set(0.5);
 				break;
 			case(BC_ROLL_OUTWARD):
-				if(proxy->get("ballcount") >= 3)
-					ballCollector.Set(-.5);
-				else
+				if(proxy->get("joy1b3n"))// >= 3) // if the ballcount is greater than or equal to 3, it sets the motor to drive backwards at half speed
 					state = BC_ROLL_INWARD;
+				else
+					ballCollector.Set(-0.5);	
 				break;
 		}
-		sl.PutOne();
-		
+		sl.PutOne((int)state);
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
