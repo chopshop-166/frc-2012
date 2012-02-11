@@ -23,6 +23,7 @@
 #define THRESHOLD (5)
 #define CENTERVOLTAGE (2.5)
 #define STRINGEXCESS (0.3)
+#define TURRETANGLE (.34)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Turret166 : public Team166Task
@@ -55,4 +56,3 @@ private:
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };	
-	

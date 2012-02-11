@@ -160,7 +160,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         centeroffset=volt-CENTERVOLTAGE;
         printf("pot voltage: %f\r",volt);	//shows volts
         printf("speed: %f\r",rspeed);
-        
+       /* 
         if (CameraX < -.5) 
         	rspeed = 1;
         if (CameraX < 0) 
@@ -187,6 +187,11 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         if (centeroffset >-THRESHOLD)
            rspeed= -0.5;
         }
+        if (TURRETANGLE<0)
+        	rspeed = 0.1;
+        else if (TURRETANGLE>0)
+        	rspeed = -0.1;
+        */
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
