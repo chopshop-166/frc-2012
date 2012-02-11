@@ -17,158 +17,70 @@
 
 #include "WPILib.h"
 #include "TargetingInfo.h"
+#include "CameraTask.h"
+#include "nivision.h"
+#include "Target2.h"
+#include "proxy.h"
 
-// To locally enable debug printing: set true, to disable false
-#define DPRINTF if(false)dprintf
+#define TPRINTF if(true) dprintf
 
-// Sample in memory buffer
-struct abuf
+
+float Ballistics(ParticleAnalysisReport* Target,int button)
 {
-	struct timespec tp;               // Time of snapshot
-	// Any values that need to be logged go here
-	// <<CHANGEME>>
-};
-
-//  Memory Log
-// <<CHANGEME>>
-class TargetingInfoLog : public MemoryLog
-{
-public:
-	TargetingInfoLog() : MemoryLog(
-			sizeof(struct abuf), TARGETINGINFO_CYCLE_TIME, "template",
-			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
-			) {
-		return;
-	};
-	~TargetingInfoLog() {return;};
-	unsigned int DumpBuffer(          // Dump the next buffer into the file
-			char *nptr,               // Buffer that needs to be formatted
-			FILE *outputFile);        // and then stored in this file
-	// <<CHANGEME>>
-	unsigned int PutOne(void);     // Log the values needed-add in arguments
-};
-
-// Write one buffer into memory
-// <<CHANGEME>>
-unsigned int TargetingInfoLog::PutOne(void)
-{
-	struct abuf *ob;               // Output buffer
+	float imageheight= Target[TOP_MOST].imageWidth; //obtain from M's function
+	float targetheight= abs((120)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	TPRINTF(LOG_INFO, "targetheight= %i", targetheight);
+	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
+	float pdistance; //perpendicular to normal distance, along the wall to the hoop
+	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
+	float tangle; //angle the turret needs to turn after all caluclations are performed
+	float calctargetwidth; //width of the vision target on the image if the robot was looking at it head on
+	float realtargetwidth = Target[TOP_MOST].boundingRect.width; //width of the vision target in the image
+	float deltax; //diagonal distance to the hoop, i.e. line of sight
+	float vo; //launch velocity, ft/s
+	float atime; //time in the air in seconds
+	float vox; //initial and final horizontal velocity component
+	float voy; //initial vertical velocity component
+	float vfy; //final vertical velocity component
+	float eangle; //entry angle
 	
-	// Get output buffer
-	if ((ob = (struct abuf *)GetNextBuffer(sizeof(struct abuf)))) {
-		
-		// Fill it in.
-		clock_gettime(CLOCK_REALTIME, &ob->tp);
-		// Add any values to be logged here
-		// <<CHANGEME>>
-		return (sizeof(struct abuf));
+	//This section claculates the distance from the target (parallel to the ground) and the turret angle
+	normaldistance=(DISTANCECALIBRATION*imageheight/targetheight);
+	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
+	calctargetwidth=targetheight*24/18; //24/18 is ratio of width to height of vision target
+	realtargetwidth=54;//TEMPORARY!!!!!!!
+	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
+	pdistance=normaldistance*(tan(angle));
+	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
+	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
+	tangle=tangle*180/PI;
+	
+	
+	
+	//This section calculates the launch velocity needed (vo)
+	vo=sqrt((GRAVITY*pow(deltax, 2))/(2*(pow(cos(LANGLE),2))*(deltax*tan(LANGLE)-TOPDELTAY))); //there is a notepad somewhere with calculations
+	
+	
+	
+	//this section figures out whether or not the ball can enter at the calulated trajectory
+	vox=vo*cos(LANGLE);
+	atime=deltax/vox;
+	voy=vo*sin(LANGLE);
+	vfy=voy-GRAVITY*atime;
+	eangle=atan(vfy/vox);
+	if (eangle>27*180/PI)
+	{
+		cout<<"Safe to launch";
+	}
+	else
+	{
+		cout<<"Not safe to launch";
 	}
 	
-	// Did not get a buffer. Return a zero length
+	
+	
+	//sending values to the proxy
+	//proxy->set("turret_angle",tangle);
+	//proxy->set("initial_velocity",vo);
 	return (0);
 }
-
-// Format the next buffer for file output
-unsigned int TargetingInfoLog::DumpBuffer(char *nptr, FILE *ofile)
-{
-	struct abuf *ab = (struct abuf *)nptr;
-	
-	// Output the data into the file
-	fprintf(ofile, "%u,%u,%4.5f\n",
-			ab->tp.tv_sec, ab->tp.tv_nsec,
-			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.))
-			// Add values here
-			// <<CHANGEME>>
-	);
-	
-	// Done
-	return (sizeof(struct abuf));
-}
-
-
-// task constructor
-TargetingInfo166::TargetingInfo166(void)
-{
-	Start((char *)"166TargetingInfoTask", TARGETINGINFO_CYCLE_TIME);
-	// ^^^ Rename those ^^^
-	// <<CHANGEME>>
-	// Register the proxy
-	proxy = Proxy::getInstance();
-	return;
-};
-	
-// task destructor
-TargetingInfo166::~TargetingInfo166(void)
-{
-	return;
-};
-	
-// Main function of the task
-int TargetingInfo166::Main(int a2, int a3, int a4, int a5,
-			int a6, int a7, int a8, int a9, int a10)
-{
-	TargetingInfoLog sl;                   // log
-	
-	// Let the world know we're in
-	DPRINTF(LOG_DEBUG,"In the 166 TargetingInfo task\n");
-	
-	// Wait for Robot go-ahead (e.g. entering Autonomous or Tele-operated mode)
-	// lHandle = Robot::getInstance() MUST go after this, otherwise code breaks
-	WaitForGoAhead();
-	
-	// Register our logger
-	lHandle = Robot::getInstance();
-	lHandle->RegisterLogger(&sl);
-		
-    // General main loop (while in Autonomous or Tele mode)
-	while (true) {
-		// <<CHANGEME>>
-		// Insert your own logic here
-		
-		
-		//calling M's function to get necessary data
-		//ReturnReport(); ADD IN LATER!!!!!!!!!!!!!!!!!!!!!!!
-		
-		
-		
-		
-		//This section claculates the distance from the target (parallel to the ground)
-		distance=DISTANCECALIBRATION*imageheight/targetheight;
-		calctargetwidth=targetheight*24/18; //24/18 is ratio of width to height of vision target
-		realtargetwidth=54;//TEMPORARY!!!!!!!
-		angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
-		deltax=distance/(sin(angle));
-
-		
-		
-		
-		//This section calculates the launch velocity needed (vo)
-		vo=sqrt((GRAVITY*pow(deltax, 2))/(2*(pow(cos(LANGLE),2))*(deltax*tan(LANGLE)-TOPDELTAY))); //there is a notepad somewhere with calculations
-		
-		
-		
-		//this section figures out whether or not the ball can enter at the calulated trajectory
-		vox=vo*cos(LANGLE);
-		time=deltax/vox;
-		voy=vo*sin(LANGLE);
-		vfy=voy-GRAVITY*time;
-		eangle=atan(vfy/vox);
-		if (eangle>27*180/PI)
-		{
-		    cout<<"Safe to launch";
-		}
-		else
-		{
-		    cout<<"Not safe to launch";
-		}
-        // Logging any values
-		// <<CHANGEME>>
-		// Make this match the declaraction above
-		sl.PutOne();
-		
-		// Wait for our next lap
-		WaitForNextLoop();		
-	}
-	return (0);
-	
-};
