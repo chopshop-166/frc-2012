@@ -87,7 +87,7 @@ unsigned int ballCollectorLog::DumpBuffer(char *nptr, FILE *ofile)
 
 
 // task constructor
-ballCollector166::ballCollector166(void): ballCollector (1)
+ballCollector166::ballCollector166(void): ballCollector (BALL_COLLECTOR)
 {
 	Start((char *)"166ballCollectorTask", ballCollector_CYCLE_TIME);
 	// ^^^ Rename those ^^^

@@ -97,8 +97,8 @@ unsigned int TurretLog::DumpBuffer(char *nptr, FILE *ofile)
 	
 	
 // task constructor
-Turret166::Turret166(void):turretpot(TURRET_POT),rotateturret(TURRET_JAG),leftlimit(TURRET_LEFT_LIMIT),rightlimit(TURRET_RIGHT_LIMIT)
-{	
+Turret166::Turret166(void):turretpot(TURRET_POT), rotateturret(TURRET_JAG)
+{
 	Start((char *)"166TurretTask", TURRET_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
@@ -148,12 +148,12 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		//button 2 for stop
 		if(proxy->get("Joy1b2"))		
 			rspeed=0;
-		//if limit switches are pressed stops
+/*		//if limit switches are pressed stops
 		if(leftlimit.Get())	
         	rspeed = 0;
         if(rightlimit.Get())
         	rspeed = 0;
-        //motor = joystick speed
+*/      //motor = joystick speed
         rotateturret.Set(rspeed)	;		
 		
         volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
