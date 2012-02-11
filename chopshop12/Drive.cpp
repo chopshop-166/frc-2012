@@ -128,21 +128,21 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
     // General main loop (while in Autonomous or Tele mode)
-	proxy->TrackNewpress("joy1b2");
-	proxy->TrackNewpress("joy1b3");
+	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON);
+	proxy->TrackNewpress(DRIVE_CREEP_BUTTON);
 	while (true) {
 		
 		DriveSpeed2 = proxy->get(DRIVE_JOYSTICK_Y);
 		DriveSpeed1 = proxy->get(DRIVE_JOYSTICK_X);
 		//if button 2 is pressed, inverts controls, input * -1
-		if(proxy->get("DRIVE_OPPOSITE_BUTTON"))
+		if(proxy->get(DRIVE_OPPOSITE_BUTTON))
 			opposite = !opposite;
 		if(opposite) {
 			DriveSpeed1 = DriveSpeed1 * -1;
 			DriveSpeed2 = DriveSpeed2 * -1;
 		}
 		//if button 3 is pressed, creep mode enabled, input / 4
-		if(proxy->get("DRIVE_CREEP_BUTTON"))
+		if(proxy->get(DRIVE_CREEP_BUTTON))
 			slow = !slow;
 		if(slow) {
 			DriveSpeed1 = DriveSpeed1 / 4;
