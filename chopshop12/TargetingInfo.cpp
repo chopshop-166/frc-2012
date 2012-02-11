@@ -31,7 +31,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	proxy2 = Proxy::getInstance();
 	float imageheight= Target[TOP_MOST].imageHeight; //obtain from M's function
 	float targetheight= abs((imageheight/2)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
-	TPRINTF(LOG_INFO, "targetheight= %i", targetheight);
+	TPRINTF(LOG_INFO, "targetheight= %f", targetheight);
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
@@ -56,11 +56,13 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
 	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
 	tangle=tangle*180/PI;
+	TPRINTF(LOG_INFO, "tangle: %f", tangle);
 	
 	
 	
 	//This section calculates the launch velocity needed (vo)
 	vo=sqrt((GRAVITY*pow(deltax, 2))/(2*(pow(cos(LANGLE),2))*(deltax*tan(LANGLE)-TOPDELTAY))); //there is a notepad somewhere with calculations
+	TPRINTF(LOG_INFO, "vo: %f", vo);
 	
 	
 	
@@ -70,6 +72,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	voy=vo*sin(LANGLE);
 	vfy=voy-GRAVITY*atime;
 	eangle=atan(vfy/vox);
+	TPRINTF(LOG_INFO, "eangle: %f", eangle);
 	if (eangle>27*180/PI)
 	{
 		cout<<"Safe to launch";
