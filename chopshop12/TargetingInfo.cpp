@@ -17,19 +17,25 @@
 
 #include "WPILib.h"
 #include "TargetingInfo.h"
+#include "CameraTask.h"
 #include "nivision.h"
+#include "Target2.h"
 #include "proxy.h"
 
-float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,ParticleAnalysisReport right,ParticleAnalysisReport bottom,int button)
+#define TPRINTF if(true) dprintf
+
+
+float Ballistics(ParticleAnalysisReport* Target,int button)
 {
-	float imageheight; //obtain from M's function
-	float targetheight; //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	float imageheight= Target[TOP_MOST].imageWidth; //obtain from M's function
+	float targetheight= abs((120)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	TPRINTF(LOG_INFO, "targetheight= %i", targetheight);
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
 	float tangle; //angle the turret needs to turn after all caluclations are performed
 	float calctargetwidth; //width of the vision target on the image if the robot was looking at it head on
-	float realtargetwidth; //width of the vision target in the image
+	float realtargetwidth = Target[TOP_MOST].boundingRect.width; //width of the vision target in the image
 	float deltax; //diagonal distance to the hoop, i.e. line of sight
 	float vo; //launch velocity, ft/s
 	float atime; //time in the air in seconds
@@ -40,6 +46,7 @@ float Ballistics(ParticleAnalysisReport top,ParticleAnalysisReport left,Particle
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
 	normaldistance=(DISTANCECALIBRATION*imageheight/targetheight);
+	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
 	calctargetwidth=targetheight*24/18; //24/18 is ratio of width to height of vision target
 	realtargetwidth=54;//TEMPORARY!!!!!!!
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
