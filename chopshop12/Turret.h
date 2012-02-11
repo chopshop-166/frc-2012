@@ -47,7 +47,6 @@ private:
 	Robot *lHandle;            // Local handle
 	AnalogChannel turretpot;
 	CANJaguar rotateturret;
-	
 	float rspeed;
 	float volt;
 	float angle;
