@@ -140,7 +140,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		// <<CHANGEME>>
 		// Insert your own logic here
 		
-		/*//joystick speed squared
+		//joystick speed squared
 		rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")); 
 		//trigger reverses speed
 		if(proxy->get("Joy1b1"))
@@ -148,12 +148,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		//button 2 for stop
 		if(proxy->get("Joy1b2"))		
 			rspeed=0;
-		///if limit switches are pressed stops
-		if(leftlimit.Get())	
-        	rspeed = 0;
-        if(rightlimit.Get())
-        	rspeed = 0;
-      *///motor = joystick speed
+      	//motor = joystick speed
         rotateturret.Set(rspeed)	;		
 		
         volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
@@ -161,31 +156,31 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         printf("pot voltage: %f\r",volt);	//shows volts
         printf("speed: %f\r",rspeed);
         
-        if (CameraX < -.4) 
+        if (CameraX < -.5) 
         	rspeed = 1;
         if (CameraX < 0) 
-            rspeed = 0.4;
+            rspeed = 0.5;
         if (CameraX = 0) 
             rspeed = 0;
         {
         	printf("CENTERED");
         }
         if (CameraX > 0) 
-            rspeed = -.4;
-        if (CameraX > .4)
+            rspeed = -.5;
+        if (CameraX > .5)
         	rspeed = 1;
         if (CameraX = 2)
         {
         if (centeroffset <THRESHOLD)
         rspeed = 1;
         if (centeroffset >THRESHOLD)
-           rspeed = 0.4;
+           rspeed = 0.5;
         if (centeroffset = 0)
         	rspeed = 0;
         if (centeroffset <-THRESHOLD)
            rspeed = -1;
         if (centeroffset >-THRESHOLD)
-           rspeed= -0.4;
+           rspeed= -0.5;
         }
         if (TURRETANGLE<0)
         	rspeed = 0.1;
