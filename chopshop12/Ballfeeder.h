@@ -42,7 +42,7 @@ private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
-	Victor BallFeed;//victor to control feeder
+	Victor BallFeed; //victor to control feeder
 	DigitalInput BallLocation0;//digital ball sensor below fall feeder
 	DigitalInput BallLocation1;//bottom digital ball sensor
 	DigitalInput BallLocation2;//middle digital ball sensor
