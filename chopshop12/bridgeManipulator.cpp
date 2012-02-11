@@ -124,18 +124,23 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 	lHandle->RegisterLogger(&sl);
 	
 	proxy->TrackNewpress(BM_BUTTON);
-	ManipulatorSpeed = .5;
+	ManipulatorSpeed = .3;
+	ManipulatorState=1;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		if(proxy->get(BM_BUTTON_N))
-			ManipulatorState = !ManipulatorState;
-			ManipulatorSpeed = ManipulatorSpeed * -1;	
-			
-		if(topLimit.Get()||bottomLimit.Get())
+		if(proxy->get(BM_BUTTON_N)){
+			ManipulatorState = ManipulatorState * -1;
+		}
+		if((ManipulatorState>0) && topLimit.Get()){
 			ManipulatorSpeed = 0;
+		} else if((ManipulatorState<0) && bottomLimit.Get()) {
+			ManipulatorSpeed = 0;
+		} else { 
+			ManipulatorSpeed = 0.3 * ManipulatorState;
+		}
 		
 		bridgeManipulator.Set(ManipulatorSpeed);
-		
+		printf("Button: %1.f Speed: %2.2f State: %d\r", proxy->get(BM_BUTTON_N),ManipulatorSpeed, ManipulatorState);
 		//commented out code
 		/*
 		switch (state){
