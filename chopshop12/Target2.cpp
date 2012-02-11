@@ -12,10 +12,9 @@
 #define TPRINTF if(false)dprintf								//testing info
 #define GPRINTF if(true)dprintf								//Let's GO!
 
-static bool FailCheck(int Returned, char* Description);		//Print out errors
 static int Countup(Image* ImageToCount);					//Print out number of particles
 
-#define BAD_CAMERA (true)
+#define BAD_CAMERA (false)
 
 static int ReturnReport(
 		Image* ProcessedImage, 
@@ -32,7 +31,6 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 */
 {
 	//create destination/editable image
-
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 	DPRINTF(LOG_INFO, "\nLOOK HERE\n");
 	
@@ -41,11 +39,11 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	(Red: 0-255, Green: 174-255,  Blue: 210-255)
 	int imaqColorThreshold(Image* dest, const Image* source, int replaceValue, ColorMode mode, const Range* plane1Range, const Range* plane2Range, const Range* plane3Range); */
 	/* Setup Threshold Values */
-	const Range RR = {0  ,255};
-	const Range GR = {0  ,255};
-	const Range BR = {35 ,255};
+	const Range RR = {0  ,30 };
+	const Range GR = {5  ,65 };
+	const Range BR = {30 ,255};
 	int thresholdcheck;
-	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
+	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_RGB, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
 	if (!Countup(ProcessedImage)) return 0;
 	
@@ -69,12 +67,9 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	/*Step 4: Particle Filter (Area: min.5%, max100% of image)
 	int imaqParticleFilter4(Image* dest, Image* source, const ParticleFilterCriteria2* criteria, int criteriaCount, const ParticleFilterOptions2* options, const ROI* roi, int* numParticles); */
 	/* Setup for Particle Filter */
-	int IMAQheight;
-	int IMAQwidth;
-	imaqGetImageSize(ProcessedImage, &IMAQwidth, &IMAQheight);
-	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA,             150  , IMAQwidth*IMAQheight, FALSE, FALSE}, 
+	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
 			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.4, FALSE, FALSE},
-    								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.6, 1.0, FALSE, FALSE}};
+    								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE}};
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
 	int NP;
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
@@ -88,46 +83,10 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	
 	/* Step 6: Take out the particles that aren't filled in enough */
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
-	Countup(ProcessedImage);
-	/* OH NOES M!!! STEP 6 SHOULD BE "REMOVE SMALL OBJECTS" X 20!!!
-	 * 
-	 * 		   MMM				   MMM
-	 * 			M					M
-	 * 			MM				   MM
-	 * 			M M				  M M
-	 * 			M  M             M  M
-	 *          M	M		    M   M
-	 * 			M	 M		   M	M
-	 *          M	  M		  M		M
-	 *          M      M     M      M
-	 *          M       M   M       M
-	 *          M        M M        M
-	 *          M         M         M
-	 *  		M					M
-	 * 			M					M
-	 * 		   MMM				   MMM
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * MAKE IT WORK!!! PREFERABLY BELOW, AFTER CHECKING FOR 5+ PARTICLES!!!
-	
-	*/
 	
 	
 	
 	
-	/* Step 7.0: Check particles */
-	/*This will be commented out until I remember what it's supposed to do...
-	 * int numP = Countup(ProcessedImage);
-	ParticleAnalysisReport PARTest[numP];
-	for (int h=0; h<numP; h++)
-	{
-		frcParticleAnalysis(ProcessedImage, h, &PARTest[h]);
-		TPRINTF(LOG_INFO, "Particle: %i   \t%i", PARTest[h].center_mass_x, PARTest[h].center_mass_y);
-	}
-	*/
 #endif
 	
 #if BAD_CAMERA
@@ -194,7 +153,6 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
 
-		GPRINTF(LOG_INFO, "Image:  %i   \t%i", IMAQwidth, IMAQheight);
 		GPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
 		GPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
 		GPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
@@ -213,7 +171,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 			if (testmeasure > BestDV)
 			{ BestDV=testmeasure; BestDVIndex = i; }
 		}
-		ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, IMAQwidth*IMAQheight, FALSE, FALSE};
+		ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
 		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 		numParticles= Countup(ProcessedImage);
 		
@@ -227,7 +185,6 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
 	
-		GPRINTF(LOG_INFO, "Image:  %i   \t%i", IMAQwidth, IMAQheight);
 		GPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
 		GPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
 		GPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
@@ -239,7 +196,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 }
 
 
-static bool FailCheck(int Returned, char* Description)
+bool FailCheck(int Returned, char* Description)
 /*	Description: Prints out errors.
 	Syntax to call:
 		if(FailCheck(imaqFxn, "Describe function Failed %i")) return 0;
