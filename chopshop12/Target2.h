@@ -8,5 +8,6 @@ typedef enum {
 	UNINITIALIZED} corner_t;
 
 extern int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int btnInput);
+extern bool FailCheck(int Returned, char* Description);
 #endif //_TARGET2_H
 
