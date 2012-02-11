@@ -93,13 +93,15 @@ Drive166::Drive166(void):
 	RearLeft(DRIVE_REAR_LEFT), 
 	RearRight(DRIVE_REAR_RIGHT),
 	
-	Drive(FrontRight,RearRight,FrontLeft,RearLeft)
+	Drive(FrontLeft,RearLeft,FrontRight,RearRight)
 {
 	Start((char *)"166DriveTask", DRIVE_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	// Register the proxy
 	proxy = Proxy::getInstance();
+	Drive.SetInvertedMotor(RobotDrive::kFrontLeftMotor,1);
+	Drive.SetInvertedMotor(RobotDrive::kRearLeftMotor,1);
 	opposite = 0;
 	slow = 0;
 	return;
