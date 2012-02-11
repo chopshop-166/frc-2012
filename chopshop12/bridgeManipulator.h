@@ -43,12 +43,15 @@ private:
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
 	
-	enum {BM_BUTTON_PUSHED,BM_BUTTON_RELEASED} state;
+	//enum {BM_BUTTON_PUSHED,BM_BUTTON_RELEASED} state;
 	
 	Victor bridgeManipulator;
 	
 	DigitalInput bottomLimit;
 	DigitalInput topLimit;
+	
+	bool ManipulatorState;
+	float ManipulatorSpeed;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
