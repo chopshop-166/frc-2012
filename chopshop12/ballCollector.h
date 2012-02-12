@@ -19,7 +19,7 @@
 // of miliseconds. Max allowed time is 999 miliseconds.
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
-#define ballCollector_CYCLE_TIME (10) // 10ms
+#define ballCollector_CYCLE_TIME (100) // 100ms
 
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
