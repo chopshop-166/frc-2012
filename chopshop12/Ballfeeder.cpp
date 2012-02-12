@@ -96,8 +96,8 @@ BallFeeder166::BallFeeder166(void):
 	BallLocation3(BALL_LOCATION_3)
 {	
 	Start((char *)"166BallFeederTask", BALLFEEDER_CYCLE_TIME);
-	// ^^^ Rename those ^^^
-	// <<CHANGEME>>
+	BallCount = 0;
+	feedspeed = 0;
 	// Register the proxy
 	proxy = Proxy::getInstance();
 	return;
@@ -126,34 +126,28 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	//send ball location digital inputs to the proxy
-	proxy->add("BallLocation0");
-	proxy->add("BallLocation1");
-	proxy->add("BallLocation2");
-	proxy->add("BallLocation3");
+	proxy->add("BallCount");
+		
+	int Sens0Ave[50]={0};
+	int Sens1Ave[50]={0};
+	int Sens2Ave[50]={0};
+	int Sens3Ave[50]={0};
+	int counter = 0;
+	
+	int Average0 = 0;
+	int Average1 = 0;
+	int Average2 = 0;
+	int Average3 = 0;
+	
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		proxy->set("BallLocation0",BallLocation0.Get());
-		proxy->set("BallLocation1",BallLocation1.Get());
-		proxy->set("BallLocation2",BallLocation2.Get());
-		proxy->set("BallLocation3",BallLocation3.Get());
 		 //BallCount = number of balls the robot has
-		
-		int Sens0Ave[50];
-		int Sens1Ave[50];
-		int Sens2Ave[50];
-		int Sens3Ave[50];
-		int counter;
-		
-		Sens0Ave[counter%50]=BallLocation0.Get();
-		Sens1Ave[counter%50]=BallLocation1.Get();
-		Sens2Ave[counter%50]=BallLocation2.Get();
-		Sens3Ave[counter%50]=BallLocation3.Get();
-		counter ++;
-		
-		int Average0;
-		int Average1;
-		int Average2;
-		int Average3;
+		//These are normally High so we need to invert them to detect a ball
+		Sens0Ave[counter%50]=!(BallLocation0.Get());
+		Sens1Ave[counter%50]=!(BallLocation1.Get());
+		Sens2Ave[counter%50]=!(BallLocation2.Get());
+		Sens3Ave[counter%50]=!(BallLocation3.Get());
+		counter++;
 		
 		for( int i=0;i<50;i++){
 			Average0+=Sens0Ave[i];
@@ -161,14 +155,21 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 			Average2+=Sens2Ave[i];
 			Average3+=Sens3Ave[i];
 		}
-		proxy->set("BallCount",Average3 + Average2 + Average1 + Average0);
+		
 		Average0=Average0/50;
 		Average1=Average1/50;
 		Average2=Average2/50;
 		Average3=Average3/50;
-		
+
+		BallCount = (Average3 + Average2 + Average1 + Average0);
+
+		proxy->set("BallCount",BallCount);
+		printf("\rBall Count: %d \t", BallCount);
+		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
+				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
-		if (proxy->get("Joy1b1"))
+		if(false)
+		//if (proxy->get("Joy1b1"))
 		{
 			//feeder has 3 balls
 			if (BallCount == 3){
@@ -190,33 +191,61 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 			}
 			else
 				feedspeed=BALLFEED;
+
 		}
 		//ball incoming
-		else if ((BallLocation0.Get()== true)&&(BallLocation1.Get()== false))
-		{
-			feedspeed=BALLFEED;
+
+		else {
+			switch(FeedState) {
+				case Stopped:
+					printf("I am Stopped");
+					feedspeed=0;
+					if(!BallLocation0.Get()) {
+						FeedState = CollectionStarted;
+					}
+					break;
+				case CollectionStarted:
+					feedspeed = BALLFEED;
+					switch(BallCount){
+						case 0:
+							FeedState = Store1Ball;
+							break;
+						case 1:
+							FeedState = Store2Ball;
+							break;
+						case 2:
+							FeedState = Store3Ball;
+							break;
+					}
+					break;
+				case Store1Ball:
+					printf("I am Storing 1 Ball");
+					if(!BallLocation1.Get()){
+						FeedState = Stopped;
+					}
+					break;
+				case Store2Ball:
+					printf("I am Storing 2 Ball");
+					if(!BallLocation2.Get()){
+						FeedState = Stopped;
+					}
+					break;
+				case Store3Ball:
+					printf("I am Storing 3 Ball");
+					if(!BallLocation3.Get()){
+						FeedState = Stopped;
+					}
+					break;
+				default:
+					printf("YO DUMB!\n");
+					break;
+			}
 		}
-		//ball incoming while ball 1 is in
-		else if ((BallLocation0.Get()== true)&&(BallLocation1.Get()== true)&&(BallLocation2.Get()== false))
-		{
-			feedspeed=BALLFEED;
-		}
-		//ball incoming with ball 1 & 2 in
-		else if ((BallLocation0.Get()== true)&&(BallLocation1.Get()== true)&&(BallLocation2.Get()== true)&&(BallLocation3.Get()== false))
-		{
-			feedspeed=BALLFEED;
-		}		
-		else
-		{
-			feedspeed=0;
-		}
-		
-			sl.PutOne();		
+		BallFeed.Set(feedspeed);
+		sl.PutOne();		
 		
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
 	return (0);
-	
-
-	};
+};
