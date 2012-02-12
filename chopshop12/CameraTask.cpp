@@ -234,8 +234,8 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		
 		ParticleAnalysisReport ParticleReport[4];
 		*numParticles = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
-		MPRINTF(LOG_INFO, "RETURNED: %i", numParticles);
-		if(numParticles!=0)
+		MPRINTF(LOG_INFO, "RETURNED: %i", *numParticles);
+		if(numParticles>0)
 		{
 			*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
 			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
@@ -245,8 +245,8 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		{
 			*normalizedCenterX = 2;
 			proxy->set("CameraX", (float) 2);
+			MPRINTF(LOG_INFO, "CameraX= %f", 2.0);
 		}
-		*normalizedCenterX = 	
 		
 		Ballistics(&ParticleReport[0], BTN_INPUT);
 		
@@ -260,7 +260,6 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
  * Take a picture and store it to the cRIO in the specified path
  * Any task should be able to call this to take and save a snapshot
  */
-#if SAVE_IMAGES
 void CameraTask::TakeSnapshot(char* imageName)  {
 	
 	myHandle->lHandle->DriverStationDisplay("storing %s",imageName);
@@ -298,5 +297,5 @@ void SaveImage(char* imageName, Image* image)  {
 		DPRINTF (LOG_INFO,"errString= %s", errString);
 	} 
 };
-#endif
+
 

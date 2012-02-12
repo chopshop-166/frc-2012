@@ -20,7 +20,7 @@
 	
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
-#define CAMERA_AVAILABLE (0)
+#define CAMERA_AVAILABLE (true)
 	
 // Sample in memory buffer
 struct abuf
@@ -156,24 +156,24 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         volt = turretpot.GetVoltage();				
         centeroffset=volt-CENTERVOLTAGE;
 
-        printf("pot voltage: %f\r",volt);	//shows volts
-        printf("speed: %f\r",rspeed);		//shows current speed of rotation
+        printf("pot voltage: %f speed: %f ",volt,rspeed);	//shows volts
 
 #if (CAMERA_AVAILABLE)
+        CameraX = proxy->get("CameraX");
         if (CameraX < -.5) 
         	rspeed = 1;
         if (CameraX < 0){ 
             rspeed = 0.5;
-            printf("Tuuret Moving Right \n");
+            printf("Tuuret Moving Right \r");
         }
         if (CameraX = 0) 
             rspeed = 0;
         {
-        	printf("Turret CENTERED \n");
+        	printf("Turret CENTERED \r");
         }
         if (CameraX > 0) {
             rspeed = -.5;
-            printf("Turret moving Left \n");
+            printf("Turret moving Left \r");
         }
         if (CameraX > .5)
         	rspeed = 1;
