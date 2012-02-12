@@ -93,11 +93,11 @@ Drive166::Drive166(void):
 	RearLeft(DRIVE_REAR_LEFT), 
 	RearRight(DRIVE_REAR_RIGHT),
 	
-	Drive(FrontRight,RearRight,FrontLeft,RearLeft)
+	Drive(FrontLeft,RearLeft, FrontRight,RearRight)
 {
 	Start((char *)"166DriveTask", DRIVE_CYCLE_TIME);
-	// ^^^ Rename those ^^^
-	// <<CHANGEME>>
+	Drive.SetInvertedMotor(RobotDrive::kFrontLeftMotor,1);
+	Drive.SetInvertedMotor(RobotDrive::kRearLeftMotor, 1);
 	// Register the proxy
 	proxy = Proxy::getInstance();
 	opposite = 0;
@@ -135,21 +135,21 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		DriveSpeed2 = proxy->get(DRIVE_JOYSTICK_Y);
 		DriveSpeed1 = proxy->get(DRIVE_JOYSTICK_X);
 		//if button 2 is pressed, inverts controls, input * -1
-		if(proxy->get(DRIVE_OPPOSITE_BUTTON))
+		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N))
 			opposite = !opposite;
 		if(opposite) {
 			DriveSpeed1 = DriveSpeed1 * -1;
 			DriveSpeed2 = DriveSpeed2 * -1;
 		}
 		//if button 3 is pressed, creep mode enabled, input / 4
-		if(proxy->get(DRIVE_CREEP_BUTTON))
+		if(proxy->get(DRIVE_CREEP_BUTTON_N))
 			slow = !slow;
 		if(slow) {
 			DriveSpeed1 = DriveSpeed1 / 4;
 			DriveSpeed2 = DriveSpeed2 / 4;
 		}	
-			Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);
-       
+		Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);
+       printf("Speed1: %2.2f Speed2: %2.2f Dir: %d Slow: %d\r", DriveSpeed1, DriveSpeed2, opposite, slow);
 			// Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
