@@ -34,18 +34,26 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 	DPRINTF(LOG_INFO, "\nLOOK HERE\n");
 	
+	
 #if (!BAD_CAMERA)
 	/*Step 1: Color Threshold 
 	(Red: 0-255, Green: 174-255,  Blue: 210-255)
 	int imaqColorThreshold(Image* dest, const Image* source, int replaceValue, ColorMode mode, const Range* plane1Range, const Range* plane2Range, const Range* plane3Range); */
 	/* Setup Threshold Values */
-	const Range RR = {0  ,30 };
-	const Range GR = {5  ,65 };
-	const Range BR = {30 ,255};
+	int NP;
+	const Range RR = {100,255};
+	const Range GR = {0  ,255};
+	const Range BR = {12 ,255};
 	int thresholdcheck;
-	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_RGB, &RR, &GR, &BR);
+	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
 	if (!Countup(ProcessedImage)) return 0;
+	
+	/*Step 1.5: Get rid of itty-bitty bits*/
+	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
+	ParticleFilterCriteria2 CRIT1 = {IMAQ_MT_AREA, 10  , 76800, FALSE, FALSE};
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT1, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	Countup(ProcessedImage);
 	
 	/*Step 2: Basic Morphology Dilation
 	int imaqMorphology(Image* dest, Image* source, MorphologyMethod method, const StructuringElement* structuringElement); */
@@ -68,10 +76,8 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	int imaqParticleFilter4(Image* dest, Image* source, const ParticleFilterCriteria2* criteria, int criteriaCount, const ParticleFilterOptions2* options, const ROI* roi, int* numParticles); */
 	/* Setup for Particle Filter */
 	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
-			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.4, FALSE, FALSE},
+			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.5, FALSE, FALSE},
     								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE}};
-	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
-	int NP;
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
 	
