@@ -10,6 +10,6 @@
 #include "Shooter.h"
 #include "bridgeManipulator.h"
 #include "ballCollector.h"
-#include "Ballfeeder.cpp"
+#include "Ballfeeder.h"
 
 #endif

@@ -45,8 +45,8 @@
 #define BALL_FEED				(9)
 
 //DIGITAL INPUTS
-#define BRIDGE_TOP_LIMIT		(1)
-#define BRIDGE_BOTTOM_LIMIT		(2)
+#define BRIDGE_TOP_LIMIT		(2)
+#define BRIDGE_BOTTOM_LIMIT		(1)
 #define BALL_LOCATION_0			(3)
 #define BALL_LOCATION_1			(4)
 #define BALL_LOCATION_2			(5)
