@@ -89,8 +89,8 @@ unsigned int bridgeManipulatorLog::DumpBuffer(char *nptr, FILE *ofile)
 // task constructor
 bridgeManipulator166::bridgeManipulator166(void):
 	bridgeManipulator(BRIDGE_MANIPULATOR),
-	bottomLimit(BRIDGE_BOTTOM_LIMIT),
-	topLimit(BRIDGE_TOP_LIMIT)
+	ExtendedLimit(BRIDGE_BOTTOM_LIMIT),
+	RetractedLimit(BRIDGE_TOP_LIMIT)
 {
 	Start((char *)"166bridgeManipulatorTask", bridgeManipulator_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -124,41 +124,22 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 	lHandle->RegisterLogger(&sl);
 	
 	proxy->TrackNewpress(BM_BUTTON);
-	ManipulatorSpeed = .5;
+	ManipulatorSpeed = BRIDGESPEED;
+	ManipulatorState = 1;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		if(proxy->get(BM_BUTTON_N))
-			ManipulatorState = !ManipulatorState;
-			ManipulatorSpeed = ManipulatorSpeed * -1;	
-			
-		if(topLimit.Get()||bottomLimit.Get())
-			ManipulatorSpeed = 0;
-		
-		bridgeManipulator.Set(ManipulatorSpeed);
-		
-		//commented out code
-		/*
-		switch (state){
-			case(BM_BUTTON_RELEASED):
-				if(!topLimit.Get())
-				    bridgeManipulator.Set(.5);
-				if(topLimit.Get())
-					bridgeManipulator.Set(0);
-				else if (proxy-> get(BM_BUTTON))
-					state = BM_BUTTON_PUSHED;
-				break;
-			
-			case(BM_BUTTON_PUSHED):
-				if(!bottomLimit.Get())
-					bridgeManipulator.Set(-.5);
-				if(bottomLimit.Get())
-					bridgeManipulator.Set(0);
-				else if (!proxy -> get(BM_BUTTON))
-					state = BM_BUTTON_RELEASED;
-				break;	
+		if(proxy->get(BM_BUTTON_N)){
+			ManipulatorState *= -1;
 		}
-		*/
-		//printf("bottomLimit:%d,topLimit:%d\n",bottomLimit.Get(),topLimit.Get());
+		if(ManipulatorState>0 && RetractedLimit.Get()) {
+			ManipulatorSpeed = 0;
+		} else if(ManipulatorState<0 && ExtendedLimit.Get()) {
+			ManipulatorSpeed = 0;
+		} else {
+			ManipulatorSpeed = BRIDGESPEED * ManipulatorState;
+		}
+		printf("State: %d Speed: %2.2f\r", ManipulatorState, ManipulatorSpeed);
+		bridgeManipulator.Set(ManipulatorSpeed);
 		sl.PutOne();
 		
 		// Wait for our next lap
