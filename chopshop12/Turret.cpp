@@ -20,6 +20,7 @@
 	
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
+#define CAMERA_AVAILABLE (0)
 	
 // Sample in memory buffer
 struct abuf
@@ -134,7 +135,6 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
-	float rspeed;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		// <<CHANGEME>>
@@ -149,24 +149,32 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		if(proxy->get("Joy1b2"))		
 			rspeed=0;
       	//motor = joystick speed
+		//sets rotateturret(CANJaguar) to rspeed
         rotateturret.Set(rspeed)	;		
-		
-        volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
-        centeroffset=volt-CENTERVOLTAGE;
-        printf("pot voltage: %f\r",volt);	//shows volts
-        printf("speed: %f\r",rspeed);
         
+        //voltage = what the pot picks up
+        volt = turretpot.GetVoltage();				
+        centeroffset=volt-CENTERVOLTAGE;
+
+        printf("pot voltage: %f\r",volt);	//shows volts
+        printf("speed: %f\r",rspeed);		//shows current speed of rotation
+
+#if (CAMERA_AVAILABLE)
         if (CameraX < -.5) 
         	rspeed = 1;
-        if (CameraX < 0) 
+        if (CameraX < 0){ 
             rspeed = 0.5;
+            printf("Tuuret Moving Right \n");
+        }
         if (CameraX = 0) 
             rspeed = 0;
         {
-        	printf("CENTERED");
+        	printf("Turret CENTERED \n");
         }
-        if (CameraX > 0) 
+        if (CameraX > 0) {
             rspeed = -.5;
+            printf("Turret moving Left \n");
+        }
         if (CameraX > .5)
         	rspeed = 1;
         if (CameraX = 2)
@@ -182,10 +190,12 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         if (centeroffset >-THRESHOLD)
            rspeed= -0.5;
         }
-        if (TURRETANGLE<0)
+        /*if (TURRETANGLE<0)
         	rspeed = 0.1;
         else if (TURRETANGLE>0)
         	rspeed = -0.1;
+        	*/
+#endif
         
         // Logging any values
 		// <<CHANGEME>>

@@ -53,7 +53,7 @@ public:
 	static void TakeSnapshot(char* imageName);
 	
 	// Search for Target
-	bool FindTargets();
+	bool FindTargets(double* normalizedCenterX, int* numParticles);
 	
 private:
 	Proxy *proxy;				// Handle to proxy

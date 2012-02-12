@@ -33,9 +33,8 @@ struct abuf
 {
 	struct timespec tp;               // Time of snapshot
 	// Any values that need to be logged go here
-	double targetHAngle;
-	double targetVAngle;
-	double targetSize;	
+	double normalizedCenterX;
+	int numParticles;
 };
 
 //  Memory Log
@@ -44,7 +43,7 @@ class CameraLog : public MemoryLog
 public:
 	CameraLog() : MemoryLog(
 			sizeof(struct abuf), CAMERA_CYCLE_TIME, "camera",
-			"Elapsed Time,H-Angle, V-Angle, Size,\n" 
+			"Elapsed Time,normalizedCenterX,numParticles\n" 
 			) {
 		return;
 	};
@@ -53,11 +52,11 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 
-	unsigned int PutOne(double,double,double);     // Log the values needed-add in arguments
+	unsigned int PutOne(double normalizedCenterX,int numParticles);     // Log the values needed-add in arguments
 };
 
 // Write one buffer into memory
-unsigned int CameraLog::PutOne(double hAngle,double vAngle,double size)
+unsigned int CameraLog::PutOne(double normalizedCenterX,int numParticles)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -68,9 +67,8 @@ unsigned int CameraLog::PutOne(double hAngle,double vAngle,double size)
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
 		// Add any values to be logged here
 
-		ob-> targetHAngle = hAngle;
-		ob-> targetVAngle = vAngle;
-		ob-> targetSize = size;	
+		ob->normalizedCenterX = normalizedCenterX;
+		ob->numParticles = numParticles;
 		return (sizeof(struct abuf));
 	}
 	
@@ -84,10 +82,11 @@ unsigned int CameraLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%4.5f, %3.3f, %3.3f, %4.4f\n",
+	fprintf(ofile, "%4.5f, %3.3f, %i \n",
 			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
 			// Values to log
-			ab-> targetHAngle, ab-> targetVAngle, ab-> targetSize		
+			ab->normalizedCenterX, 
+			ab-> numParticles	
 	);
 	
 	// Done
@@ -168,12 +167,13 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		/* Look for target */
 		MPRINTF(LOG_INFO, "\n\nLOOP\n\n");
-		found = CameraTask::FindTargets();
+		double normalizedCenterX;
+		int numParticles;
+		found = CameraTask::FindTargets(&normalizedCenterX, &numParticles);
+		sl.PutOne(normalizedCenterX, numParticles);
         found = false;
-	    // Logging values if a valid target found
-		if (found) {
-			sl.PutOne(targetHAngle,targetVAngle,targetSize);
-		}
+	    // Logging is done in FindTargets();
+		
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
@@ -189,7 +189,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
  * TODO: change to Rectangular shapes
  * @return bool success code
  */
-bool CameraTask::FindTargets() {
+bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
@@ -233,19 +233,23 @@ bool CameraTask::FindTargets() {
 		
 		
 		ParticleAnalysisReport ParticleReport[4];
-		int returnedval = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
-		MPRINTF(LOG_INFO, "RETURNED: %i", returnedval);
-		if(returnedval!=0)
+		*numParticles = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
+		MPRINTF(LOG_INFO, "RETURNED: %i", numParticles);
+		if(numParticles!=0)
 		{
+			*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
 			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
 			MPRINTF(LOG_INFO, "CameraX= %f", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
 		}
 		else
 		{
+			*normalizedCenterX = 2;
 			proxy->set("CameraX", (float) 2);
 		}
-			
+		*normalizedCenterX = 	
+		
 		Ballistics(&ParticleReport[0], BTN_INPUT);
+		
 		
 		//delete image;
 		imaqDispose(image);
