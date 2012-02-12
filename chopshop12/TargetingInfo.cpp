@@ -75,11 +75,11 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	TPRINTF(LOG_INFO, "eangle: %f", eangle);
 	if (eangle>27*180/PI)
 	{
-		cout<<"Safe to launch";
+		cout<<"Safe to launch\n";
 	}
 	else
 	{
-		cout<<"Not safe to launch";
+		cout<<"Not safe to launch\n";
 	}
 	
 	

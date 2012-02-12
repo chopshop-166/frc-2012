@@ -19,7 +19,7 @@
 // of miliseconds. Max allowed time is 999 miliseconds.
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
-#define TURRET_CYCLE_TIME (10) // 10ms
+#define TURRET_CYCLE_TIME (100) // 100ms
 #define THRESHOLD (5)
 #define CENTERVOLTAGE (2.5)
 #define STRINGEXCESS (0.3)
