@@ -8,8 +8,8 @@
 #include "nivision.h"
 #include "Target2.h"
 
-#define DPRINTF if(false)dprintf								//debugging info
-#define TPRINTF if(false)dprintf								//testing info
+#define DPRINTF if(true)dprintf								//debugging info
+#define TPRINTF if(true)dprintf								//testing info
 #define GPRINTF if(true)dprintf								//Let's GO!
 
 static int Countup(Image* ImageToCount);					//Print out number of particles
@@ -34,18 +34,26 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 	DPRINTF(LOG_INFO, "\nLOOK HERE\n");
 	
+	
 #if (!BAD_CAMERA)
 	/*Step 1: Color Threshold 
 	(Red: 0-255, Green: 174-255,  Blue: 210-255)
 	int imaqColorThreshold(Image* dest, const Image* source, int replaceValue, ColorMode mode, const Range* plane1Range, const Range* plane2Range, const Range* plane3Range); */
 	/* Setup Threshold Values */
-	const Range RR = {0  ,30 };
-	const Range GR = {5  ,65 };
-	const Range BR = {30 ,255};
+	int NP;
+	const Range RR = {100,255};
+	const Range GR = {0  ,255};
+	const Range BR = {12 ,255};
 	int thresholdcheck;
-	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_RGB, &RR, &GR, &BR);
+	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
 	if (!Countup(ProcessedImage)) return 0;
+	
+	/*Step 1.5: Get rid of itty-bitty bits*/
+	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
+	ParticleFilterCriteria2 CRIT1 = {IMAQ_MT_AREA, 10  , 76800, FALSE, FALSE};
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT1, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	Countup(ProcessedImage);
 	
 	/*Step 2: Basic Morphology Dilation
 	int imaqMorphology(Image* dest, Image* source, MorphologyMethod method, const StructuringElement* structuringElement); */
@@ -61,18 +69,19 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	/* Step 3: Basic Morphology Erosion (to clean up) */
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+	if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) {return 0;} else {DPRINTF(LOG_INFO, "Eroded");}
+	Countup(ProcessedImage);
 	
 	
-	/*Step 4: Particle Filter (Area: min.5%, max100% of image)
+	/*Step 4: Particle Filters (Area: min.5%, max100% of image)
 	int imaqParticleFilter4(Image* dest, Image* source, const ParticleFilterCriteria2* criteria, int criteriaCount, const ParticleFilterOptions2* options, const ROI* roi, int* numParticles); */
 	/* Setup for Particle Filter */
 	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
-			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.4, FALSE, FALSE},
+			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.5, FALSE, FALSE},
     								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE}};
-	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
-	int NP;
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	Countup(ProcessedImage);
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[1], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered 2");}
 	Countup(ProcessedImage);
 	
 	/* Step 5: Convex hull it */
@@ -148,7 +157,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		ReturnReport(ProcessedImage, numParticles, RIGHT_MOST,  &ParticleRep[RIGHT_MOST] );
 		ReturnReport(ProcessedImage, numParticles, BOTTOM_MOST, &ParticleRep[BOTTOM_MOST]);
 		
-		TPRINTF(LOG_INFO, "TOP:    %f   \t%f", ParticleRep[TOP_MOST].center_mass_x_normalized,    ParticleRep[TOP_MOST].center_mass_y_normalized);
+		GPRINTF(LOG_INFO, "TOP:    %f   \t%f", ParticleRep[TOP_MOST].center_mass_x_normalized,    ParticleRep[TOP_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "LEFT:   %f   \t%f", ParticleRep[LEFT_MOST].center_mass_x_normalized,   ParticleRep[LEFT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
 		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
