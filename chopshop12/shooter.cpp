@@ -99,18 +99,23 @@ Shooter::Shooter(void):
 	// <<CHANGEME>>
 	P=I=D=0;
 	//Top Jag A
+
 	ShooterJagTopA.ConfigEncoderCodesPerRev(360);
+#if PID
 	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_Encoder);
 	ShooterJagTopA.SetPID(P,I,D);
 	ShooterJagTopA.EnableControl(0);
+#endif
 	//Top Jag B
 	ShooterJagTopB.ChangeControlMode(CANJaguar::kVoltage);
 	ShooterJagTopB.EnableControl();
 	//Bottom Jag A
+#if PID
 	ShooterJagBottomA.ConfigEncoderCodesPerRev(360);
 	ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_Encoder);
 	ShooterJagBottomA.SetPID(P,I,D);
 	ShooterJagBottomA.EnableControl(0);
+#endif
 	//Bottom Jag B
 	ShooterJagBottomB.ChangeControlMode(CANJaguar::kVoltage);
 	ShooterJagBottomB.EnableControl();
@@ -158,8 +163,14 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b5");
 	int Speed=0;
 	float changevalue;
+	float MasterSpeedTop=0, MasterSpeedBottom=0;
+	float joystickspeed=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		MasterSpeedTop = ShooterJagTopA.GetOutputVoltage();
+		MasterSpeedBottom = ShooterJagBottomA.GetOutputVoltage();
+		ShooterJagTopB.Set(MasterSpeedTop);
+		ShooterJagBottomB.Set(MasterSpeedBottom);
 		//set speed
 		if(proxy->get("joy1b8")) {
 			changevalue+=0.01;
@@ -179,7 +190,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			I+=changevalue;
 		}
 		//Set Derivative
-		if(proxy->get("joy1b611n")) {
+		if(proxy->get("joy1b11n")) {
 			D-=changevalue;
 		} else if(proxy->get("joy1b10n")){
 			D+=changevalue;
@@ -201,8 +212,12 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		//Press trigger to make motors go
 		if(proxy->get("joy2b1")) {
 			ShooterJagTopA.Set(Speed);
-			ShooterJagBottomA.Set(Speed);
+			//ShooterJagBottomA.Set(-Speed);
 		}
+		joystickspeed = proxy->get("joy1y");
+		ShooterJagTopA.Set(joystickspeed);
+		ShooterJagBottomA.Set(-joystickspeed);
+		printf("Joy: %f Top RPM: %f\r", joystickspeed,ShooterJagTopA.GetSpeed());
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.
 	/*

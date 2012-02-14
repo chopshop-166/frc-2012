@@ -126,25 +126,22 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b3");
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {  //infinite while loop
-		if (!(pcounter++ % 5))
-			printf("Current state; %d\n", state);
-		
 		if (proxy->get("matchTimer")>=117) { //once purge mode is active the state changes to outward
 			state = BC_ROLL_OUTWARD;
 		}
 		
 		switch(state){ // switches between inward and outward
 			case(BC_ROLL_INWARD): 
-				if(proxy->get("joy1b3n"))// < 3) // if the ballcount is less then three it sets the motor to go forward at halfspeed
+				if(proxy->get("BallCount") > 3) // if the ballcount is less then three it sets the motor to go forward at halfspeed
 					state = BC_ROLL_OUTWARD;
 				else
-					ballCollector.Set(0.5);
+					ballCollector.Set(0.25);
 				break;
 			case(BC_ROLL_OUTWARD):
-				if(proxy->get("joy1b3n"))// >= 3) // if the ballcount is greater than or equal to 3, it sets the motor to drive backwards at half speed
+				if(proxy->get("BallCount") < 3) // if the ballcount is greater than or equal to 3, it sets the motor to drive backwards at half speed
 					state = BC_ROLL_INWARD;
 				else
-					ballCollector.Set(-0.5);	
+					ballCollector.Set(-0.25);	
 				break;
 		}
 		sl.PutOne((int)state);

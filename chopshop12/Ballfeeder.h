@@ -21,6 +21,7 @@
 // <<CHANGEME>>
 #define BALLFEEDER_CYCLE_TIME (10) // 10ms
 #define BALLFEED (-.25)
+#define NUMTOAVERAGE (25)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class BallFeeder166 : public Team166Task
