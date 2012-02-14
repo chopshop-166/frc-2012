@@ -22,11 +22,12 @@
 //
 // This constant defines how often we want this task to run in the form
 // of miliseconds. Max allowed time is 999 miliseconds.
-//#define CAMERA_CYCLE_TIME (20) // ms
-#define CAMERA_CYCLE_TIME (200) // ms
+#define CAMERA2_CYCLE_TIME (200) // ms
 
 /** Private NI function needed to write to the VxWorks target */
 IMAQ_FUNC int Priv_SetWriteFileAllowed(UINT32 enable); 
+
+void SaveImageCam2(char* imageName, Image* image);
 
 class BallCameraTask : public Team166Task 
 {
@@ -44,7 +45,11 @@ public:
 			int a6, int a7, int a8, int a9, int a10);
 	
 	// Search for Target
-	bool FindTargets();
+	bool FindBalls(double *centerMassXNormalized);
+
+	// Take a picture and store to cRIO
+	// Any task should be able to call this to take and save a snapshot
+	static void TakeSnapshotCam2(char* imageName);
 	
 private:
 	Proxy *proxy;				// Handle to proxy

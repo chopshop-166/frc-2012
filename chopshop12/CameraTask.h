@@ -29,10 +29,9 @@ IMAQ_FUNC int Priv_SetWriteFileAllowed(UINT32 enable);
 /**
  * Store an Image to the cRIO in the specified path
  */
-#define SAVE_IMAGES (1)
-#if SAVE_IMAGES
+
 void SaveImage(char* imageName, Image* image);
-#endif
+
 class CameraTask : public Team166Task 
 {
 	
@@ -53,7 +52,7 @@ public:
 	static void TakeSnapshot(char* imageName);
 	
 	// Search for Target
-	bool FindTargets();
+	bool FindTargets(double* normalizedCenterX, int* numParticles);
 	
 private:
 	Proxy *proxy;				// Handle to proxy

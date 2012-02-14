@@ -21,8 +21,6 @@
 #include "TargetingInfo.h"
 
 
-
-
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
 
@@ -31,9 +29,7 @@ struct abuf
 {
 	struct timespec tp;               // Time of snapshot
 	// Any values that need to be logged go here
-	double targetHAngle;
-	double targetVAngle;
-	double targetSize;	
+	double centerMassXNormalized;
 };
 
 //  Memory Log
@@ -42,7 +38,7 @@ class BallCameraLog : public MemoryLog
 public:
 	BallCameraLog() : MemoryLog(
 			sizeof(struct abuf), CAMERA_CYCLE_TIME, "camera",
-			"Elapsed Time,H-Angle, V-Angle, Size,\n" 
+			"centerMassXNormalized,\n" 
 			) {
 		return;
 	};
@@ -51,11 +47,11 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 
-	unsigned int PutOne(double,double,double);     // Log the values needed-add in arguments
+	unsigned int PutOne(double);     // Log the values needed-add in arguments
 };
 
 // Write one buffer into memory
-unsigned int BallCameraLog::PutOne(double hAngle,double vAngle,double size)
+unsigned int BallCameraLog::PutOne(double centerMassXNormalized)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -66,9 +62,7 @@ unsigned int BallCameraLog::PutOne(double hAngle,double vAngle,double size)
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
 		// Add any values to be logged here
 
-		ob-> targetHAngle = hAngle;
-		ob-> targetVAngle = vAngle;
-		ob-> targetSize = size;	
+		ob-> centerMassXNormalized = centerMassXNormalized;	
 		return (sizeof(struct abuf));
 	}
 	
@@ -82,10 +76,10 @@ unsigned int BallCameraLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%4.5f, %3.3f, %3.3f, %4.4f\n",
+	fprintf(ofile, "%4.5f, %3.3f, \n",
 			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
 			// Values to log
-			ab-> targetHAngle, ab-> targetVAngle, ab-> targetSize		
+			ab-> centerMassXNormalized		
 	);
 	
 	// Done
@@ -108,9 +102,9 @@ BallCameraTask::BallCameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"
 	camera.WriteResolution(AxisCamera::kResolution_320x240);
 	camera.WriteBrightness(10);
 	int fps = camera.GetMaxFPS();
-	Start((char *)"BallCameraTask", CAMERA_CYCLE_TIME);
+	Start((char *)"BallCameraTask", CAMERA2_CYCLE_TIME);
 
-	DPRINTF(LOG_INFO,"BallCameraTask FPS=%i task cycle time=%i",fps,CAMERA_CYCLE_TIME);
+	DPRINTF(LOG_INFO,"BallCameraTask FPS=%i task cycle time=%i",fps,CAMERA2_CYCLE_TIME);
 
 	printf("End of BallCamera constructor\n");
 	return;
@@ -144,6 +138,7 @@ int BallCameraTask::Main(int a2, int a3, int a4, int a5,
 	
 	WaitForGoAhead(); // THIS IS VERY IMPORTANT
 
+	TakeSnapshotCam2("BallCameraStartup");
 	
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
@@ -151,23 +146,23 @@ int BallCameraTask::Main(int a2, int a3, int a4, int a5,
 	lHandle->DriverStationDisplay("BallCamera Task...");
 	
 	DPRINTF(LOG_INFO,"BallCameraTask informed DS");
+	double xvalue;
 	
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {				
 		// Wait for our next lap
 		WaitForNextLoop();
-		
+
 		/* Look for target */
-		found = BallCameraTask::FindTargets();
-        found = false;
+		found = BallCameraTask::FindBalls(&xvalue);
 	    // Logging values if a valid target found
 		if (found) {
-			sl.PutOne(targetHAngle,targetVAngle,targetSize);
+			sl.PutOne(xvalue);
 		}
-		
+		found = false;
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		Wait(3.0);
+		Wait(1.0);
 	}
 	return (0);
 	
@@ -175,11 +170,10 @@ int BallCameraTask::Main(int a2, int a3, int a4, int a5,
 
 
 /** 
- * Call the targeting code that looks for rectangular objects.
- * TODO: change to Rectangular shapes
- * @return bool success code
+ * Call the targeting code that looks for round objects.
+ * @return bool success
  */
-bool BallCameraTask::FindTargets() {
+bool BallCameraTask::FindBalls(double *centerMassXNormalized) {
 
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
@@ -188,10 +182,49 @@ bool BallCameraTask::FindTargets() {
     Image* image = image1->GetImaqImage();
 		
     //Image Processing 2
-    proxy->set("BallCameraX", (float) ProcessMyImageForBalls(image));
+    float cmXNormalized = (float) ProcessMyImageForBalls(image);
+    proxy->set("BallCameraX", cmXNormalized);
     
 	//delete image;
 	imaqDispose(image);
     return 1;
 }
 
+
+void BallCameraTask::TakeSnapshotCam2(char* imageName)  {
+	
+	myHandle->lHandle->DriverStationDisplay("storing %s",imageName);
+	//DPRINTF(LOG_DEBUG, "taking a SNAPSHOT ");
+	
+	Image* cameraImage = frcCreateImage(IMAQ_IMAGE_HSL);
+	if (!cameraImage) {
+		DPRINTF (LOG_INFO,"frcCreateImage failed - errorcode %i",GetLastVisionError()); 
+	    return;
+	}
+	/* If there is an unacquired image to get, acquire it */
+	if ( myHandle->camera.IsFreshImage() ) {
+		if ( !myHandle->camera.GetImage(cameraImage) ) {
+			DPRINTF (LOG_INFO,"\nImage Acquisition from camera failed %i", GetLastVisionError());
+		} else { 	
+			SaveImageCam2(imageName, cameraImage);
+		  	// always dispose of image objects when done
+		  	frcDispose(cameraImage);
+		} 
+	}
+	else {
+			DPRINTF (LOG_INFO,"Image is stale");	
+	} // fresh
+};
+
+/**
+ * Store an Image to the cRIO in the specified path
+ */
+void SaveImageCam2(char* imageName, Image* image)  {	
+	DPRINTF (LOG_DEBUG, "writing %s", imageName);
+	if (!frcWriteImage(image, imageName) ) { 
+		int errCode = GetLastVisionError();
+		DPRINTF (LOG_INFO,"frcWriteImage failed - errorcode %i", errCode);
+		char *errString = GetVisionErrorText(errCode);
+		DPRINTF (LOG_INFO,"errString= %s", errString);
+	} 
+};

@@ -54,6 +54,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
 	pdistance=normaldistance*(tan(angle));
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
+	deltax-=5/6;
 	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
 	tangle=tangle*180/PI;
 	TPRINTF(LOG_INFO, "tangle: %f", tangle);
@@ -75,11 +76,11 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	TPRINTF(LOG_INFO, "eangle: %f", eangle);
 	if (eangle>27*180/PI)
 	{
-		cout<<"Safe to launch";
+		cout<<"Safe to launch\n";
 	}
 	else
 	{
-		cout<<"Not safe to launch";
+		cout<<"Not safe to launch\n";
 	}
 	
 	
