@@ -112,10 +112,6 @@ Turret166::~Turret166(void)
 {	
 	return;
 };	
-int Turret166::volttoangle(float volts) //class that will convert volt to angle
-{	
-	return (int) volts;
-}	
 	
 // Main function of the task
 int Turret166::Main(int a2, int a3, int a4, int a5,
@@ -143,13 +139,10 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		//joystick speed squared
 		rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")); 
 		//trigger reverses speed
-		if(proxy->get("Joy1b1"))
-			rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")*-1); 
 		//button 2 for stop
 		if(proxy->get("Joy1b2"))		
 			rspeed=0;
       	//motor = joystick speed
-        rotateturret.Set(rspeed)	;		
 		
         volt = turretpot.GetVoltage();		//voltage = what the pot picks up		
         centeroffset=volt-CENTERVOLTAGE;
@@ -187,6 +180,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         else if (TURRETANGLE>0)
         	rspeed = -0.1;
         
+        rotateturret.Set(rspeed);
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
