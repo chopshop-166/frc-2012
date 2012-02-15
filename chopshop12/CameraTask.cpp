@@ -25,7 +25,7 @@
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
 #define TPRINTF if(false)dprintf
-#define MPRINTF if(true)dprintf
+#define MPRINTF if(false)dprintf
 #define M_METHOD (false)
 
 // Sample in memory buffer
@@ -177,7 +177,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		Wait(3.0);
+		//Wait.
 	}
 	return (0);
 	
@@ -239,16 +239,16 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		{
 			*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
 			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
-			MPRINTF(LOG_INFO, "CameraX= %f", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+			printf("CameraX= %f\n", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
 		}
 		else
 		{
 			*normalizedCenterX = 2;
 			proxy->set("CameraX", (float) 2);
-			MPRINTF(LOG_INFO, "CameraX= %f", 2.0);
+			printf("CameraX= %f\n", 2.0);
 		}
 		
-		Ballistics(&ParticleReport[0], BTN_INPUT);
+		//Ballistics(&ParticleReport[0], BTN_INPUT);
 		
 		
 		//delete image;
