@@ -148,7 +148,14 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	 * Do we want to use the camera or the joystick?*/
 		if(proxy->get("Joy1b1"))
 		    {  
-			rspeed=proxy->get("CameraX")*-1;
+			rspeed=2* proxy->get("CameraX");
+			/*if(rspeed<0)
+				{rspeed=-.5;}
+			else if(rspeed>0)
+				{rspeed=.5;}
+			else if (rspeed==0)
+				{rspeed=0;}
+			*/
 			/*CameraX = proxy->get("CameraX");
 			if (CameraX < -.5) 
 				rspeed = 1;
