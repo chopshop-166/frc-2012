@@ -147,8 +147,16 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	/*
 	 * Do we want to use the camera or the joystick?*/
 		if(proxy->get("Joy1b1"))
-		    {   
-			CameraX = proxy->get("CameraX");
+		    {  
+			rspeed=2* proxy->get("CameraX");
+			/*if(rspeed<0)
+				{rspeed=-.5;}
+			else if(rspeed>0)
+				{rspeed=.5;}
+			else if (rspeed==0)
+				{rspeed=0;}
+			*/
+			/*CameraX = proxy->get("CameraX");
 			if (CameraX < -.5) 
 				rspeed = 1;
 			if (CameraX < 0) 
@@ -158,7 +166,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				rspeed = 0;
 				{printf("Turret CENTERED \r");}
 			if (CameraX > 0)
-					rspeed = -.5;
+				rspeed = -.5;
 				{printf("Turret moving Right \r");}
 			if (CameraX > .5)
 				rspeed = 1;
@@ -174,7 +182,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 					rspeed = -1;
 				if (centeroffset >-THRESHOLD)
 					rspeed= -0.5;
-				}
+				}*/
 		    }
 		else
 		    {
@@ -198,7 +206,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         centeroffset=volt-CENTERVOLTAGE;
         
         rotateturret.Set(rspeed);
-        printf("pot voltage: %f speed: %f ",volt,rspeed);	//shows volts
+        printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
         
         /*if (TURRETANGLE<0)
         	rspeed = 0.1;
