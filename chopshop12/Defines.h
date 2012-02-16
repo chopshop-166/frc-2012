@@ -17,15 +17,16 @@
 // #define DRIVER_JOYSTICK (1)
 
 //CONTROL Defines
-#define DRIVE_JOYSTICK_Y		("Joy1Y")
-#define DRIVE_JOYSTICK_X		("Joy1X")
+#define DRIVE_1_JOYSTICK_Y		("Joy1Y")
+#define DRIVE_1_JOYSTICK_X		("Joy1X")
+#define DRIVE_2_JOYSTICK_Y		("Joy2Y")
 #define BM_BUTTON				("joy1b2")
 #define BM_BUTTON_N				("joy1b2n")
 #define DRIVE_OPPOSITE_BUTTON   ("joy1b3")
 #define DRIVE_OPPOSITE_BUTTON_N ("joy1b3n")
 #define DRIVE_CREEP_BUTTON      ("joy1b4")
 #define DRIVE_CREEP_BUTTON_N    ("joy1b4n")
-
+#define SHOOTER_TRIGGER			("joy2b1")
 
 //JAGUAR ID's
 #define SHOOTER_JAG_TOP_A		(3)

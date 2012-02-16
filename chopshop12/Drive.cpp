@@ -132,8 +132,14 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress(DRIVE_CREEP_BUTTON);
 	while (true) {
 		
-		DriveSpeed2 = proxy->get(DRIVE_JOYSTICK_Y);
-		DriveSpeed1 = proxy->get(DRIVE_JOYSTICK_X);
+		if(proxy->get("joy1T")>0){
+			DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
+			DriveSpeed2 = proxy->get(DRIVE_1_JOYSTICK_X);	
+		} else {
+			DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
+			DriveSpeed2 = proxy->get(DRIVE_2_JOYSTICK_Y);
+		}
+		
 		//if button 2 is pressed, inverts controls, input * -1
 		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N))
 			opposite = !opposite;
@@ -148,7 +154,12 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 			DriveSpeed1 = DriveSpeed1 / 4;
 			DriveSpeed2 = DriveSpeed2 / 4;
 		}	
-		Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);
+		if(proxy->get("joy1T")>0){
+			Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);	
+		} else {
+			Drive.TankDrive(DriveSpeed1, DriveSpeed2);
+		}
+		
        printf("Speed1: %2.2f Speed2: %2.2f Dir: %d Slow: %d\r", DriveSpeed1, DriveSpeed2, opposite, slow);
 			// Logging any values
 		// <<CHANGEME>>
