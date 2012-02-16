@@ -121,7 +121,6 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	int pcounter = 0;
 	state = BC_ROLL_INWARD;
 	proxy->TrackNewpress("joy1b3");
     // General main loop (while in Autonomous or Tele mode)

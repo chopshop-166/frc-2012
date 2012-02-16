@@ -168,8 +168,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
 				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
-		if(false)
-		//if (proxy->get("Joy1b1"))
+		if (proxy->get(SHOOTER_TRIGGER))
 		{
 			//feeder has 3 balls
 			if (BallCount == 3){

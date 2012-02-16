@@ -20,7 +20,7 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define TEMPLATE_CYCLE_TIME (10) // 10ms
-
+#define PID (1)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Shooter : public Team166Task
