@@ -164,10 +164,11 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		BallCount = (Average3 + Average2 + Average1);
 
 		proxy->set("BallCount",BallCount);
-		printf("\rBall Count: %d \t", BallCount);
+		//printf("\rBall Count: %d \t", BallCount);
 		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
 				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
+#if 0
 		if (proxy->get(SHOOTER_TRIGGER))
 		{
 			//feeder has 3 balls
@@ -241,6 +242,12 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 			}
 		}
 		BallFeed.Set(feedspeed);
+#endif
+		if(proxy->get(SHOOTER_TRIGGER)) {
+			BallFeed.Set(BALLFEED);
+		} else {
+			BallFeed.Set(0);
+		}
 		sl.PutOne();		
 		
 		// Wait for our next lap

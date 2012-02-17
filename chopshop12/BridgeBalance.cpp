@@ -128,13 +128,23 @@ int BridgeBalance166::Main(int a2, int a3, int a4, int a5,
 		// Insert your own logic here
 		TempAngle = Balance.Get();
 		proxy->set("RobotAngle",TempAngle);
-		
-		if(TempAngle>10)
-			//robotgoforward
-			
-		if(TempAngle<10)
-			//robotgobackward
-			
+		if(proxy->get("JOY1B5")) {
+			if(TempAngle>10) {
+				//robotgoforward
+				proxy->set(DRIVE_1_JOYSTICK_Y, 75);
+				proxy->set(DRIVE_2_JOYSTICK_Y, 75);
+			}
+			if(TempAngle<10) {
+				//robotgobackward
+				proxy->set(DRIVE_1_JOYSTICK_Y, -75);
+				proxy->set(DRIVE_2_JOYSTICK_Y, -75);
+			}
+			proxy->UseUserJoystick(1,0);
+			proxy->UseUserJoystick(2,0);
+		} else {
+			proxy->UseUserJoystick(1,1);
+			proxy->UseUserJoystick(2,1);
+		}
 			
         // Logging any values
 		// <<TODO>>
