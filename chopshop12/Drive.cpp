@@ -128,8 +128,10 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
     // General main loop (while in Autonomous or Tele mode)
-	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON);
-	proxy->TrackNewpress(DRIVE_CREEP_BUTTON);
+	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_LEFT);
+	proxy->TrackNewpress(DRIVE_CREEP_BUTTON_LEFT);
+	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_RIGHT);
+	proxy->TrackNewpress(DRIVE_CREEP_BUTTON_RIGHT);
 	while (true) {
 		
 		if(proxy->get("joy1T")>0){
@@ -141,26 +143,26 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		}
 		
 		//if button 2 is pressed, inverts controls, input * -1
-		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N))
+		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N_LEFT) || proxy->get(DRIVE_OPPOSITE_BUTTON_N_RIGHT))
 			opposite = !opposite;
 		if(opposite) {
 			DriveSpeed1 = DriveSpeed1 * -1;
 			DriveSpeed2 = DriveSpeed2 * -1;
 		}
 		//if button 3 is pressed, creep mode enabled, input / 4
-		if(proxy->get(DRIVE_CREEP_BUTTON_N))
+		if(proxy->get(DRIVE_CREEP_BUTTON_N_LEFT) || proxy->get(DRIVE_CREEP_BUTTON_N_RIGHT))
 			slow = !slow;
 		if(slow) {
-			DriveSpeed1 = DriveSpeed1 / 4;
-			DriveSpeed2 = DriveSpeed2 / 4;
+			DriveSpeed1 = DriveSpeed1 / 3;
+			DriveSpeed2 = DriveSpeed2 / 3;
 		}	
 		if(proxy->get("joy1T")>0){
 			Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);	
 		} else {
-			Drive.TankDrive(DriveSpeed1, DriveSpeed2);
+			Drive.TankDrive(DriveSpeed1, -DriveSpeed2);
 		}
 		
-       printf("Speed1: %2.2f Speed2: %2.2f Dir: %d Slow: %d\r", DriveSpeed1, DriveSpeed2, opposite, slow);
+       //printf("Speed1: %2.2f Speed2: %2.2f Dir: %d Slow: %d\r", DriveSpeed1, DriveSpeed2, opposite, slow);
 			// Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above

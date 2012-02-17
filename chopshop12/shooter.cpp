@@ -171,7 +171,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b5");
 	proxy->TrackNewpress("joy2b4");
 	proxy->TrackNewpress("joy2b5");
-	int Speed=0, Speed2=0;
+	float Speed=0, Speed2=0;
 	float changevalue=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
 	float joystickspeed=0;
@@ -216,7 +216,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			ShooterJagBottomA.SetPID(P,I,D);
 			ShooterJagBottomA.EnableControl(0);
 		}
-#endif
+
 		//Set Speed
 		if(proxy->get("joy1b4n", true)) {
 			Speed+=100;
@@ -228,10 +228,16 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if(proxy->get("joy2b5n", true)) {
 			Speed2-=100;
 		}
+#endif
+		Speed = proxy->get("joy3T");
+		Speed += 1;
+		Speed /= 2;
+		Speed *= 4000;
+		printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
 		if(proxy->get("joy2b1")||proxy->get("joy1b1")) {
 			ShooterJagTopA.Set(-(Speed));
-			ShooterJagBottomA.Set(Speed2);
+			ShooterJagBottomA.Set(Speed);
 		} else {
 			ShooterJagTopA.Set(0);
 			ShooterJagBottomA.Set(0);
@@ -241,7 +247,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 				changevalue, P, I, D,
 				Speed, ShooterJagTopA.GetSpeed());
 #endif
-		printf("RPM Top %d RPM Bottom %d\r", Speed, Speed2);
+		//printf("RPM Top %d RPM Bottom %d\r", Speed, Speed2);
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.
 	/*
