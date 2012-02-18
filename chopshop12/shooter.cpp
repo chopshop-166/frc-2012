@@ -27,8 +27,16 @@
 struct abuf
 {
 	struct timespec tp;               // Time of snapshot
-	float top_jaguar_speed;           // Speed of top Jaguars
-	float bottom_jaguar_speed;        // Speed of bottom Jaguars
+	float TheoreticalSpeedTop;        // Speed that top jags should be
+	float TheoreticalSpeedBottom;     // Speed that bottom jags should be
+	float ActualSpeedTop;			      // Actual current speed of top jags
+	float ActualSpeedBottom;			  // Actual current speed of bottom jags
+//Voltages for all the motors
+	float VoltageTopA;
+	float VoltageTopB;
+	float VoltageBottomA;
+	float VoltageBottomB;
+		
 };
 
 //  Memory Log
@@ -37,22 +45,52 @@ class ShooterLog : public MemoryLog
 {
 public:
 	ShooterLog() : MemoryLog(
-			sizeof(struct abuf), TEMPLATE_CYCLE_TIME, "template",
-			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
-			) {
-		return;
+			sizeof(struct abuf), TEMPLATE_CYCLE_TIME,
+			 // Put the names of the values in here, comma-seperated	
+			"template",
+			"Seconds,\
+			Nanoseconds,\
+			Elapsed Time,\
+			TheoreticalSpeedTop,\
+			TheoreticalSpeedBottom,\
+			ActualSpeedTop,\
+			ActualSpeedBottom,\
+			VoltageTopA,\
+			VoltageTopB,\
+			VoltageBottomA,\
+			VoltageBottomB\
+			\n"){
+	return;
 	};
+	
 	~ShooterLog() {return;};
 	unsigned int DumpBuffer(          // Dump the next buffer into the file
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 	// <<CHANGEME>>
-	unsigned int PutOne(float s1, float s2);     // Log the values needed-add in arguments
+	unsigned int PutOne(
+		// Log the values needed-add in arguments
+		float TheoreticalSpeedTop,        
+		float TheoreticalSpeedBottom,    
+		float ActualSpeedTop,			      
+		float ActualSpeedBottom,			  
+		float VoltageTopA,
+		float VoltageTopB,
+		float VoltageBottomA,
+		float VoltageBottomB);
 };
 
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int ShooterLog::PutOne(float speed1, float speed2)
+unsigned int ShooterLog::PutOne(
+		float TheoreticalSpeedTop, 
+		float TheoreticalSpeedBottom,
+		float ActualSpeedTop,
+		float ActualSpeedBottom,
+		float VoltageTopA,
+		float VoltageTopB,
+		float VoltageBottomA,
+		float VoltageBottomB)
 {
 	struct abuf *ob;               // Output buffer
 	
@@ -61,8 +99,15 @@ unsigned int ShooterLog::PutOne(float speed1, float speed2)
 		
 		// Fill it in.
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
-		ob->top_jaguar_speed = speed1;
-		ob->bottom_jaguar_speed = speed2;
+		ob->TheoreticalSpeedTop = TheoreticalSpeedTop;
+		ob->TheoreticalSpeedBottom = TheoreticalSpeedBottom;
+		ob->ActualSpeedTop = ActualSpeedTop;
+		ob->ActualSpeedBottom = ActualSpeedBottom;
+		ob->VoltageTopA = VoltageTopA;
+		ob->VoltageTopB = VoltageTopB;
+		ob->VoltageBottomA = VoltageBottomA;
+		ob->VoltageBottomB = VoltageBottomB;
+		
 		return (sizeof(struct abuf));
 	}
 	
@@ -76,11 +121,26 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u, %4.5f, %4.5f, %4.5f\n",
+	fprintf(ofile, "%u,%u, %4.5f, %4.5f, %4.5f, "
+			"%fTheoreticalSpeedTop,"
+			"%fTheoreticalSpeedBottom,"
+			"%fActualSpeedtop,"
+			"%fActualSpeedBottom,"
+			"%fVoltageTopA,"
+			"%fVoltageTopB,"
+			"%fVoltageBottomA,"
+			"%fVoltageBottomB, \n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
 			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
-			ab->top_jaguar_speed,
-			ab->bottom_jaguar_speed
+			ab->TheoreticalSpeedTop,
+			ab->TheoreticalSpeedBottom,
+			ab->ActualSpeedTop,
+			ab->ActualSpeedBottom,
+			ab->VoltageTopA,
+			ab->VoltageTopB,
+			ab->VoltageBottomA,
+			ab->VoltageBottomB
+			
 	);
 	// Done
 	return (sizeof(struct abuf));
@@ -171,10 +231,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b5");
 	proxy->TrackNewpress("joy2b4");
 	proxy->TrackNewpress("joy2b5");
-	float Speed=0, Speed2=0;
-	float changevalue=0;
+	float Speed=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
-	float joystickspeed=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
@@ -266,14 +324,23 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			break;
 	}
 	ShooterJagTopA.Set(speed1);
-	ShooterJagTopB.Set(speed2);
+	ShooterJagBottomA.Set(speed2);
 	*/
 		// Make this match the declaraction above
-		sl.PutOne(ShooterJagTopA.GetSpeed(), ShooterJagBottomA.GetSpeed());
-		
+		sl.PutOne(
+				speed1,
+				speed2,
+				ShooterJagTopA.Get(),
+				ShooterJagBottomA.Get(),
+				0.1,//VoltageTopA,
+				0.1,//VoltageTopB,
+				0.1,//VoltageBottomA,
+				0.1//VoltageBottomB
+				);
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
 	return (0);
 	
 };
+
