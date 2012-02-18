@@ -144,33 +144,44 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 
 	else
 		{
-	/*
-	 * Do we want to use the camera or the joystick?*/
+	 
+	/* Do we want to use the camera or the joystick?*/
 		if(proxy->get("Joy1b1"))
 		    {  
 			rspeed=2* proxy->get("CameraX");
 			/*if(rspeed<0)
-				{rspeed=-.5;}
+				{rspeed=-0.5;}
 			else if(rspeed>0)
-				{rspeed=.5;}
+				{rspeed=0.5;}
 			else if (rspeed==0)
 				{rspeed=0;}
-			*/
-			/*CameraX = proxy->get("CameraX");
-			if (CameraX < -.5) 
+			 */
+		/*	CameraX = proxy->get("CameraX");
+			
+			if (CameraX < -0.5)   	//Camera < -0.5 	rspeed = 1
 				rspeed = 1;
-			if (CameraX < 0) 
+			if (CameraX < -0.25)  	//Camera < -0.25 	rspeed = 0.5
 				rspeed = 0.5;
-				{printf("Tuuret Moving Left \r");}
-			if (CameraX = 0) 
+			if (CameraX < -0.05)  	//Camera < -0.05 	rspeed = 0.25
+				rspeed = 0.25;
+			if (CameraX < 0) 		//Camera < 0 		rspeed = 0.15;
+				rspeed = 0.15;
+				{printf("Turret Moving Left \r");}
+			
+			if (CameraX = 0) 		//Camera = 0 		rspeed = 0
 				rspeed = 0;
 				{printf("Turret CENTERED \r");}
-			if (CameraX > 0)
-				rspeed = -.5;
+			
+			if (CameraX < 0.05)  	//Camera < 0.05 	rspeed = -0.15
+				rspeed = -0.15;
+			if (CameraX > 0)		//Camera > 0 		rspeed = -0.25
+				rspeed = -0.15;
 				{printf("Turret moving Right \r");}
-			if (CameraX > .5)
-				rspeed = 1;
-			if (CameraX = 2)
+			if (CameraX > 0.25)		//Camera > 0.25 	rspeed = -0.5
+				rspeed = -0.5;
+			if (CameraX > 0.5)		//Camera > 0.5 		rspeed = 1
+				rspeed = -1;
+			if (CameraX = 2)		//Camera = 2		Set Turret Default Position
 				{
 				if (centeroffset <THRESHOLD)
 					rspeed = 1;
@@ -181,8 +192,9 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				if (centeroffset <-THRESHOLD)
 					rspeed = -1;
 				if (centeroffset >-THRESHOLD)
-					rspeed= -0.5;
-				}*/
+					rspeed = -0.5;
+				}
+		*/	
 		    }
 		else
 		    {
@@ -196,32 +208,30 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")*-1);
 				}
 		    }	
-		}
-      	
-		//motor = joystick speed
-		//sets rotateturret(CANJaguar) to rspeed	
+		}	
+			
 /*APPLY SPEEDS*/
-        //voltage = what the pot picks up
-        volt = turretpot.GetVoltage();				
+        
+        volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
         centeroffset=volt-CENTERVOLTAGE;
-        
-        rotateturret.Set(rspeed);
+        	
+        rotateturret.Set(rspeed);		//sets rotateturret(CANJaguar) to rspeed
         printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
-        
+        	
         /*if (TURRETANGLE<0)
         	rspeed = 0.1;
         else if (TURRETANGLE>0)
         	rspeed = -0.1;
-        	*/
-        rotateturret.Set(rspeed);
+       	*/
+        rotateturret.Set(rspeed);	//motor = joystick speed
         // Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
 		sl.PutOne(rotateturret.GetForwardLimitOK(),rotateturret.GetReverseLimitOK(),volt);
-		
+			
 		// Wait for our next lap
 		WaitForNextLoop();		
-	}
+	}	
 	return (0);
-	
-};	
+		
+};		

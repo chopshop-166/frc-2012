@@ -91,6 +91,7 @@ BridgeBalance166::BridgeBalance166(void):
 	Balance(INCLINOMETER_CHANNEL_A, INCLINOMETER_CHANNEL_B)
 	{
 	Start((char *)"166BridgeBalanceTask", BridgeBalance_CYCLE_TIME);
+	TempAngle = 0;
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	// Register the proxy
@@ -122,20 +123,36 @@ int BridgeBalance166::Main(int a2, int a3, int a4, int a5,
 	lHandle->RegisterLogger(&sl);
 	
 	proxy->add("RobotAngle");
+	Balance.Start();
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		// <<CHANGEME>>
 		// Insert your own logic here
 		TempAngle = Balance.Get();
 		proxy->set("RobotAngle",TempAngle);
-		
-		if(TempAngle>10)
-			//robotgoforward
-			
-		if(TempAngle<10)
-			//robotgobackward
-			
-			
+#if 0
+		if(proxy->get("JOY1B5")) {
+			proxy->UseUserJoystick(1,0);
+			proxy->UseUserJoystick(2,0);
+			if(TempAngle>10) {
+				//robotgoforward
+				proxy->set(DRIVE_1_JOYSTICK_Y, 75);
+				proxy->set(DRIVE_2_JOYSTICK_Y, 75);
+			}
+			else if(TempAngle<-10) {
+				//robotgobackward
+				proxy->set(DRIVE_1_JOYSTICK_Y, -75);
+				proxy->set(DRIVE_2_JOYSTICK_Y, -75);
+			} else {
+				proxy->set(DRIVE_1_JOYSTICK_Y, 0);
+				proxy->set(DRIVE_2_JOYSTICK_Y, 0);	
+			}
+		} else {
+			proxy->UseUserJoystick(1,1);
+			proxy->UseUserJoystick(2,1);
+		}
+#endif
+		printf("Angle: %d\r", TempAngle);
         // Logging any values
 		// <<TODO>>
 		// Make this match the declaraction above

@@ -98,6 +98,7 @@ BallFeeder166::BallFeeder166(void):
 	Start((char *)"166BallFeederTask", BALLFEEDER_CYCLE_TIME);
 	BallCount = 0;
 	feedspeed = 0;
+	waitTimer = 0;
 	// Register the proxy
 	proxy = Proxy::getInstance();
 	return;
@@ -164,12 +165,12 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		BallCount = (Average3 + Average2 + Average1);
 
 		proxy->set("BallCount",BallCount);
-		printf("\rBall Count: %d \t", BallCount);
+		//printf("\rBall Count: %d \t", BallCount);
 		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
 				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
-		if(false)
-		//if (proxy->get("Joy1b1"))
+#if 0
+		if (proxy->get(SHOOTER_TRIGGER))
 		{
 			//feeder has 3 balls
 			if (BallCount == 3){
@@ -201,8 +202,14 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					printf("I am Stopped");
 					feedspeed=0;
 					if(!BallLocation0.Get()) {
-						FeedState = CollectionStarted;
+						waitTimer=0;
+						FeedState = Waiting;
 					}
+					break;
+				case Waiting:
+						waitTimer+=1;
+						if(waitTimer==50)
+							FeedState=CollectionStarted;
 					break;
 				case CollectionStarted:
 					feedspeed = BALLFEED;
@@ -219,19 +226,19 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					}
 					break;
 				case Store1Ball:
-					printf("I am Storing 1 Ball");
+					//printf("I am Storing 1 Ball");
 					if(!BallLocation1.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Store2Ball:
-					printf("I am Storing 2 Ball");
+					//printf("I am Storing 2 Ball");
 					if(!BallLocation2.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Store3Ball:
-					printf("I am Storing 3 Ball");
+					//printf("I am Storing 3 Ball");
 					if(!BallLocation3.Get()){
 						FeedState = Stopped;
 					}
@@ -242,6 +249,12 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 			}
 		}
 		BallFeed.Set(feedspeed);
+#endif
+		if(proxy->get(SHOOTER_TRIGGER)) {
+			BallFeed.Set(BALLFEED);
+		} else {
+			BallFeed.Set(0);
+		}
 		sl.PutOne();		
 		
 		// Wait for our next lap

@@ -138,7 +138,7 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 		} else {
 			ManipulatorSpeed = BRIDGESPEED * ManipulatorState;
 		}
-		printf("State: %d Speed: %2.2f\r", ManipulatorState, ManipulatorSpeed);
+		//printf("State: %d Speed: %2.2f\r", ManipulatorState, ManipulatorSpeed);
 		bridgeManipulator.Set(ManipulatorSpeed);
 		sl.PutOne();
 		

@@ -97,13 +97,18 @@ Shooter::Shooter(void):
 	Start((char *)"166Templateask", TEMPLATE_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
-	P=I=D=0;
+	P=0.8;
+	I=0.01;
+	D=0;
+	const double MaxOutputVolts=6.00;
 	//Top Jag A
 
 	ShooterJagTopA.ConfigEncoderCodesPerRev(360);
 #if PID
-	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_Encoder);
+	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
+	ShooterJagTopA.ChangeControlMode(CANJaguar::kSpeed);
 	ShooterJagTopA.SetPID(P,I,D);
+	ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagTopA.EnableControl(0);
 #endif
 	//Top Jag B
@@ -112,8 +117,10 @@ Shooter::Shooter(void):
 	//Bottom Jag A
 #if PID
 	ShooterJagBottomA.ConfigEncoderCodesPerRev(360);
-	ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_Encoder);
+	ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
+	ShooterJagBottomA.ChangeControlMode(CANJaguar::kSpeed);
 	ShooterJagBottomA.SetPID(P,I,D);
+	ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagBottomA.EnableControl(0);
 #endif
 	//Bottom Jag B
@@ -146,6 +153,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
+	proxy->TrackNewpress("joy1b1");
 	//Proportianal Change
 	proxy->TrackNewpress("joy1b6");
 	proxy->TrackNewpress("joy1b7");
@@ -161,67 +169,89 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	//Change Speed
 	proxy->TrackNewpress("joy1b4");
 	proxy->TrackNewpress("joy1b5");
-	int Speed=0;
-	float changevalue;
+	proxy->TrackNewpress("joy2b4");
+	proxy->TrackNewpress("joy2b5");
+	float Speed=0, Speed2=0;
+	float changevalue=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
 	float joystickspeed=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
+		
+		//Slave 1 jaguar per axle to the other jaguar
 		MasterSpeedTop = ShooterJagTopA.GetOutputVoltage();
 		MasterSpeedBottom = ShooterJagBottomA.GetOutputVoltage();
 		ShooterJagTopB.Set(MasterSpeedTop);
 		ShooterJagBottomB.Set(MasterSpeedBottom);
+#if 0
 		//set speed
-		if(proxy->get("joy1b8")) {
+		if(proxy->get("joy1b8", true)) {
 			changevalue+=0.01;
-		} else if(proxy->get("joy1b9")){
+		} else if(proxy->get("joy1b9", true)){
 			changevalue-=0.01;
 		}
 		//Set Proportional
-		if(proxy->get("joy1b6n")) {
+		if(proxy->get("joy1b6n", true)) {
 			P-=changevalue;
-		} else if(proxy->get("joy1b7n")){
+		} else if(proxy->get("joy1b7n", true)){
 			P+=changevalue;
 		}
 		//Set Integral
-		if(proxy->get("joy1b3n")) {
+		if(proxy->get("joy1b3n", true)) {
 			I-=changevalue;
-		} else if(proxy->get("joy1b2n")){
+		} else if(proxy->get("joy1b2n",true)){
 			I+=changevalue;
 		}
 		//Set Derivative
-		if(proxy->get("joy1b11n")) {
+		if(proxy->get("joy1b11n", true)) {
 			D-=changevalue;
-		} else if(proxy->get("joy1b10n")){
+		} else if(proxy->get("joy1b10n", true)){
 			D+=changevalue;
 		}
-		if(proxy->get("joy1b1n")){
+		if(proxy->get("joy1b1n", true)){
 			//Set PID values for Top Jag A
 			ShooterJagTopA.SetPID(P,I,D);
 			ShooterJagTopA.EnableControl(0);
-			//Set PID values for Top Jag B
+			//Set PID values for Bottom Jag A
 			ShooterJagBottomA.SetPID(P,I,D);
 			ShooterJagBottomA.EnableControl(0);
 		}
+
 		//Set Speed
-		if(proxy->get("joy1b4n")) {
+		if(proxy->get("joy1b4n", true)) {
 			Speed+=100;
-		} else if(proxy->get("joy1b5n")) {
+		} else if(proxy->get("joy1b5n", true)) {
 			Speed-=100;
 		}
-		//Press trigger to make motors go
-		if(proxy->get("joy2b1")) {
-			ShooterJagTopA.Set(Speed);
-			//ShooterJagBottomA.Set(-Speed);
+		if(proxy->get("joy2b4n", true)) {
+			Speed2+=100;
+		} else if(proxy->get("joy2b5n", true)) {
+			Speed2-=100;
 		}
-		joystickspeed = proxy->get("joy1y");
-		ShooterJagTopA.Set(joystickspeed);
-		ShooterJagBottomA.Set(-joystickspeed);
-		printf("Joy: %f Top RPM: %f\r", joystickspeed,ShooterJagTopA.GetSpeed());
+#endif
+		Speed = proxy->get("joy3T");
+		Speed += 1;
+		Speed /= 2;
+		Speed *= 4000;
+		//printf("Speed: %f\r", Speed);
+		//Press trigger to make motors go
+		if(proxy->get("joy2b1")||proxy->get("joy1b1")) {
+			ShooterJagTopA.Set(-(Speed));
+			ShooterJagBottomA.Set(Speed);
+		} else {
+			ShooterJagTopA.Set(0);
+			ShooterJagBottomA.Set(0);
+		}
+#if 0
+		printf("Change: %f P: %f I: %f D: %f Speed: %d Speed: %f\r",
+				changevalue, P, I, D,
+				Speed, ShooterJagTopA.GetSpeed());
+#endif
+		//printf("RPM Top %d RPM Bottom %d\r", Speed, Speed2);
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.
 	/*
-	switch (proxy->get ("BallCount") > 0) 
+	switch (proxy->get(SHOOTER_TRIGGER) ) 
 	{
 		case true:
 			speed1 = proxy->get("initial_velocity"); //get speed from proxy in feet per second	
@@ -229,22 +259,17 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			
 			speed2 = speed1 * -1; // set bottom speed to opposite of top
 			speed2 = speed1 * BackspinFactor; //allows the top and bottom to go at different speeds for goodness
-						
-			ShooterJagTopA.Set(speed1);
-			ShooterJagTopB.Set(speed1);
-			ShooterJagBottomA.Set(speed2); //set ALL the speeds!
-			ShooterJagBottomB.Set(speed2);
 			break;
 		case false:
-			ShooterJagTopA.Set(1000);
-			ShooterJagTopB.Set(1000);
-			ShooterJagBottomA.Set(10000); //make slow the speeds of the motors 
-			ShooterJagBottomB.Set(1000);
+			speed1 = 1000;
+			speed2 = 1000;
 			break;
 	}
+	ShooterJagTopA.Set(speed1);
+	ShooterJagTopB.Set(speed2);
 	*/
 		// Make this match the declaraction above
-		sl.PutOne(speed1, speed2);
+		sl.PutOne(ShooterJagTopA.GetSpeed(), ShooterJagBottomA.GetSpeed());
 		
 		// Wait for our next lap
 		WaitForNextLoop();		
