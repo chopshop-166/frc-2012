@@ -11,6 +11,8 @@ extern int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRe
 /* ProcessMyImage takes the camera image and an array of 4 ParticleAnalysisReports.
  * The button input isn't used here.
  * Upon success, the number of targets seen is returned. */
+
+
 extern bool FailCheck(int Returned, char* Description);
 /* FailCheck takes an NI Vision Function and a description. 
  * The description is returned upon failure. 

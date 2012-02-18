@@ -80,6 +80,36 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	/* Step 8: Particle Filter: Compactness (eliminate not-dense particles) */
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 	
+	/* Step 9: Delete particles that are much smaller than the largest. */
+	int BestDVIndex;
+	double BestDV=0;
+	GPRINTF(LOG_INFO, "More than 4 found!");
+	int numParticles=Countup(ProcessedImage);
+	for (int i = 0; i < numParticles; i++) //determine largest particle
+	{
+		double testmeasure;
+		imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_AREA, &testmeasure);
+		if (testmeasure > BestDV)
+		{ BestDV=testmeasure; BestDVIndex = i; }
+	}
+	//Filter
+	ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	numParticles= Countup(ProcessedImage);
+	
+	/* Step 10: Filter out particles if more than 4 */
+	if(numParticles>4)
+	{
+		GPRINTF(LOG_INFO, "%i Particles found at end! Eliminating...", numParticles);
+		
+		double ParticleAreas[numParticles];
+		for(int x=0; x<numParticles;x++)
+		{
+			imaqMeasureParticle(ProcessedImage, x, 0, IMAQ_MT_AREA, &ParticleAreas[x]);
+		}
+		/*LOGIC IS NON-FUNCTIONAL*/
+	}
+	
 #endif
 	
 #if BAD_CAMERA
@@ -129,49 +159,16 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 /*****************************************************************
                      Examine the targets
  *****************************************************************/
-	/* Step 1: Use number of particles to determine elimination method, if any */
-	int numParticles=Countup(ProcessedImage); //Count Particles
+	/* Step 1: Use number of particles to determine what's what */
+	numParticles=Countup(ProcessedImage); //Count Particles
 	GPRINTF(LOG_INFO, "Number particles found: %i", numParticles);
-	if(numParticles==0) return 0; //If none found, return nothing
-	else if(numParticles==1 || numParticles==2 || numParticles==3 || numParticles==4)
-	//If 1-4 are found, assume they are targets and return reports.
+	
+	if(numParticles==0) //If none found, return nothing
 	{
-		ReturnReport(ProcessedImage, numParticles, TOP_MOST,    &ParticleRep[TOP_MOST]   );
-		ReturnReport(ProcessedImage, numParticles, LEFT_MOST,   &ParticleRep[LEFT_MOST]  );
-		ReturnReport(ProcessedImage, numParticles, RIGHT_MOST,  &ParticleRep[RIGHT_MOST] );
-		ReturnReport(ProcessedImage, numParticles, BOTTOM_MOST, &ParticleRep[BOTTOM_MOST]);
-		
-		GPRINTF(LOG_INFO, "TOP:    %f   \t%f", ParticleRep[TOP_MOST].center_mass_x_normalized,    ParticleRep[TOP_MOST].center_mass_y_normalized);
-		TPRINTF(LOG_INFO, "LEFT:   %f   \t%f", ParticleRep[LEFT_MOST].center_mass_x_normalized,   ParticleRep[LEFT_MOST].center_mass_y_normalized);
-		TPRINTF(LOG_INFO, "RIGHT:  %f   \t%f", ParticleRep[RIGHT_MOST].center_mass_x_normalized,  ParticleRep[RIGHT_MOST].center_mass_y_normalized);
-		TPRINTF(LOG_INFO, "BOTTOM: %f   \t%f", ParticleRep[BOTTOM_MOST].center_mass_x_normalized, ParticleRep[BOTTOM_MOST].center_mass_y_normalized);
-
-		GPRINTF(LOG_INFO, "TOP:    %i   \t%i", ParticleRep[TOP_MOST].center_mass_x,    ParticleRep[TOP_MOST].center_mass_y);
-		GPRINTF(LOG_INFO, "LEFT:   %i   \t%i", ParticleRep[LEFT_MOST].center_mass_x,   ParticleRep[LEFT_MOST].center_mass_y);
-		GPRINTF(LOG_INFO, "RIGHT:  %i   \t%i", ParticleRep[RIGHT_MOST].center_mass_x,  ParticleRep[RIGHT_MOST].center_mass_y);
-		GPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
+		return 0; 
 	}
-	else if(numParticles>4)
-	// If more than 4 are found, filter out particles that are less than 
-	// 90% of the area of the biggest.
+	else
 	{
-		int BestDVIndex;
-		double BestDV=0;
-		GPRINTF(LOG_INFO, "More than 4 found!");
-		Countup(ProcessedImage);
-		for (int i = 0; i < numParticles; i++) 
-		//Determine largest particle
-		{
-			double testmeasure;
-			imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_AREA, &testmeasure);
-			if (testmeasure > BestDV)
-			{ BestDV=testmeasure; BestDVIndex = i; }
-		}
-		//Filter
-		ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
-		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
-		numParticles= Countup(ProcessedImage);
-		
 		//Return information
 		ReturnReport(ProcessedImage, numParticles, TOP_MOST,    &ParticleRep[TOP_MOST]   );
 		ReturnReport(ProcessedImage, numParticles, LEFT_MOST,   &ParticleRep[LEFT_MOST]  );

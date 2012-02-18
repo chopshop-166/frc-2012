@@ -206,9 +206,9 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	MPRINTF(LOG_INFO, "RETURNED: %i", *numParticles);
 	if(numParticles>0)
 	{
-		*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
-		proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
-		printf("CameraX= %f\n", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+		*normalizedCenterX = ParticleReport[BOTTOM_MOST].center_mass_x_normalized;
+		proxy->set("CameraX", (float) ParticleReport[BOTTOM_MOST].center_mass_x_normalized);
+		printf("CameraX= %f\n", (float) ParticleReport[BOTTOM_MOST].center_mass_x_normalized);
 	}
 	else
 	{
