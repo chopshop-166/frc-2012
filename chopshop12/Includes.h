@@ -11,5 +11,6 @@
 #include "bridgeManipulator.h"
 #include "ballCollector.h"
 #include "Ballfeeder.h"
+#include "BridgeBalance.h"
 
 #endif

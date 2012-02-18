@@ -233,7 +233,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		Speed += 1;
 		Speed /= 2;
 		Speed *= 4000;
-		printf("Speed: %f\r", Speed);
+		//printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
 		if(proxy->get("joy2b1")||proxy->get("joy1b1")) {
 			ShooterJagTopA.Set(-(Speed));
