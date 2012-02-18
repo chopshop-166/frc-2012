@@ -26,7 +26,6 @@
 #define DPRINTF if(false)dprintf
 #define TPRINTF if(false)dprintf
 #define MPRINTF if(false)dprintf
-#define M_METHOD (false)
 
 // Sample in memory buffer
 struct abuf
@@ -96,7 +95,7 @@ unsigned int CameraLog::DumpBuffer(char *nptr, FILE *ofile)
 CameraTask *CameraTask::myHandle = NULL;
 
 // task constructor
-CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
+CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
 {
 	myHandle = this;
 	printf("This is the Camera constructor\n");
@@ -155,6 +154,9 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	lHandle->DriverStationDisplay("Camera Task...");
 	
 	DPRINTF(LOG_INFO,"CameraTask informed DS");
+	DPRINTF(LOG_INFO,"About to...");
+	TakeSnapshot("FIRSTcRIOimage.jpg");
+	DPRINTF(LOG_INFO,"...take a picture!");
 	
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {				
@@ -177,7 +179,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		//Wait.
+		Wait(1);
 	}
 	return (0);
 	
@@ -196,64 +198,31 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	// get the camera image
     HSLImage* image1 = camera.GetImage();   
     Image* image = image1->GetImaqImage();
-#if M_METHOD
-	// find FRC targets in the image
-	vector<Target> targets = Target::FindTargets(image1);
-	
-		if (targets.size()) {
-			DPRINTF(LOG_DEBUG, "targetImage SCORE = %f", targets[0].m_score);
-		}	
-		if (targets.size() == 0) {
-			// no targets found.
-			DPRINTF(LOG_DEBUG, "No target foxxxund\n\n");
-			return false;			
-		}
-		else if (targets[0].m_score < MINIMUM_SCORE) {
-			// no good enough targets found
-			DPRINTF(LOG_DEBUG, "No valid targets foxxxund, best score: %f ", 
-						targets[0].m_score);
-			return false;			
-		}
-		else {
-			// We have some targets.
-			// set the new PID heading setpoint to the first target in the list
-			targetHAngle = targets[0].GetHorizontalAngle();
-			targetVAngle = targets[0].GetVerticalAngle();
-			targetSize = targets[0].GetSize();
 
-			// send dashboard data for target tracking
-			DPRINTF(LOG_DEBUG, "Target found %f ", targets[0].m_score);
-			DPRINTF(LOG_DEBUG, "H: %3.0f  V: %3.0f  SIZE: %3.3f ", 
-					targetHAngle, targetVAngle, targetSize);
-//			targets[0].Print();
-		}
-		return true;
-#endif
-		int BTN_INPUT = 0;
+	int BTN_INPUT = 0;
 		
-		
-		ParticleAnalysisReport ParticleReport[4];
-		*numParticles = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
-		MPRINTF(LOG_INFO, "RETURNED: %i", *numParticles);
-		if(numParticles>0)
-		{
-			*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
-			proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
-			printf("CameraX= %f\n", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
-		}
-		else
-		{
-			*normalizedCenterX = 2;
-			proxy->set("CameraX", (float) 2);
-			printf("CameraX= %f\n", 2.0);
-		}
-		
-		Ballistics(&ParticleReport[0], BTN_INPUT);
-		
-		
-		//delete image;
-		imaqDispose(image);
-	    return 1;
+	ParticleAnalysisReport ParticleReport[4];
+	*numParticles = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
+	MPRINTF(LOG_INFO, "RETURNED: %i", *numParticles);
+	if(numParticles>0)
+	{
+		*normalizedCenterX = ParticleReport[TOP_MOST].center_mass_x_normalized;
+		proxy->set("CameraX", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+		printf("CameraX= %f\n", (float) ParticleReport[TOP_MOST].center_mass_x_normalized);
+	}
+	else
+	{
+		*normalizedCenterX = 2;
+		proxy->set("CameraX", (float) 2);
+		printf("CameraX= %f\n", 2.0);
+	}
+	
+	Ballistics(&ParticleReport[0], BTN_INPUT);
+	
+	
+	//delete image;
+	imaqDispose(image);
+    return 1;
 }
 
 /**
