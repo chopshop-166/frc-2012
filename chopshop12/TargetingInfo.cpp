@@ -54,6 +54,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
 	pdistance=normaldistance*(tan(angle));
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
+	deltax-=5/6;
 	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
 	tangle=tangle*180/PI;
 	TPRINTF(LOG_INFO, "tangle: %f", tangle);

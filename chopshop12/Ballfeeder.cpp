@@ -128,10 +128,10 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	//send ball location digital inputs to the proxy
 	proxy->add("BallCount");
 		
-	int Sens0Ave[50]={0};
-	int Sens1Ave[50]={0};
-	int Sens2Ave[50]={0};
-	int Sens3Ave[50]={0};
+	int Sens0Ave[NUMTOAVERAGE]={0};
+	int Sens1Ave[NUMTOAVERAGE]={0};
+	int Sens2Ave[NUMTOAVERAGE]={0};
+	int Sens3Ave[NUMTOAVERAGE]={0};
 	int counter = 0;
 	
 	int Average0 = 0;
@@ -143,25 +143,25 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	while (true) {
 		 //BallCount = number of balls the robot has
 		//These are normally High so we need to invert them to detect a ball
-		Sens0Ave[counter%50]=!(BallLocation0.Get());
-		Sens1Ave[counter%50]=!(BallLocation1.Get());
-		Sens2Ave[counter%50]=!(BallLocation2.Get());
-		Sens3Ave[counter%50]=!(BallLocation3.Get());
+		Sens0Ave[counter%NUMTOAVERAGE]=!(BallLocation0.Get());
+		Sens1Ave[counter%NUMTOAVERAGE]=!(BallLocation1.Get());
+		Sens2Ave[counter%NUMTOAVERAGE]=!(BallLocation2.Get());
+		Sens3Ave[counter%NUMTOAVERAGE]=!(BallLocation3.Get());
 		counter++;
 		
-		for( int i=0;i<50;i++){
+		for( int i=0;i<NUMTOAVERAGE;i++){
 			Average0+=Sens0Ave[i];
 			Average1+=Sens1Ave[i];
 			Average2+=Sens2Ave[i];
 			Average3+=Sens3Ave[i];
 		}
 		
-		Average0=Average0/50;
-		Average1=Average1/50;
-		Average2=Average2/50;
-		Average3=Average3/50;
+		Average0=(Average0/NUMTOAVERAGE);
+		Average1=(Average1/NUMTOAVERAGE);
+		Average2=(Average2/NUMTOAVERAGE);
+		Average3=(Average3/NUMTOAVERAGE);
 
-		BallCount = (Average3 + Average2 + Average1 + Average0);
+		BallCount = (Average3 + Average2 + Average1);
 
 		proxy->set("BallCount",BallCount);
 		printf("\rBall Count: %d \t", BallCount);

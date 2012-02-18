@@ -14,15 +14,14 @@
 #include "WPILib.h"
 #include "Robot.h"
 	
-//	
 // This constant defines how often we want this task to run in the form
 // of miliseconds. Max allowed time is 999 miliseconds.
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define TURRET_CYCLE_TIME (100) // 100ms
 #define THRESHOLD (5)
-#define CENTERVOLTAGE (2.5)
-#define STRINGEXCESS (0.3)
+#define CENTERVOLTAGE (4.3)
+#define STRINGEXCESS (3.59)
 #define TURRETANGLE (.34)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
@@ -36,7 +35,6 @@ public:
 	
 	// task destructor
 	virtual ~Turret166(void);
-	int volttoangle(float volts);
 	// Main function of the task
 	virtual int Main(int a2, int a3, int a4, int a5,
 			int a6, int a7, int a8, int a9, int a10);

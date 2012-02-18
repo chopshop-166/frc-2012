@@ -8,9 +8,9 @@
 #include "nivision.h"
 #include "Target2.h"
 
-#define DPRINTF if(true)dprintf								//debugging info
-#define TPRINTF if(true)dprintf								//testing info
-#define GPRINTF if(true)dprintf								//Let's GO!
+#define DPRINTF if(false)dprintf								//debugging info
+#define TPRINTF if(false)dprintf								//testing info
+#define GPRINTF if(false)dprintf								//Let's GO!
 
 static int Countup(Image* ImageToCount);					//Print out number of particles
 
