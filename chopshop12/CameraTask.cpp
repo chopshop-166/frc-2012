@@ -248,7 +248,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 			printf("CameraX= %f\n", 2.0);
 		}
 		
-		//Ballistics(&ParticleReport[0], BTN_INPUT);
+		Ballistics(&ParticleReport[0], BTN_INPUT);
 		
 		
 		//delete image;

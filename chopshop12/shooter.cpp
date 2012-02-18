@@ -224,7 +224,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	switch (proxy->get ("BallCount") > 0) 
 	{
 		case true:
-			speed1 = proxy->get("vo"); //get speed from proxy in feet per second	
+			speed1 = proxy->get("initial_velocity"); //get speed from proxy in feet per second	
 			speed1 = speed1 / 60 * 2.083333333333333; // convert fps to rpm
 			
 			speed2 = speed1 * -1; // set bottom speed to opposite of top
