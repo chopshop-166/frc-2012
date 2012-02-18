@@ -41,10 +41,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	float realtargetwidth = Target[TOP_MOST].boundingRect.width; //width of the vision target in the image
 	float deltax; //diagonal distance to the hoop, i.e. line of sight
 	float vo; //launch velocity, ft/s
-	float atime; //time in the air in seconds
-	float vox; //initial and final horizontal velocity component
-	float voy; //initial vertical velocity component
-	float vfy; //final vertical velocity component
+	float derivative; //derivative of equation of the parabola at point deltax
 	float eangle; //entry angle
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
@@ -68,19 +65,16 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	
 	
 	//this section figures out whether or not the ball can enter at the calulated trajectory
-	vox=vo*cos(LANGLE);
-	atime=deltax/vox;
-	voy=vo*sin(LANGLE);
-	vfy=voy-GRAVITY*atime;
-	eangle=atan(vfy/vox);
+	derivative=(tan(LANGLE)-((GRAVITY*pow(deltax,2))/(pow((vo*cos(LANGLE)),2))));
+	eangle=atan(derivative);
 	TPRINTF(LOG_INFO, "eangle: %f", eangle);
-	if (eangle>27*180/PI)
+	if (eangle<(-27*180/PI))
 	{
-		cout<<"Safe to launch\n";
+		TPRINTF(LOG_INFO, "safe to launch");
 	}
 	else
 	{
-		cout<<"Not safe to launch\n";
+		TPRINTF(LOG_INFO, "too close");
 	}
 	
 	
