@@ -24,7 +24,14 @@
 // Sample in memory buffer
 struct abuf
 {	
-	struct timespec tp;               // Time of snapshot
+	struct timespec tp; // Time of snapshot
+	float feedspeed;
+	int BallCount;
+	bool BallLocation0;
+	bool BallLocation1;
+	bool BallLocation2;
+	bool BallLocation3;
+	
 	// Any values that need to be logged go here
 	// <<CHANGEME>>
 };	
@@ -36,7 +43,7 @@ class BallFeederLog : public MemoryLog
 public:
 	BallFeederLog() : MemoryLog(
 			sizeof(struct abuf), BALLFEEDER_CYCLE_TIME, "template",
-			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
+			"Seconds,Nanoseconds,Elapsed Time,feedspeed,BallCount,BallLocation0,BallLocation1,BallLocation2,BallLocation3\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
 	};
@@ -45,12 +52,12 @@ public:
 			char *nptr,               // Buffer that needs to be formatted
 			FILE *outputFile);        // and then stored in this file
 	// <<CHANGEME>>
-	unsigned int PutOne(void);     // Log the values needed-add in arguments
+	unsigned int PutOne(float feedspeed,int BallCount,bool BallLocation0,bool BallLocation1,bool BallLocation2,bool BallLocation3);     // Log the values needed-add in arguments
 };	
 	
 // Write one buffer into memory
 // <<CHANGEME>>
-unsigned int BallFeederLog::PutOne(void)
+unsigned int BallFeederLog::PutOne(float feedspeed,int BallCount,bool BallLocation0,bool BallLocation1,bool BallLocation2,bool BallLocation3)
 {	
 	struct abuf *ob;               // Output buffer
 	
@@ -59,7 +66,12 @@ unsigned int BallFeederLog::PutOne(void)
 		
 		// Fill it in.
 		clock_gettime(CLOCK_REALTIME, &ob->tp);
-		// Add any values to be logged here
+		ob->feedspeed = feedspeed;
+		ob->BallCount = BallCount;
+		ob->BallLocation0 = BallLocation0;
+		ob->BallLocation1 = BallLocation1;
+		ob->BallLocation2 = BallLocation2;
+		ob->BallLocation3 = BallLocation3;
 		// <<CHANGEME>>
 		return (sizeof(struct abuf));
 	}
@@ -74,10 +86,17 @@ unsigned int BallFeederLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u,%4.5f\n",
+	fprintf(ofile, "%u,%u,%4.5f,%f,%f,%d,%d,%d,%d\n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
-			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.))
-			// Add values here
+			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
+			ab->feedspeed,
+			ab->BallCount,
+			ab->BallLocation0,
+			ab->BallLocation1,
+			ab->BallLocation2,
+			ab->BallLocation3
+
+			
 			// <<CHANGEME>>
 	);
 	
@@ -255,10 +274,11 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		} else {
 			BallFeed.Set(0);
 		}
-		sl.PutOne();		
+		sl.PutOne(BallLocation0.Get(),BallLocation1.Get(),BallLocation2.Get(),BallLocation3.Get(),feedspeed,BallCount);		
 		
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
 	return (0);
+
 };
