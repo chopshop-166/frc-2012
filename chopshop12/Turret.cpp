@@ -218,7 +218,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         centeroffset=volt-CENTERVOLTAGE;
         	
         rotateturret.Set(rspeed);		//sets rotateturret(CANJaguar) to rspeed
-        printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
+        //printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
         	
         /*if (TURRETANGLE<0)
         	rspeed = 0.1;

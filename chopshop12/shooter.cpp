@@ -272,7 +272,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		}
 #endif
 		//Set Speed
-		if(proxy->get("joy1b4n", true)) {
+		/*
+		 * if(proxy->get("joy1b4n", true)) {
 			Speed+=50;
 		} else if(proxy->get("joy1b5n", true)) {
 			Speed-=50;
@@ -282,6 +283,9 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if(proxy->get("joy2b5n", true)) {
 			Speed2-=50;
 		}
+		*/
+		Speed = 700;
+		Speed2 = 1300;
 /*
 		Speed = proxy->get("joy3T");
 		Speed += 1;
@@ -289,7 +293,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		Speed *= 4000;*/
 		//printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
-		if(proxy->get("joy2b1")||proxy->get("joy1b1")) {
+		if(proxy->get(SHOOTER_TRIGGER)||proxy->get("joy1b1")) {
 			ShooterJagTopA.Set(-(Speed));
 			ShooterJagBottomA.Set(Speed2);
 		} else {

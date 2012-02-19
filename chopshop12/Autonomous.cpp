@@ -36,13 +36,18 @@ AutonomousTask::AutonomousTask() {
 	
 	while( lHandle->IsAutonomous() ) {
 		
+		proxy->set("joy3b10", 1);
+		
+		printf("State: %d \n", int(state));
 		switch(state){
 			case INIT:
 				state = IS_ALIGNING;
-				// no break on purpose
+				break;
 			case IS_ALIGNING:
-				if(proxy->get("CameraX")<.09&&proxy->get("CameraX")>-.09)
+				if(proxy->get("CameraX")<.09&&proxy->get("CameraX")>-.09){
+					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
+				}
 				break;
 			case CHECK_BALL:
 				if(int(proxy->get("BallCount"))>0){
@@ -77,7 +82,8 @@ AutonomousTask::AutonomousTask() {
 				break;
 			case START_DRIVE:
 				proxy->set(BM_BUTTON_N, 1);
-				proxy->set(DRIVE_1_JOYSTICK_Y, .1);
+				proxy->set(DRIVE_1_JOYSTICK_Y, .2);
+				proxy->set(DRIVE_2_JOYSTICK_Y, .2);
 				driveTimer.Start();
 				state = DO_DRIVE;
 				break;
@@ -86,6 +92,7 @@ AutonomousTask::AutonomousTask() {
 					driveTimer.Stop();
 					driveTimer.Reset();
 					proxy->set(DRIVE_1_JOYSTICK_Y, 0);
+					proxy->set(DRIVE_2_JOYSTICK_Y, 0);
 					state = DONE;
 				}
 				break;

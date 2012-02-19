@@ -189,7 +189,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		else {
 			switch(FeedState) {
 				case Stopped:
-					printf("I am Stopped");
+					//printf("I am Stopped");
 					feedspeed=0;
 					if(!BallLocation0.Get()) {
 						waitTimer=0;
@@ -218,37 +218,37 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					}
 					break;
 				case Store1Ball:
-					printf("I am Storing 1 Ball");
+					//printf("I am Storing 1 Ball");
 					if(!BallLocation1.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Store2Ball:
-					printf("I am Storing 2 Ball");
+					//printf("I am Storing 2 Ball");
 					if(!BallLocation2.Get()){
 						FeedState = Stopping;
 					}
 					waitTimer++;
 					break;
 				case Store3Ball:
-					printf("I am Storing 3 Ball");
+					//printf("I am Storing 3 Ball");
 					if(!BallLocation3.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Stopping:
-					printf("I Am STOPPING!!!");
+					//printf("I Am STOPPING!!!");
 					if(waitTimer>=10){
 						FeedState = Stopped;
 					}
 					waitTimer++;
 					break;
 				default:
-					printf("YO DUMB!\n");
+					//printf("YO DUMB!\n");
 					break;
 			}
 		}
-		printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
+		//printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
 
 #if 0
 		if (proxy->get("joy2b3")){
