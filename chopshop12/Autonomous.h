@@ -22,6 +22,5 @@ class AutonomousTask
 {
 public:
 	AutonomousTask(void);
-	// <<CHANGEME>>
-	// Add any extra functions your autonomous needs
+	enum {INIT , IS_ALIGNING, IS_SHOOTING, CHECK_BALL, LOAD_N_SHOOT, START_DRIVE} state;
 };
