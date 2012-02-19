@@ -39,7 +39,7 @@ class TurretLog : public MemoryLog
 {	
 public:
 	TurretLog() : MemoryLog(
-			sizeof(struct abuf), TURRET_CYCLE_TIME, "template",
+			sizeof(struct abuf), TURRET_CYCLE_TIME, "Turret",
 			"Seconds,Nanoseconds,Elapsed Time,Leftlimit,Rightlimit,Volt\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;

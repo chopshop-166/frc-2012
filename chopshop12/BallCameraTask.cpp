@@ -37,7 +37,7 @@ class BallCameraLog : public MemoryLog
 {
 public:
 	BallCameraLog() : MemoryLog(
-			sizeof(struct abuf), CAMERA_CYCLE_TIME, "camera",
+			sizeof(struct abuf), CAMERA_CYCLE_TIME, "BallCamera",
 			"centerMassXNormalized,\n" 
 			) {
 		return;

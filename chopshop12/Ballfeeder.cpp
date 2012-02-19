@@ -35,7 +35,7 @@ class BallFeederLog : public MemoryLog
 {	
 public:
 	BallFeederLog() : MemoryLog(
-			sizeof(struct abuf), BALLFEEDER_CYCLE_TIME, "template",
+			sizeof(struct abuf), BALLFEEDER_CYCLE_TIME, "BallFeeder",
 			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;

@@ -35,7 +35,7 @@ class DriveLog : public MemoryLog
 {
 public:
 	DriveLog() : MemoryLog(
-			sizeof(struct abuf), DRIVE_CYCLE_TIME, "template",
+			sizeof(struct abuf), DRIVE_CYCLE_TIME, "Drive",
 			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
