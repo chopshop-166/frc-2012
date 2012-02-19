@@ -130,16 +130,16 @@ int BridgeBalance166::Main(int a2, int a3, int a4, int a5,
 		// Insert your own logic here
 		TempAngle = Balance.Get();
 		proxy->set("RobotAngle",TempAngle);
-#if 0
+
 		if(proxy->get("JOY1B5")) {
-			proxy->UseUserJoystick(1,0);
-			proxy->UseUserJoystick(2,0);
-			if(TempAngle>10) {
+			proxy->DisableJoystickAxesByButton(1,5);
+			proxy->UseUserJoystick(2,5);
+			if(TempAngle>BALANCEDANGLE) {
 				//robotgoforward
 				proxy->set(DRIVE_1_JOYSTICK_Y, 75);
 				proxy->set(DRIVE_2_JOYSTICK_Y, 75);
 			}
-			else if(TempAngle<-10) {
+			else if(TempAngle<-BALANCEDANGLE) {
 				//robotgobackward
 				proxy->set(DRIVE_1_JOYSTICK_Y, -75);
 				proxy->set(DRIVE_2_JOYSTICK_Y, -75);
@@ -147,12 +147,8 @@ int BridgeBalance166::Main(int a2, int a3, int a4, int a5,
 				proxy->set(DRIVE_1_JOYSTICK_Y, 0);
 				proxy->set(DRIVE_2_JOYSTICK_Y, 0);	
 			}
-		} else {
-			proxy->UseUserJoystick(1,1);
-			proxy->UseUserJoystick(2,1);
 		}
-#endif
-		printf("Angle: %d\r", TempAngle);
+		//printf("Angle: %d\r", TempAngle);
         // Logging any values
 		// <<TODO>>
 		// Make this match the declaraction above

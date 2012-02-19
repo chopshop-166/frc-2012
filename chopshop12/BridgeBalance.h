@@ -20,7 +20,7 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define BridgeBalance_CYCLE_TIME (10) // 10ms
-
+#define BALANCEDANGLE (25)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class BridgeBalance166 : public Team166Task

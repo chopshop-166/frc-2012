@@ -37,7 +37,7 @@ class ShooterLog : public MemoryLog
 {
 public:
 	ShooterLog() : MemoryLog(
-			sizeof(struct abuf), TEMPLATE_CYCLE_TIME, "template",
+			sizeof(struct abuf), TEMPLATE_CYCLE_TIME, "Shooter",
 			"Seconds,Nanoseconds,Elapsed Time\n" // Put the names of the values in here, comma-seperated
 			) {
 		return;
@@ -94,10 +94,10 @@ Shooter::Shooter(void):
 	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_A),
 	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_B)
 {
-	Start((char *)"166Templateask", TEMPLATE_CYCLE_TIME);
+	Start((char *)"166Shooter", TEMPLATE_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
-	P=0.8;
+	P=0.9;
 	I=0.01;
 	D=0;
 	const double MaxOutputVolts=6.00;
@@ -108,11 +108,12 @@ Shooter::Shooter(void):
 	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
 	ShooterJagTopA.ChangeControlMode(CANJaguar::kSpeed);
 	ShooterJagTopA.SetPID(P,I,D);
-	ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
+	//ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagTopA.EnableControl(0);
 #endif
 	//Top Jag B
 	ShooterJagTopB.ChangeControlMode(CANJaguar::kVoltage);
+	//ShooterJagTopB.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagTopB.EnableControl();
 	//Bottom Jag A
 #if PID
@@ -120,11 +121,12 @@ Shooter::Shooter(void):
 	ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
 	ShooterJagBottomA.ChangeControlMode(CANJaguar::kSpeed);
 	ShooterJagBottomA.SetPID(P,I,D);
-	ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
+	//ShooterJagBottomA.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagBottomA.EnableControl(0);
 #endif
 	//Bottom Jag B
 	ShooterJagBottomB.ChangeControlMode(CANJaguar::kVoltage);
+	//ShooterJagBottomB.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagBottomB.EnableControl();
 	// Register the proxy
 	proxy = Proxy::getInstance();
@@ -144,7 +146,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	ShooterLog sl;                   // log
 	
 	// Let the world know we're in
-	DPRINTF(LOG_DEBUG,"In the 166 Template task\n");
+	DPRINTF(LOG_DEBUG,"In the 166 Shooter task\n");
 	
 	// Wait for Robot go-ahead (e.g. entering Autonomous or Tele-operated mode)
 	// lHandle = Robot::getInstance() MUST go after this, otherwise code breaks
@@ -216,28 +218,23 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			ShooterJagBottomA.SetPID(P,I,D);
 			ShooterJagBottomA.EnableControl(0);
 		}
-
+#endif
 		//Set Speed
 		if(proxy->get("joy1b4n", true)) {
-			Speed+=100;
+			Speed+=50;
 		} else if(proxy->get("joy1b5n", true)) {
-			Speed-=100;
+			Speed-=50;
 		}
 		if(proxy->get("joy2b4n", true)) {
-			Speed2+=100;
+			Speed2+=50;
 		} else if(proxy->get("joy2b5n", true)) {
-			Speed2-=100;
+			Speed2-=50;
 		}
-#endif
-		Speed = proxy->get("joy3T");
-		Speed += 1;
-		Speed /= 2;
-		Speed *= 4000;
 		//printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
 		if(proxy->get("joy2b1")||proxy->get("joy1b1")) {
 			ShooterJagTopA.Set(-(Speed));
-			ShooterJagBottomA.Set(Speed);
+			ShooterJagBottomA.Set(Speed2);
 		} else {
 			ShooterJagTopA.Set(0);
 			ShooterJagBottomA.Set(0);
@@ -247,7 +244,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 				changevalue, P, I, D,
 				Speed, ShooterJagTopA.GetSpeed());
 #endif
-		//printf("RPM Top %d RPM Bottom %d\r", Speed, Speed2);
+		printf("RPM Top %f ACT: %f Volts %f RPM Bottom %f ACT %f Volts %f\r", Speed, ShooterJagTopA.GetSpeed(),ShooterJagTopA.GetOutputVoltage(), Speed2, ShooterJagBottomA.GetSpeed(), ShooterJagBottomA.GetOutputVoltage());
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.
 	/*
