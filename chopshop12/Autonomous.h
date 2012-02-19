@@ -22,5 +22,5 @@ class AutonomousTask
 {
 public:
 	AutonomousTask(void);
-	enum {INIT , IS_ALIGNING, IS_SHOOTING, CHECK_BALL, LOAD_N_SHOOT, START_DRIVE} state;
+	enum {INIT , IS_ALIGNING, IS_SHOOTING, CHECK_BALL, LOAD_N_SHOOT, START_DRIVE, DONE, DO_DRIVE} state;
 };
