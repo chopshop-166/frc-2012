@@ -22,7 +22,7 @@
 #include "Target2.h"
 #include "proxy.h"
 
-#define TPRINTF if(true) dprintf
+#define TPRINTF if(false) dprintf
 
 
 float Ballistics(ParticleAnalysisReport* Target,int button)

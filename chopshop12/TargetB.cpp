@@ -15,10 +15,10 @@ double ProcessMyImageForBalls(Image* CameraSource)
 	
 	/*Step 1: HSL Color plane extraction*/
 	Range HR, SR, LR;
-		HR.minValue=5  ; HR.maxValue= 14;
-		SR.minValue=131; SR.maxValue=200;
-		LR.minValue= 86; LR.maxValue=153;
-	if(FailCheck(imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_HSL, &HR, &SR, &LR), "ColorThresholdBalls")) return 2; 
+		HR.minValue=159; HR.maxValue=255;
+		SR.minValue=80 ; SR.maxValue=141;
+		LR.minValue=75 ; LR.maxValue=153;
+	if(FailCheck(imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_RGB, &HR, &SR, &LR), "ColorThresholdBalls")) return 2; 
 	
 	/*Step 2: Smooth out bits (clean up)*/
 	StructuringElement StructEle;
@@ -28,6 +28,11 @@ double ProcessMyImageForBalls(Image* CameraSource)
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	free(StructEle.kernel);
 	return 1;
 	
@@ -35,16 +40,10 @@ double ProcessMyImageForBalls(Image* CameraSource)
 	int IMAQheight;
 	int IMAQwidth;
 	imaqGetImageSize(ProcessedImage, &IMAQwidth, &IMAQheight);
-	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA,             1000  , 76800, FALSE, FALSE}, 
-			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.4, FALSE, FALSE},
-    								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.6, 1.0, FALSE, FALSE}};
+	ParticleFilterCriteria2 CRIT[3] = {IMAQ_MT_AREA, 400, 76800, FALSE, FALSE};
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
 	int NP;
-	imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP);
-	
-	/* Step 4: Dilate again to clean up */
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
+	imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP);
 	
 	/* Step 5: Convex hull */
 	imaqConvexHull(ProcessedImage, ProcessedImage, TRUE);
