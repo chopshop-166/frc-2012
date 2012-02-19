@@ -47,19 +47,8 @@ public:
 	ShooterLog() : MemoryLog(
 			sizeof(struct abuf), TEMPLATE_CYCLE_TIME, "Shooter",
 			 // Put the names of the values in here, comma-seperated	
-			"template",
-			"Seconds,\
-			Nanoseconds,\
-			Elapsed Time,\
-			TheoreticalSpeedTop,\
-			TheoreticalSpeedBottom,\
-			ActualSpeedTop,\
-			ActualSpeedBottom,\
-			VoltageTopA,\
-			VoltageTopB,\
-			VoltageBottomA,\
-			VoltageBottomB\
-			\n"){
+			"template,Seconds,Nanoseconds,Elapsed Time,TheoreticalSpeedTop,TheoreticalSpeedBottom,ActualSpeedTop,ActualSpeedBottom,VoltageTopA,VoltageTopB,VoltageBottomA,VoltageBottomB\n"
+			){
 	return;
 	};
 	
@@ -233,11 +222,9 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy1b5");
 	proxy->TrackNewpress("joy2b4");
 	proxy->TrackNewpress("joy2b5");
-	float Speed=0;
 	float Speed=0, Speed2=0;
 	float changevalue=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
-	float joystickspeed=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
@@ -291,7 +278,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if(proxy->get("joy2b5n", true)) {
 			Speed2-=50;
 		}
-#endif
+
 		Speed = proxy->get("joy3T");
 		Speed += 1;
 		Speed /= 2;
