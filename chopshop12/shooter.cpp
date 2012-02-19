@@ -45,9 +45,12 @@ class ShooterLog : public MemoryLog
 {
 public:
 	ShooterLog() : MemoryLog(
-			sizeof(struct abuf), TEMPLATE_CYCLE_TIME, "Shooter",
+			sizeof(struct abuf), SHOOTER_CYCLE_TIME, "Shooter",
 			 // Put the names of the values in here, comma-seperated	
-			"template,Seconds,Nanoseconds,Elapsed Time,TheoreticalSpeedTop,TheoreticalSpeedBottom,ActualSpeedTop,ActualSpeedBottom,VoltageTopA,VoltageTopB,VoltageBottomA,VoltageBottomB\n"
+			"Seconds,Nanoseconds,Elapsed Time,\
+			TheoreticalSpeedTop,TheoreticalSpeedBottom,\
+			ActualSpeedTop,ActualSpeedBottom,\
+			VoltageTopA,VoltageTopB,VoltageBottomA,VoltageBottomB\n"
 			){
 	return;
 	};
@@ -143,7 +146,7 @@ Shooter::Shooter(void):
 	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_A),
 	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_B)
 {
-	Start((char *)"166Shooter", TEMPLATE_CYCLE_TIME);
+	Start((char *)"166Shooter", SHOOTER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
 	P=0.9;
