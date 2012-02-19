@@ -59,8 +59,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) {return 0;} else {DPRINTF(LOG_INFO, "Eroded");}
 	free(StructEle.kernel);
-	Countup(ProcessedImage);
-	
+	Countup(ProcessedImage);	
 	
 	/* Step 6: Particle Filters: Area and Compactness (eliminate dense particles) */
 	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
@@ -73,7 +72,10 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	
 	/* Step 7: Convex hull it */
 	if(FailCheck(imaqConvexHull(ProcessedImage, ProcessedImage, TRUE), "Convex Hull")) 
-	{return 0; } 
+	{
+		imaqDispose(ProcessedImage);
+		return 0; 
+	} 
 	else 
 	{DPRINTF(LOG_INFO, "Convexed");}
 	
@@ -148,7 +150,10 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		
 		/* Step 5: Convex hull it */
 		if(FailCheck(imaqConvexHull(ProcessedImage, ProcessedImage, TRUE), "Convex Hull")) 
-		{return 0; } 
+		{
+			imaqDispose(ProcessedImage);
+			return 0; 
+		} 
 		else 
 		{DPRINTF(LOG_INFO, "Convexed");}
 		
@@ -186,7 +191,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		GPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
 	
 	}
-	
+	imaqDispose(ProcessedImage);
 	return numParticles;
 }
 
