@@ -20,7 +20,6 @@
 	
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
-	
 // Sample in memory buffer
 struct abuf
 {	
@@ -130,6 +129,8 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
+	proxy->TrackNewpress(TURRET_BTN_AUTO);
+	
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		// <<CHANGEME>>
@@ -137,7 +138,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		
 /* DETERMINING TURRET SPEEDS:
  * Emergency stop check*/
-	if(proxy->get("Joy1b2"))		
+	if(proxy->get(TURRET_BTN_STOP))		
 		{
 		rspeed=0;
 		}
@@ -146,9 +147,9 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		{
 	 
 	/* Do we want to use the camera or the joystick?*/
-		if(proxy->get("Joy1b1"))
+		if(proxy->get(TURRET_BTN_AUTO))
 		    {  
-			rspeed=2* proxy->get("CameraX");
+			rspeed=3* (proxy->get("CameraX"));
 			/*if(rspeed<0)
 				{rspeed=-0.5;}
 			else if(rspeed>0)
@@ -156,7 +157,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 			else if (rspeed==0)
 				{rspeed=0;}
 			 */
-		/*	CameraX = proxy->get("CameraX");
+			/*CameraX = proxy->get("CameraX");
 			
 			if (CameraX < -0.5)   	//Camera < -0.5 	rspeed = 1
 				rspeed = 1;
@@ -193,19 +194,20 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 					rspeed = -1;
 				if (centeroffset >-THRESHOLD)
 					rspeed = -0.5;
-				}
-		*/	
+				}*/
+			
+			dprintf(LOG_INFO, "rspeed=%f", rspeed);
 		    }
 		else
 		    {
 			//Joystick Control Y-Axis
-			if(proxy->get("Joy1y")>0)
+			if(proxy->get(TURRET_AXIS)>0)
 				{
-				rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y"));
+				rspeed=(proxy->get(TURRET_AXIS)*proxy->get(TURRET_AXIS));
 				}
-			if(proxy->get("Joy1y")<0)
+			if(proxy->get(TURRET_AXIS)<0)
 				{
-				rspeed=(proxy->get("Joy1y")*proxy->get("Joy1y")*-1);
+				rspeed=(proxy->get(TURRET_AXIS)*proxy->get(TURRET_AXIS)*-1);
 				}
 		    }	
 		}	

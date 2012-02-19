@@ -22,7 +22,7 @@
 #include "Target2.h"
 #include "proxy.h"
 
-#define TPRINTF if(false) dprintf
+#define TPRINTF if(true) dprintf
 
 
 float Ballistics(ParticleAnalysisReport* Target,int button)
@@ -46,35 +46,36 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
 	normaldistance=(DISTANCECALIBRATION*targetheight/TARGET_HEIGHT_CALIBRATION);
-	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
+	//TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
 	calctargetwidth=particleheight*24/18; //24/18 is ratio of width to height of vision target
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
 	pdistance=normaldistance*(tan(angle));
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
 	deltax-=5/6;
+	TPRINTF(LOG_INFO, "deltax: %f", deltax);
 	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
 	tangle=tangle*180/PI;
-	TPRINTF(LOG_INFO, "tangle: %f", tangle);
+	//TPRINTF(LOG_INFO, "tangle: %f", tangle);
 	
 	
 	
 	//This section calculates the launch velocity needed (vo)
 	vo=sqrt((GRAVITY*pow(deltax, 2))/(2*(pow(cos(LANGLE),2))*(deltax*tan(LANGLE)-TOPDELTAY))); //there is a notepad somewhere with calculations
-	TPRINTF(LOG_INFO, "vo: %f", vo);
+	//TPRINTF(LOG_INFO, "vo: %f", vo);
 	
 	
 	
 	//this section figures out whether or not the ball can enter at the calulated trajectory
 	derivative=(tan(LANGLE)-((GRAVITY*pow(deltax,2))/(pow((vo*cos(LANGLE)),2))));
 	eangle=atan(derivative);
-	TPRINTF(LOG_INFO, "eangle: %f", eangle);
+	//TPRINTF(LOG_INFO, "eangle: %f", eangle);
 	if (eangle<(-27*180/PI))
 	{
-		TPRINTF(LOG_INFO, "safe to launch");
+		//TPRINTF(LOG_INFO, "safe to launch");
 	}
 	else
 	{
-		TPRINTF(LOG_INFO, "too close");
+		//TPRINTF(LOG_INFO, "too close");
 	}
 	
 	

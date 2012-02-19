@@ -95,7 +95,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		{ BestDV=testmeasure; BestDVIndex = i; }
 	}
 	//Filter
-	ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
+	ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.5)*BestDV, 76800, FALSE, FALSE};
 	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
 	numParticles= Countup(ProcessedImage);
 	
@@ -109,7 +109,8 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		{
 			imaqMeasureParticle(ProcessedImage, x, 0, IMAQ_MT_AREA, &ParticleAreas[x]);
 		}
-		/*LOGIC IS NON-FUNCTIONAL*/
+		//LOGIC IS NON-FUNCTIONAL
+		return 0;
 	}
 	
 #endif
@@ -172,7 +173,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	{
 		return 0; 
 	}
-	else
+	else if (numParticles>0)
 	{
 		//Return information
 		ReturnReport(ProcessedImage, numParticles, TOP_MOST,    &ParticleRep[TOP_MOST]   );

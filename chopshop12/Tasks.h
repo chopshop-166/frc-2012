@@ -7,8 +7,8 @@
 
 //ballCollector166 ballCollector;
 //bridgeManipulator166 bridgeManipulator;	
-//Turret166 TurretObject;
-//Shooter ShooterObject;
+Turret166 TurretObject;
+Shooter ShooterObject;
 CameraTask CameraObject;
 //BallCameraTask BallCameraObject;
 //Drive166 DriveObject;
