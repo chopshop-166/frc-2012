@@ -91,17 +91,13 @@ Drive166::Drive166(void):
 	FrontLeft(DRIVE_FRONT_LEFT), 
 	FrontRight(DRIVE_FRONT_RIGHT), 
 	RearLeft(DRIVE_REAR_LEFT), 
-	RearRight(DRIVE_REAR_RIGHT),
+	RearRight(DRIVE_REAR_RIGHT)
 	
-	Drive(FrontLeft,RearLeft, FrontRight,RearRight)
 {
 	Start((char *)"166DriveTask", DRIVE_CYCLE_TIME);
-	Drive.SetInvertedMotor(RobotDrive::kFrontLeftMotor,1);
-	Drive.SetInvertedMotor(RobotDrive::kRearLeftMotor, 1);
 	// Register the proxy
 	proxy = Proxy::getInstance();
 	opposite = 0;
-	slow = 0;
 	return;
 };
 	
@@ -129,18 +125,11 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	lHandle->RegisterLogger(&sl);
     // General main loop (while in Autonomous or Tele mode)
 	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_LEFT);
-	proxy->TrackNewpress(DRIVE_CREEP_BUTTON_LEFT);
 	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_RIGHT);
-	proxy->TrackNewpress(DRIVE_CREEP_BUTTON_RIGHT);
 	while (true) {
-		
-		if(proxy->get("joy1T")>0){
-			DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
-			DriveSpeed2 = proxy->get(DRIVE_1_JOYSTICK_X);	
-		} else {
-			DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
-			DriveSpeed2 = proxy->get(DRIVE_2_JOYSTICK_Y);
-		}
+
+		DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
+		DriveSpeed2 = proxy->get(DRIVE_2_JOYSTICK_Y);
 		
 		//if button 2 is pressed, inverts controls, input * -1
 		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N_LEFT) || proxy->get(DRIVE_OPPOSITE_BUTTON_N_RIGHT))
@@ -149,18 +138,10 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 			DriveSpeed1 = DriveSpeed1 * -1;
 			DriveSpeed2 = DriveSpeed2 * -1;
 		}
-		//if button 3 is pressed, creep mode enabled, input / 4
-		if(proxy->get(DRIVE_CREEP_BUTTON_N_LEFT) || proxy->get(DRIVE_CREEP_BUTTON_N_RIGHT))
-			slow = !slow;
-		if(slow) {
-			DriveSpeed1 = DriveSpeed1 / 3;
-			DriveSpeed2 = DriveSpeed2 / 3;
-		}	
-		if(proxy->get("joy1T")>0){
-			Drive.ArcadeDrive(DriveSpeed1,DriveSpeed2,0);	
-		} else {
-			Drive.TankDrive(DriveSpeed1, -DriveSpeed2);
-		}
+		FrontLeft.Set(DriveSpeed1);
+		RearLeft.Set(DriveSpeed1);
+		FrontRight.Set(DriveSpeed2);
+		RearRight.Set(DriveSpeed2);
 		
        //printf("Speed1: %2.2f Speed2: %2.2f Dir: %d Slow: %d\r", DriveSpeed1, DriveSpeed2, opposite, slow);
 			// Logging any values

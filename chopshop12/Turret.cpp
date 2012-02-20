@@ -150,52 +150,6 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		if(proxy->get(TURRET_BTN_AUTO))
 		    {  
 			rspeed=3* (proxy->get("CameraX"));
-			/*if(rspeed<0)
-				{rspeed=-0.5;}
-			else if(rspeed>0)
-				{rspeed=0.5;}
-			else if (rspeed==0)
-				{rspeed=0;}
-			 */
-			/*CameraX = proxy->get("CameraX");
-			
-			if (CameraX < -0.5)   	//Camera < -0.5 	rspeed = 1
-				rspeed = 1;
-			if (CameraX < -0.25)  	//Camera < -0.25 	rspeed = 0.5
-				rspeed = 0.5;
-			if (CameraX < -0.05)  	//Camera < -0.05 	rspeed = 0.25
-				rspeed = 0.25;
-			if (CameraX < 0) 		//Camera < 0 		rspeed = 0.15;
-				rspeed = 0.15;
-				{printf("Turret Moving Left \r");}
-			
-			if (CameraX = 0) 		//Camera = 0 		rspeed = 0
-				rspeed = 0;
-				{printf("Turret CENTERED \r");}
-			
-			if (CameraX < 0.05)  	//Camera < 0.05 	rspeed = -0.15
-				rspeed = -0.15;
-			if (CameraX > 0)		//Camera > 0 		rspeed = -0.25
-				rspeed = -0.15;
-				{printf("Turret moving Right \r");}
-			if (CameraX > 0.25)		//Camera > 0.25 	rspeed = -0.5
-				rspeed = -0.5;
-			if (CameraX > 0.5)		//Camera > 0.5 		rspeed = 1
-				rspeed = -1;
-			if (CameraX = 2)		//Camera = 2		Set Turret Default Position
-				{
-				if (centeroffset <THRESHOLD)
-					rspeed = 1;
-				if (centeroffset >THRESHOLD)
-					rspeed = 0.5;
-				if (centeroffset = 0)
-					rspeed = 0;
-				if (centeroffset <-THRESHOLD)
-					rspeed = -1;
-				if (centeroffset >-THRESHOLD)
-					rspeed = -0.5;
-				}*/
-			
 			dprintf(LOG_INFO, "rspeed=%f", rspeed);
 		    }
 		else
@@ -216,15 +170,8 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
         
         volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
         centeroffset=volt-CENTERVOLTAGE;
-        	
-        rotateturret.Set(rspeed);		//sets rotateturret(CANJaguar) to rspeed
         //printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
-        	
-        /*if (TURRETANGLE<0)
-        	rspeed = 0.1;
-        else if (TURRETANGLE>0)
-        	rspeed = -0.1;
-       	*/
+
         rotateturret.Set(rspeed);	//motor = joystick speed
         // Logging any values
 		// <<CHANGEME>>
