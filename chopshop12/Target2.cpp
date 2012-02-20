@@ -35,13 +35,25 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	const Range BR = {12 ,255};
 	int thresholdcheck;
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
-	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
-	if (!Countup(ProcessedImage)) return 0;
+	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Thresholded");}
+	if (!Countup(ProcessedImage)) 
+	{
+		frcDispose(ProcessedImage);
+		return 0;
+	}
 	
 	/*Step 2: Use an area filter to eliminate tiny/massive particles */
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
 	ParticleFilterCriteria2 CRIT1 = {IMAQ_MT_AREA, 10  , 38400, FALSE, FALSE};
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT1, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT1, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
 	
 	/*Step 3: Basic Morphology Dilation */
@@ -51,23 +63,38 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	const StructuringElement StructEle = {3, 3, FALSE, &kernelvalues[0]};
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) {return 0; } else {DPRINTF(LOG_INFO, "Dilated");}
+	if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Dilated");}
 	Countup(ProcessedImage);
 	
 	/* Step 5: Basic Morphology Erosion */
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
-	if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) {return 0;} else {DPRINTF(LOG_INFO, "Eroded");}
-	free(StructEle.kernel);
+	if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0;
+	} else {DPRINTF(LOG_INFO, "Eroded");}
 	Countup(ProcessedImage);	
 	
 	/* Step 6: Particle Filters: Area and Compactness (eliminate dense particles) */
 	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
 			                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.5, FALSE, FALSE},
     								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE}};
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[1], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered 2");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[1], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered 2");}
 	Countup(ProcessedImage);
 	
 	/* Step 7: Convex hull it */
@@ -80,7 +107,11 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	{DPRINTF(LOG_INFO, "Convexed");}
 	
 	/* Step 8: Particle Filter: Compactness (eliminate not-dense particles) */
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered");}
 	
 	/* Step 9: Delete particles that are much smaller than the largest. */
 	int BestDVIndex;
@@ -96,7 +127,11 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	}
 	//Filter
 	ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered");}
 	numParticles= Countup(ProcessedImage);
 	
 	/* Step 10: Filter out particles if more than 4 */
@@ -120,15 +155,26 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		const Range RR = {0  ,255};
 		const Range GR = {0  ,255};
 		const Range BR = {150,255};
-		if(FailCheck(imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR), "Color Threshold Failed %i")) {return 0; } else {DPRINTF(LOG_INFO, "Thresholded");}
-		if (!Countup(ProcessedImage)) return 0;
+		if(FailCheck(imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR), "Color Threshold Failed %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Thresholded");}
+		if (!Countup(ProcessedImage)) 
+		{
+			frcDispose(ProcessedImage);
+			return 0;
+		}
 		
 		/*Step 2: Basic Morphology Dilation */
 		static int kernelvalues[9] = {1,1,1,1,1,1,1,1,1};
 		const StructuringElement StructEle = {3, 3, FALSE, &kernelvalues[0]};
 		imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-		if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) {return 0; } else {DPRINTF(LOG_INFO, "Dilated");}
-		free(StructEle.kernel);
+		if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Dilated");}
 		Countup(ProcessedImage);
 		
 		/* Step 3: Basic Morphology Erosion (to clean up) */
@@ -145,20 +191,28 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	    								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.7, 1.0, FALSE, FALSE}};
 		const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
 		int NP;
-		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 2, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
 		Countup(ProcessedImage);
 		
 		/* Step 5: Convex hull it */
 		if(FailCheck(imaqConvexHull(ProcessedImage, ProcessedImage, TRUE), "Convex Hull")) 
 		{
-			imaqDispose(ProcessedImage);
+			frcDispose(ProcessedImage);
 			return 0; 
 		} 
 		else 
 		{DPRINTF(LOG_INFO, "Convexed");}
 		
 		/* Step 6: Take out the particles that aren't filled in enough */
-		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) {return 0; } else {DPRINTF(LOG_INFO, "Filtered");}
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
 		Countup(ProcessedImage);
 #endif
 /*****************************************************************
@@ -170,6 +224,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	
 	if(numParticles==0) //If none found, return nothing
 	{
+		frcDispose(ProcessedImage);
 		return 0; 
 	}
 	else
@@ -191,7 +246,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		GPRINTF(LOG_INFO, "BOTTOM: %i   \t%i", ParticleRep[BOTTOM_MOST].center_mass_x, ParticleRep[BOTTOM_MOST].center_mass_y);
 	
 	}
-	imaqDispose(ProcessedImage);
+	frcDispose(ProcessedImage);
 	return numParticles;
 }
 
