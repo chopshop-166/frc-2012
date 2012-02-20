@@ -22,7 +22,7 @@
 #include "Target2.h"
 #include "proxy.h"
 
-#define TPRINTF if(false) dprintf
+#define TPRINTF if(true) dprintf
 
 
 float Ballistics(ParticleAnalysisReport* Target,int button)
@@ -31,16 +31,17 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	proxy2 = Proxy::getInstance();
 	float imageheight= Target[TOP_MOST].imageHeight; //obtain from M's function
 	float targetheight= abs((imageheight/2)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
-	TPRINTF(LOG_INFO, "targetheight= %f", targetheight);
+	TPRINTF(LOG_INFO, "targetheight: %f", targetheight);
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
 	float tangle; //angle the turret needs to turn after all caluclations are performed
 	float calctargetwidth; //width of the vision target on the image if the robot was looking at it head on
-	float particleheight=Target[TOP_MOST].boundingRect.height; //height of the particle
-	float realtargetwidth = Target[TOP_MOST].boundingRect.width; //width of the vision target in the image
+	float particleheight=Target[BOTTOM_MOST].boundingRect.height; //height of the particle
+	float realtargetwidth = Target[BOTTOM_MOST].boundingRect.width; //width of the vision target in the image
 	float deltax; //diagonal distance to the hoop, i.e. line of sight
 	float vo; //launch velocity, ft/s
+	float rpm; //launch velocity converted into rpm
 	float derivative; //derivative of equation of the parabola at point deltax
 	float eangle; //entry angle
 	
@@ -48,33 +49,39 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	normaldistance=(DISTANCECALIBRATION*targetheight/TARGET_HEIGHT_CALIBRATION);
 	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
 	calctargetwidth=particleheight*24/18; //24/18 is ratio of width to height of vision target
+	TPRINTF(LOG_INFO, "calctargetwidth: %f", calctargetwidth);
 	angle=(PI/2)-(acos(realtargetwidth/calctargetwidth));
+	TPRINTF(LOG_INFO, "angle: %f", (angle*180/PI));
 	pdistance=normaldistance*(tan(angle));
+	TPRINTF(LOG_INFO, "pdistance: %f", pdistance);
 	deltax=sqrt(pow((normaldistance-HOOP),2)+pow(pdistance,2));
 	deltax-=5/6;
+	TPRINTF(LOG_INFO, "deltax: %f", deltax);
 	tangle=(atan(pdistance/(normaldistance-HOOP))-angle);
 	tangle=tangle*180/PI;
-	TPRINTF(LOG_INFO, "tangle: %f", tangle);
+	//TPRINTF(LOG_INFO, "tangle: %f", tangle);
 	
 	
 	
 	//This section calculates the launch velocity needed (vo)
 	vo=sqrt((GRAVITY*pow(deltax, 2))/(2*(pow(cos(LANGLE),2))*(deltax*tan(LANGLE)-TOPDELTAY))); //there is a notepad somewhere with calculations
-	TPRINTF(LOG_INFO, "vo: %f", vo);
+	rpm=vo*60/(2*PI/3);
+	//TPRINTF(LOG_INFO, "vo: %f", vo);
+	TPRINTF(LOG_INFO, "rpm: %f", rpm);
 	
 	
 	
 	//this section figures out whether or not the ball can enter at the calulated trajectory
 	derivative=(tan(LANGLE)-((GRAVITY*pow(deltax,2))/(pow((vo*cos(LANGLE)),2))));
 	eangle=atan(derivative);
-	TPRINTF(LOG_INFO, "eangle: %f", eangle);
+	//TPRINTF(LOG_INFO, "eangle: %f", eangle);
 	if (eangle<(-27*180/PI))
 	{
-		TPRINTF(LOG_INFO, "safe to launch");
+		//TPRINTF(LOG_INFO, "safe to launch");
 	}
 	else
 	{
-		TPRINTF(LOG_INFO, "too close");
+		//TPRINTF(LOG_INFO, "too close");
 	}
 	
 	
