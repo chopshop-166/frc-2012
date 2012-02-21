@@ -13,59 +13,49 @@ double ProcessMyImageForBalls(Image* CameraSource)
 {
 	Image* ProcessedImage = frcCreateImage(IMAQ_IMAGE_U8);
 	
-	/*Step 1: HSL Color plane extraction*/
+	/*Step 1: RGB Color plane extraction*/
 	Range HR, SR, LR;
-		HR.minValue=159; HR.maxValue=255;
-		SR.minValue=80 ; SR.maxValue=141;
-		LR.minValue=75 ; LR.maxValue=153;
-	if(FailCheck(imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_RGB, &HR, &SR, &LR), "ColorThresholdBalls")) return 2; 
+		HR.minValue=150; HR.maxValue=215;
+		SR.minValue=80 ; SR.maxValue=145;
+		LR.minValue=30 ; LR.maxValue=130;
+	imaqColorThreshold(ProcessedImage, CameraSource, 255, IMAQ_RGB, &HR, &SR, &LR); 
 	
-	/*Step 2: Smooth out bits (clean up)*/
+	/*Step 2: Filter out pointless particles */
+	ParticleFilterCriteria2 CRIT = {IMAQ_MT_AREA, 100, 76800, FALSE, FALSE};
+	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
+	int NP;
+	imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT, 1, &OPTS, NULL, &NP);
+	
+	/*Step 3: Smooth out bits (clean up)*/
 	StructuringElement StructEle;
 		StructEle.matrixCols = 3; StructEle.matrixRows = 3; StructEle.hexa = FALSE;
 		StructEle.kernel = (int*) malloc(9 * sizeof(int));
 		for(int s=0;s<9;s++) StructEle.kernel[s] = 1;
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
-	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	free(StructEle.kernel);
-	return 1;
 	
-	/*Step 3: Filter out pointless particles */
-	int IMAQheight;
-	int IMAQwidth;
-	imaqGetImageSize(ProcessedImage, &IMAQwidth, &IMAQheight);
-	ParticleFilterCriteria2 CRIT[3] = {IMAQ_MT_AREA, 400, 76800, FALSE, FALSE};
-	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
-	int NP;
-	imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP);
-	
-	/* Step 5: Convex hull */
-	imaqConvexHull(ProcessedImage, ProcessedImage, TRUE);
-	
-	/*Step 6: Find best particle */
+	/*Step 4: Find best particle */
 	int numParticles;
 	imaqCountParticles(ProcessedImage, TRUE, &numParticles);
+	if(numParticles==0)
+	{
+		frcDispose(ProcessedImage);
+		return 2;
+	}
 	int BestDVIndex;
-	double BestDV;
+	double BestDV=0;
 	double testmeasure;
 	for (int i = 0; i < numParticles; i++) 
 	{
-		imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_AREA, &testmeasure);
-		if (testmeasure < BestDV)
+		imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_CENTER_OF_MASS_Y, &testmeasure);
+		if (testmeasure > BestDV)
 		{ BestDV=testmeasure; BestDVIndex = i; }
 	}
 	
-	/* Step 7: Return desired value */
+	/* Step 5: Return desired value */
 	ParticleAnalysisReport Report;
 	frcParticleAnalysis(ProcessedImage, BestDVIndex, &Report);
+	frcDispose(ProcessedImage);
 	return Report.center_mass_x_normalized;
-	
-	
 }
 
