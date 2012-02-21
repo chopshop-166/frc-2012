@@ -195,8 +195,12 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
 
-	// get the camera image
+	// get the camera image. The image that is created is
+	//	created with a "new" function so must be deleted.
     HSLImage* image1 = camera.GetImage();   
+
+	// Get a pointer to the internal IMAQ image that is
+	// in image1. This DOES NOT allocate any memory!
     Image* image = image1->GetImaqImage();
 
 	int BTN_INPUT = 0;
@@ -220,8 +224,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	Ballistics(&ParticleReport[0], BTN_INPUT);
 	
 	
-	//delete image;
-	imaqDispose(image);
+	delete image1;
     return 1;
 }
 
@@ -246,12 +249,12 @@ void CameraTask::TakeSnapshot(char* imageName)  {
 		} else { 	
 			SaveImage(imageName, cameraImage);
 		  	// always dispose of image objects when done
-		  	frcDispose(cameraImage);
 		} 
 	}
 	else {
 			DPRINTF (LOG_INFO,"Image is stale");	
 	} // fresh
+	frcDispose(cameraImage);
 };
 
 /**
