@@ -7,6 +7,7 @@
 #include "Robot.h"
 #include "nivision.h"
 #include "Target2.h"
+#include "Defines.h"
 
 #define DPRINTF if(false)dprintf			//debugging info
 #define TPRINTF if(false)dprintf			//testing info

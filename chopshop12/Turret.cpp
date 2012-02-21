@@ -149,9 +149,18 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	/* Do we want to use the camera or the joystick?*/
 		if(proxy->get(TURRET_BTN_AUTO))
 		    {  
-			rspeed=3* (proxy->get("CameraX"));
-			dprintf(LOG_INFO, "rspeed=%f", rspeed);
-		    }
+			float CameraX = proxy->get("CameraX");
+			if (CameraX==2)
+				{
+				rspeed=0;
+				DPRINTF(LOG_INFO, "No Targets!");
+				}
+			else
+				{
+				rspeed=3* (CameraX);
+				DPRINTF(LOG_INFO, "rspeed=%f", rspeed);
+				}
+			}
 		else
 		    {
 			//Joystick Control Y-Axis
