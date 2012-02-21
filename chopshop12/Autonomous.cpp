@@ -42,20 +42,17 @@ AutonomousTask::AutonomousTask() {
 		switch(state){
 			case INIT:
 				proxy->set(BM_BUTTON, 1);
-				//state = IS_ALIGNING;
-				state = CHECK_BALL;
+				state = IS_ALIGNING;
 				break;
 			case IS_ALIGNING:
-				//if(proxy->get(BM_BUTTON))
-					//proxy->set(BM_BUTTON, 0);
+				if(proxy->get(BM_BUTTON))
+					proxy->set(BM_BUTTON, 0);
 				if(proxy->get("CameraX")<.09&&proxy->get("CameraX")>-.09){
 					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
 				}
 				break;
 			case CHECK_BALL:
-				if(proxy->get(BM_BUTTON))		//until camera is fixed
-					proxy->set(BM_BUTTON, 0);	// ******************
 				if(int(proxy->get("BallCount"))>0){
 					prevCount = int(proxy->get("BallCount"));
 					state = LOAD_N_SHOOT;
