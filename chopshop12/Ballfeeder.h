@@ -50,8 +50,10 @@ private:
 	DigitalInput BallLocation3;//top digital ball sensor
 	int BallCount;//number of balls the robot has
 	float feedspeed;
-	enum {Stopped, CollectionStarted, Waiting, Store1Ball, Store2Ball, Store3Ball, Stopping} FeedState;
+	enum {Stopped, CollectionStarted, Waiting, Store1Ball, Store2Ball, Store3Ball, BallWaiting} FeedState;
 	int waitTimer;
+	int BallWaitTime;
+	bool AreWeWaiting;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
