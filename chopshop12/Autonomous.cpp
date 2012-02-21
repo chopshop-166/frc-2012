@@ -32,19 +32,30 @@ AutonomousTask::AutonomousTask() {
 	
 	state = INIT;
 	int prevCount = 0;
-	Timer shooterTimer;
-	
+	Timer shooterTimer, driveTimer, pauseTimer;
+	proxy->set("joy1T", -1);
 	while( lHandle->IsAutonomous() ) {
 		
+		proxy->set("joy3b10", 1);
+		
+		//printf("State: %d \n", int(state));
 		switch(state){
 			case INIT:
-				state = IS_ALIGNING;
-				// no break on purpose
+				proxy->set(BM_BUTTON, 1);
+				//state = IS_ALIGNING;
+				state = CHECK_BALL;
+				break;
 			case IS_ALIGNING:
-				if(proxy->get("CameraX")==0)
+				//if(proxy->get(BM_BUTTON))
+					//proxy->set(BM_BUTTON, 0);
+				if(proxy->get("CameraX")<.09&&proxy->get("CameraX")>-.09){
+					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
+				}
 				break;
 			case CHECK_BALL:
+				if(proxy->get(BM_BUTTON))		//until camera is fixed
+					proxy->set(BM_BUTTON, 0);	// ******************
 				if(int(proxy->get("BallCount"))>0){
 					prevCount = int(proxy->get("BallCount"));
 					state = LOAD_N_SHOOT;
@@ -57,25 +68,42 @@ AutonomousTask::AutonomousTask() {
 				//start shooting, loading, and timer
 				if(shooterTimer.Get()==0)	//start time 3 second timer
 					shooterTimer.Start();
-				if(proxy->get("joy3b1")==0)
-					proxy->set("joy3b1", 1);	//start shooting
-				if(proxy->get("joy2b3")==0 && prevCount==(int(proxy->get("BallCount"))))
-					proxy->set("joy2b3", 1);	//start loading
-				
-				
-				// once its loaded fully, stop loading!
-				else if(proxy->get("joy2b3")==1 && prevCount>(int(proxy->get("BallCount"))))
-					proxy->set("joy2b3", 0);
+				if(proxy->get(SHOOTER_TRIGGER)==0)
+					proxy->set(SHOOTER_TRIGGER, 1);	//start shooting
 				
 				//when the 3 seconds are up, stop timer and shooter
-				if(shooterTimer.Get()>=3){
+				if(shooterTimer.Get()>=2){
 					shooterTimer.Stop();
-					proxy->set("joy2b3", 0);
+					proxy->set(SHOOTER_TRIGGER, 0);
 					shooterTimer.Reset();
+					state = PAUSE_ONE_SEC;
+				}
+				break;
+			case PAUSE_ONE_SEC:
+				if(pauseTimer.Get()==0)
+					pauseTimer.Start();
+				else if(pauseTimer.Get()>=1){
+					pauseTimer.Stop();
+					pauseTimer.Reset();
 					state = CHECK_BALL;
 				}
 				break;
 			case START_DRIVE:
+				proxy->set(DRIVE_1_JOYSTICK_Y, -.2);
+				proxy->set(DRIVE_2_JOYSTICK_Y, -.2);
+				driveTimer.Start();
+				state = DO_DRIVE;
+				break;
+			case DO_DRIVE:
+				if(driveTimer.Get()>=2){
+					driveTimer.Stop();
+					driveTimer.Reset();
+					proxy->set(DRIVE_1_JOYSTICK_Y, 0);
+					proxy->set(DRIVE_2_JOYSTICK_Y, 0);
+					state = DONE;
+				}
+				break;
+			case DONE:
 				break;
 			default:
 				printf("ERROR IF THIS IS SEEN");

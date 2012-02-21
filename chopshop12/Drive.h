@@ -47,10 +47,8 @@ private:
 	Victor RearLeft;
 	Victor RearRight;
 	
-	RobotDrive Drive;
 	
 	int opposite; //used for inverting the code
-	int slow; //used for initializing creep mode
 	
 	float DriveSpeed1; //speeds for jags
 	float DriveSpeed2; //speeds for jags

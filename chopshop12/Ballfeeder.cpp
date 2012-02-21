@@ -142,14 +142,15 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	
 	int PrevBallCount = 0;
 	
+	int shooting = 0;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		 //BallCount = number of balls the robot has
 		//These are normally High so we need to invert them to detect a ball
 		Sens0Ave[counter%NUMTOAVERAGE]=!(BallLocation0.Get());
-		Sens1Ave[counter%NUMTOAVERAGE]=!(BallLocation1.Get());
-		Sens2Ave[counter%NUMTOAVERAGE]=!(BallLocation2.Get());
-		Sens3Ave[counter%NUMTOAVERAGE]=!(BallLocation3.Get());
+		Sens1Ave[counter%NUMTOAVERAGE]=(BallLocation1.Get());
+		Sens2Ave[counter%NUMTOAVERAGE]=(BallLocation2.Get());
+		Sens3Ave[counter%NUMTOAVERAGE]=(BallLocation3.Get());
 		counter++;
 		
 		for( int i=0;i<NUMTOAVERAGE;i++){
@@ -171,14 +172,17 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
 				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
-#if 0
-		if (proxy->get("joy3b1"))
+		if (proxy->get("joy3b1n"))
 		{
+			shooting=!shooting;
 			PrevBallCount = BallCount;
-			if(BallCount != (PrevBallCount-1)) {
+		}
+		if(shooting){
+			if((BallCount != (PrevBallCount-1))||(BallLocation3.Get())) {
 				feedspeed = BALLFEED;
 			} else {
 				feedspeed = 0;
+				shooting = !shooting;
 			}
 		}
 		//ball incoming
@@ -186,7 +190,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		else {
 			switch(FeedState) {
 				case Stopped:
-					printf("I am Stopped");
+					//printf("I am Stopped");
 					feedspeed=0;
 					if(!BallLocation0.Get()) {
 						waitTimer=0;
@@ -215,43 +219,45 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					}
 					break;
 				case Store1Ball:
-					printf("I am Storing 1 Ball");
+					//printf("I am Storing 1 Ball");
 					if(!BallLocation1.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Store2Ball:
-					printf("I am Storing 2 Ball");
+					//printf("I am Storing 2 Ball");
 					if(!BallLocation2.Get()){
 						FeedState = Stopping;
 					}
-					waitTimer++;
 					break;
 				case Store3Ball:
-					printf("I am Storing 3 Ball");
+					//printf("I am Storing 3 Ball");
 					if(!BallLocation3.Get()){
 						FeedState = Stopped;
 					}
 					break;
 				case Stopping:
-					printf("I Am STOPPING!!!");
+					//printf("I Am STOPPING!!!");
 					if(waitTimer>=10){
 						FeedState = Stopped;
 					}
 					waitTimer++;
 					break;
 				default:
-					printf("YO DUMB!\n");
+					//printf("YO DUMB!\n");
 					break;
 			}
 		}
-		printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
-#endif
-		if(proxy->get("joy2b3")){
+		printf("%f", feedspeed);
+		//printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
+
+#if 0
+		if (proxy->get("joy2b3")){
 			feedspeed = BALLFEED;
 		} else {
 			feedspeed = 0;
 		}
+#endif
 		BallFeed.Set(feedspeed);
 		sl.PutOne();		
 		
