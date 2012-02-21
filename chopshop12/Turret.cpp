@@ -165,7 +165,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				}
 		    }	
 		}	
-			
+		printf("Camera: %f\r", proxy->get("CameraX"));
 /*APPLY SPEEDS*/
         
         volt = turretpot.GetVoltage();	//voltage = what the pot picks up				

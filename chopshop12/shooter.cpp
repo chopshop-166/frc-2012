@@ -272,8 +272,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		}
 #endif
 		//Set Speed
-		/*
-		 * if(proxy->get("joy1b4n", true)) {
+		
+		 if(proxy->get("joy1b4n", true)) {
 			Speed+=50;
 		} else if(proxy->get("joy1b5n", true)) {
 			Speed-=50;
@@ -283,9 +283,9 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if(proxy->get("joy2b5n", true)) {
 			Speed2-=50;
 		}
-		*/
-		Speed = 200;
-		Speed2 = 400;
+		
+		//Speed = 500;
+		//Speed2 = 3050;
 /*
 		Speed = proxy->get("joy3T");
 		Speed += 1;
@@ -307,7 +307,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 #endif
 		if ((loopcounter++ %5)==0)
 		{
-		//printf("RPM Top %f ACT: %f Volts %f RPM Bottom %f ACT %f Volts %f\r", Speed, ShooterJagTopA.GetSpeed(),ShooterJagTopA.GetOutputVoltage(), Speed2, ShooterJagBottomA.GetSpeed(), ShooterJagBottomA.GetOutputVoltage());
+		printf("RPM Top %f ACT: %f Volts %f RPM Bottom %f ACT %f Volts %f\r", Speed, ShooterJagTopA.GetSpeed(),ShooterJagTopA.GetOutputVoltage(), Speed2, ShooterJagBottomA.GetSpeed(), ShooterJagBottomA.GetOutputVoltage());
 		}
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.

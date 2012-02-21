@@ -248,7 +248,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					break;
 			}
 		}
-		printf("%f", feedspeed);
+		//printf("%f", feedspeed);
 		//printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
 
 #if 0

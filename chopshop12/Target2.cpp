@@ -32,7 +32,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	int NP;
 	const Range RR = {100,255};
 	const Range GR = {0  ,255};
-	const Range BR = {12 ,255};
+	const Range BR = {8 ,255};
 	int thresholdcheck;
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) 
@@ -56,7 +56,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	} else {DPRINTF(LOG_INFO, "Filtered");}
 	Countup(ProcessedImage);
 	
-	/*Step 3: Basic Morphology Dilation */
+	/*Step 3: Basic Morphology Dilation 
 	static int kernelvalues[9] = {1,1,1,
 								  1,1,1,
 								  1,1,1};
@@ -70,7 +70,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	} else {DPRINTF(LOG_INFO, "Dilated");}
 	Countup(ProcessedImage);
 	
-	/* Step 5: Basic Morphology Erosion */
+	Step 5: Basic Morphology Erosion 
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
 	if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) 
@@ -78,7 +78,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		frcDispose(ProcessedImage);
 		return 0;
 	} else {DPRINTF(LOG_INFO, "Eroded");}
-	Countup(ProcessedImage);	
+	Countup(ProcessedImage);	*/
 	
 	/* Step 6: Particle Filters: Area and Compactness (eliminate dense particles) */
 	ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 

@@ -47,7 +47,7 @@ AutonomousTask::AutonomousTask() {
 			case IS_ALIGNING:
 				if(proxy->get(BM_BUTTON))
 					proxy->set(BM_BUTTON, 0);
-				if(proxy->get("CameraX")<.09&&proxy->get("CameraX")>-.09){
+				if(proxy->get("CameraX")<.1&&proxy->get("CameraX")>-.1){
 					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
 				}
@@ -86,8 +86,8 @@ AutonomousTask::AutonomousTask() {
 				}
 				break;
 			case START_DRIVE:
-				proxy->set(DRIVE_1_JOYSTICK_Y, -.2);
-				proxy->set(DRIVE_2_JOYSTICK_Y, -.2);
+				proxy->set(DRIVE_1_JOYSTICK_Y, -.35);
+				proxy->set(DRIVE_2_JOYSTICK_Y, -.35);
 				driveTimer.Start();
 				state = DO_DRIVE;
 				break;
@@ -110,4 +110,6 @@ AutonomousTask::AutonomousTask() {
 		// This wait is required, it makes sure no task uses too much memory
 		Wait(AUTONOMOUS_WAIT_TIME);
 	}
+	
+	state = INIT;
 }
