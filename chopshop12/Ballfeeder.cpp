@@ -182,7 +182,7 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 				feedspeed = BALLFEED;
 			} else {
 				feedspeed = 0;
-				shooting = !shooting;
+				shooting=!shooting;
 			}
 		}
 		//ball incoming
