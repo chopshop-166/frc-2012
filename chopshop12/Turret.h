@@ -13,6 +13,11 @@
 	
 #include "WPILib.h"
 #include "Robot.h"
+
+
+#define TURRET_BTN_AUTO ("joy3b10")
+#define TURRET_BTN_STOP ("joy3b2")
+#define TURRET_AXIS ("joy3y")
 	
 // This constant defines how often we want this task to run in the form
 // of miliseconds. Max allowed time is 999 miliseconds.

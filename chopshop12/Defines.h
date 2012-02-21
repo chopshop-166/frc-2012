@@ -26,10 +26,6 @@
 #define DRIVE_OPPOSITE_BUTTON_N_LEFT	("joy1b3n")
 #define DRIVE_OPPOSITE_BUTTON_RIGHT		("joy2b3")
 #define DRIVE_OPPOSITE_BUTTON_N_RIGHT	("joy2b3n")
-#define DRIVE_CREEP_BUTTON_LEFT			("joy1b4")
-#define DRIVE_CREEP_BUTTON_N_LEFT 		("joy1b4n")
-#define DRIVE_CREEP_BUTTON_RIGHT		("joy2b4")
-#define DRIVE_CREEP_BUTTON_N_RIGHT		("joy2b4n")
 #define SHOOTER_TRIGGER					("joy3b1")
 
 //JAGUAR ID's

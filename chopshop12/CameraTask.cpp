@@ -19,6 +19,7 @@
 #include "nivision.h"
 #include "Target2.h"
 #include "TargetingInfo.h"
+#include "Turret.h"
 
 
 
@@ -95,7 +96,7 @@ unsigned int CameraLog::DumpBuffer(char *nptr, FILE *ofile)
 CameraTask *CameraTask::myHandle = NULL;
 
 // task constructor
-CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.11"))
+CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
 {
 	myHandle = this;
 	printf("This is the Camera constructor\n");
@@ -158,6 +159,10 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	TakeSnapshot("FIRSTcRIOimage.jpg");
 	DPRINTF(LOG_INFO,"...take a picture!");
 	
+
+	double normalizedCenterX;
+	int numParticles;
+	int loopcounter=0;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {				
 		// Wait for our next lap
@@ -168,10 +173,15 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 #endif
 		
 		/* Look for target */
-		MPRINTF(LOG_INFO, "\n\nLOOP\n\n");
-		double normalizedCenterX;
-		int numParticles;
-		found = CameraTask::FindTargets(&normalizedCenterX, &numParticles);
+		if(((loopcounter++) %10)==0)
+		{
+			dprintf(LOG_INFO, "NumParticles=%i", numParticles);
+		}
+		if(proxy->get(TURRET_BTN_AUTO))
+		{
+			found = CameraTask::FindTargets(&normalizedCenterX, &numParticles);
+		}
+		
 		sl.PutOne(normalizedCenterX, numParticles);
         found = false;
 	    // Logging is done in FindTargets();
@@ -179,7 +189,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		
 		// JUST FOR DEBUGGING - give us time to look at the screen
 		// REMOVE THIS WAIT to go operational!
-		Wait(1);
+		//Wait(1);
 	}
 	return (0);
 	
@@ -193,7 +203,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
  */
 bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 
-	lHandle->DriverStationDisplay("ProcessImage:%0.6f",GetTime());
+	
 
 	// get the camera image. The image that is created is
 	//	created with a "new" function so must be deleted.
@@ -208,11 +218,12 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	ParticleAnalysisReport ParticleReport[4];
 	*numParticles = ProcessMyImage(image, &ParticleReport[0], BTN_INPUT);
 	MPRINTF(LOG_INFO, "RETURNED: %i", *numParticles);
-	if(numParticles>0)
+	if(*numParticles>0)
 	{
-		*normalizedCenterX = ParticleReport[BOTTOM_MOST].center_mass_x_normalized;
-		proxy->set("CameraX", (float) ParticleReport[BOTTOM_MOST].center_mass_x_normalized);
-		printf("CameraX= %f\n", (float) ParticleReport[BOTTOM_MOST].center_mass_x_normalized);
+#define SELECTED_TARGET (TOP_MOST)
+		*normalizedCenterX = ParticleReport[SELECTED_TARGET].center_mass_x_normalized;
+		proxy->set("CameraX", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
+		printf("CameraX= %f\n", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
 	}
 	else
 	{
@@ -220,6 +231,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		proxy->set("CameraX", (float) 2);
 		printf("CameraX= %f\n", 2.0);
 	}
+	lHandle->DriverStationDisplay("ProcessImage:%0.6f",proxy->get("CameraX"));
 	
 	Ballistics(&ParticleReport[0], BTN_INPUT);
 	
