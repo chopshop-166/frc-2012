@@ -12,7 +12,9 @@
 #define DPRINTF if(false)dprintf			//debugging info
 #define TPRINTF if(false)dprintf			//testing info
 #define GPRINTF if(false)dprintf			//Let's GO!
-#define STEP4 (true)
+#define STEP4 (true)						//In the shortened version, shorten it more.
+#define SHORTENED (true)					//IN THE CASE that you want to shorten the
+				//image processing, but decrease accuracy... true!
 
 static int Countup(Image* ImageToCount);	//Print out number of particles
 
@@ -28,6 +30,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 /*****************************************************************
                      Isolate the targets
  *****************************************************************/
+#if SHORTENED
 	/*Step 1: Color Threshold */
 	int NP;
 	const Range RR = {100,255};
@@ -89,6 +92,157 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		return 0; 
 	} else {DPRINTF(LOG_INFO, "Filtered");}
 #endif
+#endif
+	
+#if !SHORTENED
+	/*Step 1: Color Threshold */
+		int NP;
+		const Range RR = {100,255};
+		const Range GR = {0  ,255};
+		const Range BR = {8 ,255};
+		int thresholdcheck;
+		thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
+		if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Thresholded");}
+		if (!Countup(ProcessedImage)) 
+		{
+			frcDispose(ProcessedImage);
+			return 0;
+		}
+		
+		/*Step 2: Use an area filter to eliminate tiny/massive particles */
+		const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
+		ParticleFilterCriteria2 CRIT1 = {IMAQ_MT_AREA, 10  , 38400, FALSE, FALSE};
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT1, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
+		Countup(ProcessedImage);
+		
+		/*Step 3: Basic Morphology Dilation 
+		static int kernelvalues[9] = {1,1,1,
+									  1,1,1,
+									  1,1,1};
+		const StructuringElement StructEle = {3, 3, FALSE, &kernelvalues[0]};
+		imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
+		imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle);
+		if (FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_DILATE, &StructEle), "Dilation 1 %f")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Dilated");}
+		Countup(ProcessedImage);
+		
+		Step 5: Basic Morphology Erosion 
+		imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+		imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle);
+		if(FailCheck(imaqMorphology(ProcessedImage, ProcessedImage, IMAQ_ERODE, &StructEle), "Erosion")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0;
+		} else {DPRINTF(LOG_INFO, "Eroded");}
+		Countup(ProcessedImage);	*/
+		
+		/* Step 6: Particle Filters: Area and Compactness (eliminate dense particles) */
+		ParticleFilterCriteria2 CRIT[3] = {{IMAQ_MT_AREA, 150  , 76800, FALSE, FALSE}, 
+				                           {IMAQ_MT_COMPACTNESS_FACTOR, 0.0, 0.5, FALSE, FALSE},
+	    								   {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE}};
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[0], 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
+		Countup(ProcessedImage);
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[1], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered 2");}
+		Countup(ProcessedImage);
+		
+		/* Step 7: Convex hull it */
+		if(FailCheck(imaqConvexHull(ProcessedImage, ProcessedImage, TRUE), "Convex Hull")) 
+		{
+			imaqDispose(ProcessedImage);
+			return 0; 
+		} 
+		else 
+		{DPRINTF(LOG_INFO, "Convexed");}
+		
+		/* Step 8: Particle Filter: Compactness (eliminate not-dense particles) */
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT[2], 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
+		
+		/* Step 9: Delete particles that are much smaller than the largest. */
+		int BestDVIndex;
+		double BestDV=0;
+		GPRINTF(LOG_INFO, "More than 4 found!");
+		int numParticles=Countup(ProcessedImage);
+		for (int i = 0; i < numParticles; i++) //determine largest particle
+		{
+			double testmeasure;
+			imaqMeasureParticle(ProcessedImage, i,  0, IMAQ_MT_AREA, &testmeasure);
+			if (testmeasure > BestDV)
+			{ BestDV=testmeasure; BestDVIndex = i; }
+		}
+		//Filter
+		ParticleFilterCriteria2 CRIT2 = {IMAQ_MT_AREA, (.9)*BestDV, 76800, FALSE, FALSE};
+		if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT2, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+		{
+			frcDispose(ProcessedImage);
+			return 0; 
+		} else {DPRINTF(LOG_INFO, "Filtered");}
+		numParticles= Countup(ProcessedImage);
+		
+		/* Step 10: Filter out particles if more than 4 */
+		if(numParticles>4)
+		{
+			GPRINTF(LOG_INFO, "%i Particles found at end! Eliminating...", numParticles);
+			
+			double ParticleAreas[numParticles];
+			for(int x=0; x<numParticles;x++)
+			{
+				imaqMeasureParticle(ProcessedImage, x, 0, IMAQ_MT_AREA, &ParticleAreas[x]);
+			}
+			
+			double SortedParticleAreas[numParticles];
+			SortedParticleAreas[0] = ParticleAreas[0];
+			for(int p=1; p<numParticles; p++)
+			{
+				for (int y=0; y<numParticles; y++)
+				{
+					if (SortedParticleAreas[y] > ParticleAreas[p])
+					{
+						for (int z=numParticles-1; z>y; z--)
+						{
+							SortedParticleAreas[z] = SortedParticleAreas[z-1];
+						}
+						SortedParticleAreas[y] = ParticleAreas[p];
+						break;
+					}
+				}
+			}
+			
+			 //Filter
+			ParticleFilterCriteria2 CRIT3 = {IMAQ_MT_AREA, SortedParticleAreas[3]-1, 76800, FALSE, FALSE};
+			if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT3, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+			{
+				frcDispose(ProcessedImage);
+				return 0; 
+			} else {DPRINTF(LOG_INFO, "Filtered");}
+			/*LOGIC IS UNTESTED*/
+		}
+		
+
+#endif
+	
 	
 /*****************************************************************
                      Examine the targets
