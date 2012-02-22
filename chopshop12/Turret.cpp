@@ -138,14 +138,9 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		
 /* DETERMINING TURRET SPEEDS:
  * Emergency stop check*/
-	if(proxy->get(TURRET_BTN_STOP))		
-		{
+	if(proxy->get(TURRET_BTN_STOP)) {
 		rspeed=0;
-		}
-
-	else
-		{
-	 
+	} else {
 	/* Do we want to use the camera or the joystick?*/
 		if(proxy->get(TURRET_BTN_AUTO))
 		    {  
@@ -174,9 +169,9 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				}
 		    }	
 		}	
-		printf("Camera: %f\r", proxy->get("CameraX"));
+
 /*APPLY SPEEDS*/
-        
+
         volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
         centeroffset=volt-CENTERVOLTAGE;
         //printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
