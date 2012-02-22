@@ -199,49 +199,49 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					break;
 				case Waiting:
 					feedspeed = 0;
-						waitTimer++;
-						if(waitTimer==70)
-							FeedState=CollectionStarted;
+					waitTimer++;
+					if(waitTimer==70)
+						FeedState=CollectionStarted;
 					break;
 				case CollectionStarted:
 					waitTimer = 0;
 					feedspeed = -.20;
+					BallWaitTime = 0;
 					switch(BallCount){
 						case 0:
+							feedspeed = -.20;
 							FeedState = Store1Ball;
 							break;
 						case 1:
+							feedspeed = -.20;
 							FeedState = Store2Ball;
 							break;
 						case 2:
+							feedspeed = -.20;
 							FeedState = Store3Ball;
 							break;
 					}
 					break;
 				case Store1Ball:
 					//printf("I am Storing 1 Ball");
-					if(!BallLocation1.Get()){
+					BallWaitTime++;
+					if(!BallLocation1.Get()&&(BallWaitTime >= 15)){
 						FeedState = Stopped;
 					}
 					break;
 				case Store2Ball:
 					//printf("I am Storing 2 Ball");
-					if(!BallLocation2.Get()){
-						FeedState = Stopping;
+					BallWaitTime++;
+					if(!BallLocation2.Get()&&(BallWaitTime >= 15)){
+						FeedState = Stopped;
 					}
 					break;
 				case Store3Ball:
 					//printf("I am Storing 3 Ball");
-					if(!BallLocation3.Get()){
+					BallWaitTime++;
+					if(!BallLocation3.Get()&&(BallWaitTime >= 15)){
 						FeedState = Stopped;
 					}
-					break;
-				case Stopping:
-					//printf("I Am STOPPING!!!");
-					if(waitTimer>=10){
-						FeedState = Stopped;
-					}
-					waitTimer++;
 					break;
 				default:
 					//printf("YO DUMB!\n");
@@ -266,3 +266,4 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	}
 	return (0);
 };
+
