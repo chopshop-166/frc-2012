@@ -16,6 +16,7 @@
 #include "Proxy.h"
 #include "Vision/AxisCamera.h"
 #include "TrackAPI.h"
+#include "Defines.h"
 
 //
 // This constant defines how often we want this task to run in the form

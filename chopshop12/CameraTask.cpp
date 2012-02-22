@@ -163,6 +163,8 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	double normalizedCenterX;
 	int numParticles;
 	int loopcounter=0;
+	int SnapshotNumber=1;
+	proxy->TrackNewpress("joy3b8");
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {				
 		// Wait for our next lap
@@ -176,6 +178,13 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		if(((loopcounter++) %10)==0)
 		{
 			dprintf(LOG_INFO, "NumParticles=%i", numParticles);
+		}
+		if(proxy->get(CAMERA_SNAPSHOT_TAKE, true)) 
+		{
+			char Text[15];
+			sprintf(&Text[0], "Snapshot%d.jpg", SnapshotNumber);
+			TakeSnapshot(Text);
+			SnapshotNumber++;
 		}
 		if(proxy->get(TURRET_BTN_AUTO))
 		{

@@ -273,14 +273,14 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 #endif
 		//Set Speed
 		
-		 if(proxy->get("joy1b4n", true)) {
+		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
 			TopSpeed+=50;
-		} else if(proxy->get("joy1b5n", true)) {
+		} else if(proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
 			TopSpeed-=50;
 		}
-		if(proxy->get("joy2b4n", true)) {
+		if(proxy->get(SHOOTER_BOTTOM_SPEED_INCREASE, true)) {
 			BottomSpeed+=50;
-		} else if(proxy->get("joy2b5n", true)) {
+		} else if(proxy->get(SHOOTER_BOTTOM_SPEED_DECREASE, true)) {
 			BottomSpeed-=50;
 		}
 		
