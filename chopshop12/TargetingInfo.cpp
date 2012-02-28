@@ -29,9 +29,11 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 {
 	Proxy *proxy2;
 	proxy2 = Proxy::getInstance();
-	float imageheight= Target[TOP_MOST].imageHeight; //obtain from M's function
-	float targetheight= abs((imageheight/2)-(Target[TOP_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
-	TPRINTF(LOG_INFO, "targetheight: %f", targetheight);
+	float targetheight = Target[TOP_MOST].boundingRect.height;
+	float targetheightr =((Target[TOP_MOST].center_mass_y)-(Target[RIGHT_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	//TPRINTF(LOG_INFO, "targetheightr: %f", targetheightr);
+	float targetheightl=(Target[TOP_MOST].center_mass_y-Target[LEFT_MOST].center_mass_y); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
+	//TPRINTF(LOG_INFO, "targetheightl: %f", targetheightl);
 	float normaldistance; //distance from closest point on the wall, i.e. the perpendicular
 	float pdistance; //perpendicular to normal distance, along the wall to the hoop
 	float angle; //angle of rotation of the robot, i.e. angle between line of sight and the wall
@@ -44,9 +46,14 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	float rpm; //launch velocity converted into rpm
 	float derivative; //derivative of equation of the parabola at point deltax
 	float eangle; //entry angle
+	float distance=5;
+	float ratio;
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
-	normaldistance=(DISTANCECALIBRATION*targetheight/TARGET_HEIGHT_CALIBRATION);
+	
+	ratio=distance/targetheight;
+	TPRINTF(LOG_INFO, "ratio: %f", ratio);
+	/*normaldistance=(RATIO*targetheight);
 	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
 	calctargetwidth=particleheight*24/18; //24/18 is ratio of width to height of vision target
 	TPRINTF(LOG_INFO, "calctargetwidth: %f", calctargetwidth);
@@ -88,6 +95,6 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	
 	//sending values to the proxy
 	proxy2->set("turret_angle",tangle);
-	proxy2->set("initial_velocity",vo);
+	proxy2->set("initial_velocity",vo);*/
 	return (0);
 }
