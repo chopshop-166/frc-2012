@@ -99,7 +99,7 @@ CameraTask *CameraTask::myHandle = NULL;
 CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
 {
 	myHandle = this;
-	printf("This is the Camera constructor\n");
+	DPRINTF("This is the Camera constructor\n");
 	/* allow writing to vxWorks target */
 	Priv_SetWriteFileAllowed(1);   
 		
@@ -113,7 +113,7 @@ CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
 
 	DPRINTF(LOG_INFO,"CameraTask FPS=%i task cycle time=%i",fps,CAMERA_CYCLE_TIME);
 
-	printf("End of Camera constructor\n");
+	DPRINTF("End of Camera constructor\n");
 	return;
 };
 	
@@ -177,7 +177,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 		/* Look for target */
 		if(((loopcounter++) %10)==0)
 		{
-			dprintf(LOG_INFO, "NumParticles=%i", numParticles);
+			DPRINTF(LOG_INFO, "NumParticles=%i", numParticles);
 		}
 		if(proxy->get(CAMERA_SNAPSHOT_TAKE, true)) 
 		{
@@ -232,13 +232,13 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 #define SELECTED_TARGET (TOP_MOST)
 		*normalizedCenterX = ParticleReport[SELECTED_TARGET].center_mass_x_normalized;
 		proxy->set("CameraX", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
-		printf("CameraX= %f\n", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
+		DPRINTF("CameraX= %f\n", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
 	}
 	else
 	{
 		*normalizedCenterX = 2;
 		proxy->set("CameraX", (float) 2);
-		printf("CameraX= %f\n", 2.0);
+		DPRINTF("CameraX= %f\n", 2.0);
 	}
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",proxy->get("CameraX"));
 	

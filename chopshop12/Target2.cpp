@@ -33,9 +33,9 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 #if SHORTENED
 	/*Step 1: Color Threshold */
 	int NP;
-	const Range RR = {100,255};
+	const Range RR = {115,135};
 	const Range GR = {0  ,255};
-	const Range BR = {8 ,255};
+	const Range BR = {12 ,255};
 	int thresholdcheck;
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) 
@@ -97,7 +97,7 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 #if !SHORTENED
 	/*Step 1: Color Threshold */
 		int NP;
-		const Range RR = {100,255};
+		const Range RR = {115,135};
 		const Range GR = {0  ,255};
 		const Range BR = {8 ,255};
 		int thresholdcheck;
