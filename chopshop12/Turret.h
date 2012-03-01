@@ -21,10 +21,11 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define TURRET_CYCLE_TIME (100) // 100ms
-#define THRESHOLD (5)
-#define CENTERVOLTAGE (4.3)
-#define STRINGEXCESS (3.59)
-#define TURRETANGLE (.34)
+#define THRESHOLD		(5)
+#define CENTERVOLTAGE	(4.3)
+#define STRINGEXCESS	(3.59)
+#define TURRETANGLE		(.34)
+#define DEADBAND		(.1)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Turret166 : public Team166Task

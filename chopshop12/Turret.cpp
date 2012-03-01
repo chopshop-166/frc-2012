@@ -171,7 +171,9 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		}	
 
 /*APPLY SPEEDS*/
-
+		if(rspeed>=DEADBAND && rspeed<=-DEADBAND){
+			rspeed = 0;
+		}
         volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
         centeroffset=volt-CENTERVOLTAGE;
         //printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts

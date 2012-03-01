@@ -131,6 +131,12 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		DriveSpeed1 = proxy->get(DRIVE_1_JOYSTICK_Y);
 		DriveSpeed2 = proxy->get(DRIVE_2_JOYSTICK_Y);
 		
+		if((proxy->get(DRIVE_2_JOYSTICK_Y)<=DEADBEND_RAWR)&& (proxy->get(DRIVE_2_JOYSTICK_Y)>=-DEADBEND_RAWR)){
+			DriveSpeed2=0;
+		}
+		if((proxy->get(DRIVE_1_JOYSTICK_Y)<=DEADBEND_RAWR) && (proxy->get(DRIVE_1_JOYSTICK_Y)>-DEADBEND_RAWR)){
+			DriveSpeed1=0;
+		}
 		//if button 2 is pressed, inverts controls, input * -1
 		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N_LEFT) || proxy->get(DRIVE_OPPOSITE_BUTTON_N_RIGHT))
 			opposite = !opposite;
@@ -138,19 +144,12 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 			DriveSpeed1 = DriveSpeed1 * -1;
 			DriveSpeed2 = DriveSpeed2 * -1;
 		}
-		if(proxy->get("joy1b4")) {
-			DriveSpeed1=DriveSpeed2=1.00;
-		} else if(proxy->get("joy1b5")){
-			DriveSpeed1=DriveSpeed2=-1.00;
-		} else {
-			DriveSpeed1=DriveSpeed2=0;
-		}
 		FrontLeft.Set(DriveSpeed1);
 		RearLeft.Set(DriveSpeed1);
 		FrontRight.Set(-DriveSpeed2);
 		RearRight.Set(-DriveSpeed2);
 		
-       printf("Speed1: %2.2f Speed2: %2.2f\r", DriveSpeed1, DriveSpeed2);
+       //printf("Speed1: %2.2f Speed2: %2.2f\r", DriveSpeed1, DriveSpeed2);
 			// Logging any values
 		// <<CHANGEME>>
 		// Make this match the declaraction above
