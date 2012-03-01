@@ -174,8 +174,10 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		//to shoot, pull trigger
 		if (proxy->get("joy3b1n"))
 		{
-			shooting=!shooting;
-			PrevBallCount = BallCount;
+			if(BallCount >= 1){
+				shooting=!shooting;
+				PrevBallCount = BallCount;
+			}
 		}
 		if(shooting){
 			if((BallCount != (PrevBallCount-1))||(BallLocation3.Get())) {
@@ -224,23 +226,29 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 					break;
 				case Store1Ball:
 					//printf("I am Storing 1 Ball");
-					BallWaitTime++;
-					if(!BallLocation1.Get()&&(BallWaitTime >= 15)){
-						FeedState = Stopped;
+					if(BallLocation1.Get()){
+						if(BallWaitTime >= 15){
+							FeedState = Stopped;
+						}
+						BallWaitTime++;
 					}
 					break;
 				case Store2Ball:
 					//printf("I am Storing 2 Ball");
-					BallWaitTime++;
-					if(!BallLocation2.Get()&&(BallWaitTime >= 15)){
-						FeedState = Stopped;
+					if(BallLocation2.Get()){
+						if(BallWaitTime >= 20){
+							FeedState = Stopped;
+						}
+						BallWaitTime++;
 					}
 					break;
 				case Store3Ball:
 					//printf("I am Storing 3 Ball");
-					BallWaitTime++;
-					if(!BallLocation3.Get()&&(BallWaitTime >= 15)){
-						FeedState = Stopped;
+					if(BallLocation3.Get()){
+						if(BallWaitTime >= 25){
+							FeedState = Stopped;
+						}
+						BallWaitTime++;
 					}
 					break;
 				default:
@@ -249,15 +257,8 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 			}
 		}
 		//printf("%f", feedspeed);
-		//printf("Ball Count: %d Timer: %d\r", BallCount, waitTimer);
+		//printf("Ball Count: %d \r", BallCount);
 
-#if 0
-		if (proxy->get("joy2b3")){
-			feedspeed = BALLFEED;
-		} else {
-			feedspeed = 0;
-		}
-#endif
 		BallFeed.Set(feedspeed);
 		sl.PutOne();		
 		

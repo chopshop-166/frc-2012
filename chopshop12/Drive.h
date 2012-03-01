@@ -20,6 +20,7 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define DRIVE_CYCLE_TIME (10) // 10ms
+#define DEADBEND_RAWR	(.1)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Drive166 : public Team166Task

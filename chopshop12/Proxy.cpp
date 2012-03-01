@@ -1,5 +1,5 @@
 /*******************************************************************************
-*  Project   		: Chopshop12
+*  Project   		: ChopShop12
 *  File Name  		: Proxy.cpp     
 *  Owner		   	: Software Group (FIRST Chopshop Team 166)
 *  Creation Date	: January 18, 2010
@@ -57,7 +57,6 @@ Proxy::Proxy(void):
 			add(joywid + "R");
 			add(joywid + "T");
 			add(joywid + "BT");
-			add(joywid + "BTN");
 			for(int AxisId=1; AxisId<7; AxisId++) {
 				char tmp[32];
 				sprintf(tmp, "%sA%d", joywid.c_str(), AxisId);
@@ -69,7 +68,6 @@ Proxy::Proxy(void):
 				sprintf(tmp, "%sB%d", joywid.c_str(), buttonid);
 				string butwid = tmp;
 				add(butwid);
-				add(butwid + "N");
 			}
 		}
 		for(int i=1; i<NUMBER_OF_SWITCHES+1; i++) {
@@ -359,6 +357,7 @@ bool Proxy::TrackNewpress(string JoyButton) {
 	}
 	if(newpress_list.find(JoyButton) == newpress_list.end()) {
 		newpress_list[JoyButton] = 0;
+		add(JoyButton+"N");
 		return true;
 	} else {
 		return false;
@@ -372,6 +371,7 @@ bool Proxy::StopTrackingNewpress(string JoyButton) {
 	for(unsigned i=0;i<JoyButton.size();i++) {
 		JoyButton[i] = toupper(JoyButton[i]);
 	}
+	del(JoyButton+"N");
 	return newpress_list.erase(JoyButton);
 }
 

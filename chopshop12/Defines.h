@@ -26,15 +26,15 @@
 #define DRIVE_OPPOSITE_BUTTON_N_LEFT	("joy1b3n")
 #define DRIVE_OPPOSITE_BUTTON_RIGHT		("joy2b3")
 #define DRIVE_OPPOSITE_BUTTON_N_RIGHT	("joy2b3n")
-#define SHOOTER_TOP_SPEED_INCREASE		("joy1b4n")
-#define SHOOTER_TOP_SPEED_DECREASE		("joy1b5n")
-#define SHOOTER_BOTTOM_SPEED_INCREASE	("joy2b4n")
-#define SHOOTER_BOTTOM_SPEED_DECREASE	("joy2b5n")
+#define SHOOTER_TOP_SPEED_INCREASE		("joy3b8n")
+#define SHOOTER_TOP_SPEED_DECREASE		("joy3b7n")
+#define SHOOTER_BOTTOM_SPEED_INCREASE	("joy3b11n")
+#define SHOOTER_BOTTOM_SPEED_DECREASE	("joy3b10n")
 #define SHOOTER_TRIGGER					("joy3b1")
 #define SHOOTER_MANUAL_TRIGGER			("joy3b2")
-#define TURRET_BTN_AUTO 				("joy3b10") 	//auto-aligns turret
+#define TURRET_BTN_AUTO 				("joy3b3") 	//auto-aligns turret
 #define TURRET_BTN_STOP 				("joy3b3")		//stops turret movement when pressed
-#define TURRET_AXIS 					("joy3y")		//manual turret movement
+#define TURRET_AXIS 					("joy3x")	//manual turret movement
 #define CAMERA_SNAPSHOT_TAKE			("joy3b8n")		// take a picture and save it to cRIO
 	
 
