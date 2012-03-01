@@ -123,6 +123,7 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
+	float Tmp_Speed1=0,Tmp_Speed2=0;
     // General main loop (while in Autonomous or Tele mode)
 	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_LEFT);
 	proxy->TrackNewpress(DRIVE_OPPOSITE_BUTTON_RIGHT);
@@ -141,8 +142,10 @@ int Drive166::Main(int a2, int a3, int a4, int a5,
 		if(proxy->get(DRIVE_OPPOSITE_BUTTON_N_LEFT) || proxy->get(DRIVE_OPPOSITE_BUTTON_N_RIGHT))
 			opposite = !opposite;
 		if(opposite) {
-			DriveSpeed1 = DriveSpeed1 * -1;
-			DriveSpeed2 = DriveSpeed2 * -1;
+			Tmp_Speed1=DriveSpeed1;
+			Tmp_Speed2=DriveSpeed2;
+			DriveSpeed2 = Tmp_Speed1 * -1;
+			DriveSpeed1 = Tmp_Speed2 * -1;
 		}
 		FrontLeft.Set(DriveSpeed1);
 		RearLeft.Set(DriveSpeed1);

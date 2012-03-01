@@ -186,10 +186,10 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 				feedspeed = 0;
 				shooting = !shooting;
 			}
-		}
 		//ball incoming
-
-		else {
+		}else if(proxy->get(BALLFEED_MANUAL)) {
+			feedspeed = BALLFEED;
+		}else {
 			switch(FeedState) {
 				case Stopped:
 					//printf("I am Stopped");

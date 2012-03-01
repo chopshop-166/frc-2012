@@ -130,7 +130,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 	lHandle->RegisterLogger(&sl);
 	
 	proxy->TrackNewpress(TURRET_BTN_AUTO);
-	
+	float CameraX=0;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		// <<CHANGEME>>
@@ -138,26 +138,18 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		
 /* DETERMINING TURRET SPEEDS:
  * Emergency stop check*/
-	if(proxy->get(TURRET_BTN_STOP)) {
-		rspeed=0;
-	} else {
+
 	/* Do we want to use the camera or the joystick?*/
-		if(proxy->get(TURRET_BTN_AUTO))
-		    {  
-			float CameraX = proxy->get("CameraX");
-			if (CameraX==2)
-				{
+		if(proxy->get(TURRET_BTN_AUTO)){  
+			CameraX = proxy->get("CameraX");
+			if (CameraX==2){
 				rspeed=0;
 				DPRINTF(LOG_INFO, "No Targets!");
-				}
-			else
-				{
+			}else{
 				rspeed=3* (CameraX);
 				DPRINTF(LOG_INFO, "rspeed=%f", rspeed);
 				}
-			}
-		else
-		    {
+		} else {
 			//Joystick Control Y-Axis
 			if(proxy->get(TURRET_AXIS)>0)
 				{
@@ -167,9 +159,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				{
 				rspeed=(proxy->get(TURRET_AXIS)*proxy->get(TURRET_AXIS)*-1);
 				}
-		    }	
-		}	
-
+		    }
 /*APPLY SPEEDS*/
 		if(rspeed>=DEADBAND && rspeed<=-DEADBAND){
 			rspeed = 0;

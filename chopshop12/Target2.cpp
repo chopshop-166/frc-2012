@@ -12,7 +12,7 @@
 #define DPRINTF if(false)dprintf			//debugging info
 #define TPRINTF if(false)dprintf			//testing info
 #define GPRINTF if(false)dprintf			//Let's GO!
-#define STEP4 (true)						//In the shortened version, shorten it more.
+#define STEP4 (false)						//In the shortened version, shorten it more.
 #define SHORTENED (true)					//IN THE CASE that you want to shorten the
 				//image processing, but decrease accuracy... true!
 
@@ -33,9 +33,9 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 #if SHORTENED
 	/*Step 1: Color Threshold */
 	int NP;
-	const Range RR = {115,135};
+	const Range RR = {70 ,180};
 	const Range GR = {0  ,255};
-	const Range BR = {12 ,255};
+	const Range BR = {20 ,255};
 	int thresholdcheck;
 	thresholdcheck=imaqColorThreshold(ProcessedImage, CameraInput, 255, IMAQ_HSL, &RR, &GR, &BR);
 	if(FailCheck(thresholdcheck, "Color Threshold Failed %i")) 
@@ -58,10 +58,10 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 	else 
 	{DPRINTF(LOG_INFO, "Convexed");}
 	
-	/* Step 3: Particle Filters: Compactness (eliminate not-dense particles) */
+	/* Step 3: Particle Filters: Area */
 	const ParticleFilterOptions2 OPTS = {FALSE, FALSE, FALSE, TRUE};
-	ParticleFilterCriteria2 CRIT= {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE};
-	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
+	ParticleFilterCriteria2 CRITA= {IMAQ_MT_AREA, 150, 76800, FALSE, FALSE};
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRITA, 1, &OPTS, NULL, &NP), "Filter Particles 1 %i")) 
 	{
 		frcDispose(ProcessedImage);
 		return 0; 
@@ -71,12 +71,28 @@ int ProcessMyImage(Image* CameraInput, ParticleAnalysisReport* ParticleRep, int 
 		frcDispose(ProcessedImage);
 		return 0;
 	}
+	
+	/* Step 3.5: Particle Filters: Compactness (eliminate not-dense particles) */
+	ParticleFilterCriteria2 CRIT= {IMAQ_MT_COMPACTNESS_FACTOR, 0.8, 1.0, FALSE, FALSE};
+	if(FailCheck(imaqParticleFilter4(ProcessedImage, ProcessedImage, &CRIT, 1, &OPTS, NULL, &NP), "Filter Particles 2 %i")) 
+	{
+		frcDispose(ProcessedImage);
+		return 0; 
+	} else {DPRINTF(LOG_INFO, "Filtered");}
+	if (!Countup(ProcessedImage)) 
+	{
+		frcDispose(ProcessedImage);
+		return 0;
+	}
+	
+	int numParticles;
+	
 #if STEP4
 	/* Step 4: Delete particles that are much smaller than the largest. */
 	int BestDVIndex;
 	double BestDV=0;
 	GPRINTF(LOG_INFO, "More than 4 found!");
-	int numParticles=Countup(ProcessedImage);
+	numParticles=Countup(ProcessedImage);
 	for (int i = 0; i < numParticles; i++) //determine largest particle
 	{
 		double testmeasure;

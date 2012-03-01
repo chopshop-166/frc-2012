@@ -41,12 +41,14 @@ AutonomousTask::AutonomousTask() {
 		//printf("State: %d \n", int(state));
 		switch(state){
 			case INIT:
-				proxy->set(BM_BUTTON, 1);
+				//Lower Bridge Manipulator
+				//proxy->set(BM_BUTTON, 1);
 				state = IS_ALIGNING;
 				break;
 			case IS_ALIGNING:
-				if(proxy->get(BM_BUTTON))
-					proxy->set(BM_BUTTON, 0);
+				//Stop holding bridge manipulator button
+				//if(proxy->get(BM_BUTTON))
+				//	proxy->set(BM_BUTTON, 0);
 				if(proxy->get("CameraX")<.1&&proxy->get("CameraX")>-.1){
 					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
@@ -58,7 +60,7 @@ AutonomousTask::AutonomousTask() {
 					state = LOAD_N_SHOOT;
 				}
 				else
-					state = START_DRIVE;
+					state = DONE;
 				break;
 			case LOAD_N_SHOOT:
 				

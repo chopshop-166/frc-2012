@@ -19,7 +19,7 @@
 #include "shooter.h"
 #include "CANJaguar.h"
 #include "PIDController.h"
-
+	
 // To locally enable debug printing: set true, to disable false
 #define DPRINTF if(false)dprintf
 
@@ -152,7 +152,6 @@ Shooter::Shooter(void):
 	P=0.9;
 	I=0.01;
 	D=0;
-	const double MaxOutputVolts=6.00;
 	//Top Jag A
 
 	ShooterJagTopA.ConfigEncoderCodesPerRev(360);
@@ -213,7 +212,6 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
 	float TopSpeed=0, BottomSpeed=0;
-	float changevalue=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
 	int loopcounter=0;
 	// General main loop (while in Autonomous or Tele mode)

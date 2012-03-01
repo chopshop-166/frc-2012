@@ -32,11 +32,11 @@
 #define SHOOTER_BOTTOM_SPEED_DECREASE	("joy3b10n")
 #define SHOOTER_TRIGGER					("joy3b1")
 #define SHOOTER_MANUAL_TRIGGER			("joy3b2")
+#define BALLFEED_MANUAL					("joy3b4")
 #define TURRET_BTN_AUTO 				("joy3b3") 	//auto-aligns turret
 #define TURRET_BTN_STOP 				("joy3b3")		//stops turret movement when pressed
 #define TURRET_AXIS 					("joy3x")	//manual turret movement
-#define CAMERA_SNAPSHOT_TAKE			("joy3b8n")		// take a picture and save it to cRIO
-	
+#define CAMERA_SNAPSHOT_TAKE			("joy3b1n")		// take a picture and save it to cRIO
 
 //JAGUAR ID's
 #define SHOOTER_JAG_TOP_A		(3)

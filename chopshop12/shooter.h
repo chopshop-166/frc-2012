@@ -23,7 +23,7 @@
 #define PID (1)
 
 #define KEY_SPEED_TOP (500)
-#define KEY_SPEED_BOTTOM (3050)
+#define KEY_SPEED_BOTTOM (2400)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Shooter : public Team166Task

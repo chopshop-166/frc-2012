@@ -165,7 +165,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	int numParticles;
 	int loopcounter=0;
 	int SnapshotNumber=1;
-	proxy->TrackNewpress("joy3b8");
+	proxy->TrackNewpress("joy3b1");
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {				
 		// Wait for our next lap
