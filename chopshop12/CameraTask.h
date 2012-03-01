@@ -54,6 +54,7 @@ public:
 	
 	// Search for Target
 	bool FindTargets(double* normalizedCenterX, int* numParticles);
+	int distance;
 	
 private:
 	Proxy *proxy;				// Handle to proxy
@@ -62,6 +63,7 @@ private:
 	static CameraTask *myHandle;      // handle to myself for static function
 	
 	//values to log
+
 	double targetHAngle;
 	double targetVAngle;
 	double targetSize;

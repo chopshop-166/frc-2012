@@ -13,8 +13,7 @@
 
 #include "math.h"
 
-#define DISTANCECALIBRATION (237.5/12) //THIS IS TEMPORARY! NOT THE ACTUAL VALUE!distance the robot is from the hoop when the top vision target is at the very top of the image
-#define TARGET_HEIGHT_CALIBRATION 23 //THIS IS TEMPORARY!
+#define RATIO 3 //placeholder
 #define GRAVITY (32.17) //ft/s^2
 //BEFORE: (32.17) //ft/s^2
 #define PI 3.14159265358979
@@ -25,5 +24,5 @@
 
 
 
-float Ballistics(ParticleAnalysisReport* Target,int button);
+float Ballistics(ParticleAnalysisReport* Target,int button, int distance);
 

@@ -25,11 +25,11 @@
 #define TPRINTF if(true) dprintf
 
 
-float Ballistics(ParticleAnalysisReport* Target,int button)
+float Ballistics(ParticleAnalysisReport* Target,int button, int distance)
 {
 	Proxy *proxy2;
 	proxy2 = Proxy::getInstance();
-	float targetheight = Target[TOP_MOST].boundingRect.height;
+	float targetheight = Target[TOP_MOST].center_mass_y;
 	float targetheightr =((Target[TOP_MOST].center_mass_y)-(Target[RIGHT_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
 	//TPRINTF(LOG_INFO, "targetheightr: %f", targetheightr);
 	float targetheightl=(Target[TOP_MOST].center_mass_y-Target[LEFT_MOST].center_mass_y); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
@@ -46,11 +46,10 @@ float Ballistics(ParticleAnalysisReport* Target,int button)
 	float rpm; //launch velocity converted into rpm
 	float derivative; //derivative of equation of the parabola at point deltax
 	float eangle; //entry angle
-	float distance=5;
 	float ratio;
 	
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
-	
+	TPRINTF(LOG_INFO, "distance: %i", distance);
 	ratio=distance/targetheight;
 	TPRINTF(LOG_INFO, "ratio: %f", ratio);
 	/*normaldistance=(RATIO*targetheight);

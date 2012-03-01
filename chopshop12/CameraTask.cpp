@@ -104,7 +104,7 @@ CameraTask::CameraTask(void):camera(AxisCamera::GetInstance("10.1.66.12"))
 	Priv_SetWriteFileAllowed(1);   
 		
 	this->MyTaskIsEssential=0;
-	
+	distance=0;
 	SetDebugFlag ( DEBUG_SCREEN_ONLY  );
 	camera.WriteResolution(AxisCamera::kResolution_320x240);
 	camera.WriteBrightness(10);
@@ -141,7 +141,8 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	proxy->add("CameraX");
 	proxy->add("turret_angle");
 	proxy->add("initial_velocity");
-	
+	proxy->TrackNewpress("joy3b4");
+	proxy->TrackNewpress("joy3b5");
 	
 	// Let the world know we're in
 	DPRINTF(LOG_INFO,"In the 166 Camera task\n");
@@ -242,7 +243,15 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	}
 	lHandle->DriverStationDisplay("ProcessImage:%0.6f",proxy->get("CameraX"));
 	
-	Ballistics(&ParticleReport[0], BTN_INPUT);
+	if(proxy->get("joy3b4n", true))
+	{
+		distance++;
+	} 
+	else if(proxy->get("joy3b5n", true)) 
+	{
+		distance--;
+	}
+	Ballistics(&ParticleReport[0], BTN_INPUT, distance);
 	
 	
 	delete image1;
