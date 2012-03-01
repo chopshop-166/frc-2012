@@ -128,10 +128,10 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 		if (proxy->get("matchTimer")>=117) { //once purge mode is active the state changes to outward
 			state = BC_ROLL_OUTWARD;
 		}
-#if 1
+#if 0
 		switch(state){ // switches between inward and outward
 			case(BC_ROLL_INWARD): 
-				if(proxy->get("BallCount") > 3) // if the ballcount is less then three it sets the motor to go forward at halfspeed
+				if(proxy->get("BallCount") >= 3) // if the ballcount is less then three it sets the motor to go forward at halfspeed
 					state = BC_ROLL_OUTWARD;
 				else
 					ballCollector.Set(0.25);
@@ -144,6 +144,7 @@ int ballCollector166::Main(int a2, int a3, int a4, int a5,
 				break;
 		}
 #endif
+		ballCollector.Set(0.25);
 		/*if(proxy->get("joy1b3")) {
 			ballCollector.Set(.25);
 		} else {

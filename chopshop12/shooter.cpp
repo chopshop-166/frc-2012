@@ -143,8 +143,8 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 Shooter::Shooter(void):
 	ShooterJagTopA(SHOOTER_JAG_TOP_A),
 	ShooterJagTopB(SHOOTER_JAG_TOP_B),
-	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_A),
-	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_B)
+	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_B),
+	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_A)
 {
 	Start((char *)"166Shooter", SHOOTER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -207,24 +207,11 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	// Register our logger
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
-	proxy->TrackNewpress("joy1b1");
-	//Proportianal Change
-	proxy->TrackNewpress("joy1b6");
-	proxy->TrackNewpress("joy1b7");
-	//Integral Change
-	proxy->TrackNewpress("joy1b3");
-	proxy->TrackNewpress("joy1b2");
-	//Derivative Change
-	proxy->TrackNewpress("joy1b11");
-	proxy->TrackNewpress("joy1b10");
-	//Change Incremental Value
-	proxy->TrackNewpress("joy1b8");
-	proxy->TrackNewpress("joy1b9");
-	//Change Speed
-	proxy->TrackNewpress("joy1b4");
-	proxy->TrackNewpress("joy1b5");
-	proxy->TrackNewpress("joy2b4");
-	proxy->TrackNewpress("joy2b5");
+	
+	proxy->TrackNewpress("joy3b7");
+	proxy->TrackNewpress("joy3b8");
+	proxy->TrackNewpress("joy3b10");
+	proxy->TrackNewpress("joy3b11");
 	float TopSpeed=0, BottomSpeed=0;
 	float changevalue=0;
 	float MasterSpeedTop=0, MasterSpeedBottom=0;
@@ -290,7 +277,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			ShooterJagTopA.Set(-(KEY_SPEED_TOP));
 			ShooterJagBottomA.Set(KEY_SPEED_BOTTOM);
 		} else if (proxy->get(SHOOTER_MANUAL_TRIGGER)) {
-			ShooterJagTopA.Set(-(TopSpeed));
+			ShooterJagTopA.Set(TopSpeed);
 			ShooterJagBottomA.Set(BottomSpeed);
 		} else {
 			ShooterJagTopA.Set(0);
@@ -304,7 +291,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 #endif
 		if ((loopcounter++ %5)==0)
 		{
-		printf("RPM Top %f ACT: %f Volts %f RPM Bottom %f ACT %f Volts %f\r", TopSpeed, ShooterJagTopA.GetSpeed(),ShooterJagTopA.GetOutputVoltage(), BottomSpeed, ShooterJagBottomA.GetSpeed(), ShooterJagBottomA.GetOutputVoltage());
+		//printf("RPM Top %f ACT: %f Volts %f RPM Bottom %f ACT %f Volts %f\r", TopSpeed, ShooterJagTopA.GetSpeed(),ShooterJagTopA.GetOutputVoltage(), BottomSpeed, ShooterJagBottomA.GetSpeed(), ShooterJagBottomA.GetOutputVoltage());
+		//printf("RPM Top: %f RPM Bottom: %f\r", ShooterJagTopA.GetSpeed(), ShooterJagBottomA.GetSpeed());
 		}
 	//a switch that takes a ballcount from the proxy, if its 0, 
 	//the motors spin slowly, otherwise, code runs normally.

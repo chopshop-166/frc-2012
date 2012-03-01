@@ -19,7 +19,7 @@
 // of miliseconds. Max allowed time is 999 miliseconds.
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
-#define SHOOTER_CYCLE_TIME (10) // 10ms
+#define SHOOTER_CYCLE_TIME (50) // 10ms
 #define PID (1)
 
 #define KEY_SPEED_TOP (500)
