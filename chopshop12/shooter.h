@@ -59,6 +59,8 @@ private:
 	float P;//Proportianl value
 	float I;//Integral value
 	float D;//Derivative value
+	float TopSpeed;
+	float BottomSpeed;
 	// Any variables that the task has as members go here
 	// <<CHANGEME>>
 };
