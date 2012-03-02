@@ -253,7 +253,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 	{
 		distance--;
 	}
-	Ballistics(&ParticleReport[0], BTN_INPUT, distance);
+	//Ballistics(&ParticleReport[0], BTN_INPUT, distance);
 	
 	
 	delete image1;

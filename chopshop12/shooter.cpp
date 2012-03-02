@@ -213,8 +213,12 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy3b8");
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
-	//proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
-	//proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
+#if USE_MAGIC
+	proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
+	proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
+	float MagicCameraConstant=3000000;
+	float MagicCameraValue;
+#endif
 	float ManualTopSpeed=0, ManualBottomSpeed=0;
 	float TopMasterVoltage=0, BottomMasterVoltage=0;
 	int loopcounter=0;
@@ -228,6 +232,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		ShooterJagBottomB.Set(BottomMasterVoltage);
 		
 		//Set Speed
+#if !USE_MAGIC
 		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
 			 ManualTopSpeed+=50;
 		} else if(proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
@@ -238,6 +243,19 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if(proxy->get(SHOOTER_BOTTOM_SPEED_DECREASE, true)) {
 			ManualBottomSpeed-=50;
 		}
+#endif
+#if USE_MAGIC
+		MagicCameraValue=proxy->get("MagicCameraValue", false);
+		
+		if(proxy->get(MAGIC_CONSTANT_INCREASE, true)) {
+			MagicCameraConstant+=100000;
+		} else if (proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
+			MagicCameraConstant-=100000;
+		}
+
+		ManualTopSpeed= sqrt(MagicCameraConstant*MagicCameraValue);
+		ManualBottomSpeed=(ManualTopSpeed*0.3);
+#endif
 		
 		//printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
