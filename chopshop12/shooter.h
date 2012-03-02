@@ -46,10 +46,6 @@ private:
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
 	
-	
-	float speed1; //new speed for bottom
-	float speed2; //new speed for bottom
-	
 	float BackspinFactor; // assign a value to this to differentiate top and bottom speed
 	//Jags for the shooter
 	CANJaguar ShooterJagTopA;
