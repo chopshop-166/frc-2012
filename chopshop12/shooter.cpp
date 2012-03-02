@@ -213,6 +213,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy3b8");
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
+	//proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
+	//proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
 	float ManualTopSpeed=0, ManualBottomSpeed=0;
 	float TopMasterVoltage=0, BottomMasterVoltage=0;
 	int loopcounter=0;
@@ -243,15 +245,18 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			TopSpeed = -(KEY_SPEED_TOP);
 			BottomSpeed = KEY_SPEED_BOTTOM;
 		} else if (proxy->get(SHOOTER_MANUAL_TRIGGER)) {
-			TopSpeed = TopSpeed;
-			BottomSpeed = BottomSpeed;
+			TopSpeed = ManualTopSpeed;
+			BottomSpeed = ManualBottomSpeed;
 		} else {
-			ShooterJagTopA.Set(0);
-			ShooterJagBottomA.Set(0);
+			TopSpeed = 0;
+			BottomSpeed = 0;
 		}
+		ShooterJagTopA.Set(TopSpeed);
+		ShooterJagBottomA.Set(BottomSpeed);
 		if ((loopcounter%7)==0) {
 			if(TopSpeed!=0) {
 				if(TopMasterVoltage=0){
+					printf("Top Dropped out\n");
 					//Configure Top Jaguar A
 					ShooterJagTopA.ConfigEncoderCodesPerRev(360);
 					ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
@@ -266,6 +271,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		} else if((loopcounter%14)==0) {
 			if(BottomSpeed!=0) {
 				if(BottomMasterVoltage=0){
+					printf("Bottom Dropped out\n");
 					//Configure Bottom Jaguar A
 					ShooterJagBottomA.ConfigEncoderCodesPerRev(360);
 					ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
@@ -279,6 +285,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			}
 		}
 		loopcounter++;
+		SmartDashboard::Log(ManualTopSpeed, "Top Speed");
+		SmartDashboard::Log(ManualBottomSpeed, "Bottom Speed");
 		// Make this match the declaraction above
 		sl.PutOne(
 				speed1,

@@ -148,7 +148,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 			}else{
 				rspeed=3* (CameraX);
 				DPRINTF(LOG_INFO, "rspeed=%f", rspeed);
-				}
+			}
 		} else {
 			//Joystick Control Y-Axis
 			if(proxy->get(TURRET_AXIS)>0)
@@ -160,6 +160,11 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 				rspeed=(proxy->get(TURRET_AXIS)*proxy->get(TURRET_AXIS)*-1);
 				}
 		    }
+		if((CameraX<=0.1) && (CameraX>=-0.1)){
+			SmartDashboard::Log((bool)true, "Camera Lock");
+		} else {
+			SmartDashboard::Log((bool)false, "Camera Lock");
+		}
 /*APPLY SPEEDS*/
 		if(rspeed>=DEADBAND && rspeed<=-DEADBAND){
 			rspeed = 0;

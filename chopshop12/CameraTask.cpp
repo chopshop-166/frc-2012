@@ -141,6 +141,7 @@ int CameraTask::Main(int a2, int a3, int a4, int a5,
 	proxy->add("CameraX");
 	proxy->add("turret_angle");
 	proxy->add("initial_velocity");
+	proxy->add("MagicCameraValue");
 	proxy->TrackNewpress("joy3b4");
 	proxy->TrackNewpress("joy3b5");
 	
@@ -234,6 +235,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		*normalizedCenterX = ParticleReport[SELECTED_TARGET].center_mass_x_normalized;
 		proxy->set("CameraX", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
 		DPRINTF("CameraX= %f\n", (float) ParticleReport[SELECTED_TARGET].center_mass_x_normalized);
+		proxy->set("MagicCameraValue", (float) (1/((ParticleReport[SELECTED_TARGET].particleArea)/(ParticleReport[SELECTED_TARGET].boundingRect.width))));
 	}
 	else
 	{
