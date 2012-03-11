@@ -135,8 +135,8 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 Shooter::Shooter(void):
 	ShooterJagTopA(SHOOTER_JAG_TOP_A),
 	ShooterJagTopB(SHOOTER_JAG_TOP_B),
-	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_B),
-	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_A)
+	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_A),
+	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_B)
 {
 	Start((char *)"166Shooter", SHOOTER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -147,8 +147,10 @@ Shooter::Shooter(void):
 	TopSpeed=0;
 	BottomSpeed=0;
 	//Top Jag A
-
-	
+	ShooterJagTopA.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagTopB.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagBottomA.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagBottomB.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
 #if PID
 	ShooterJagTopA.ConfigEncoderCodesPerRev(360);
 	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
@@ -212,15 +214,18 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
+	proxy->TrackNewpress("joy3b6");
 	proxy->TrackNewpress("joy3b7");
-	proxy->TrackNewpress("joy3b8");
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
 	//proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
 	//proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
-	float ManualTopSpeed=400, ManualBottomSpeed=2000;
+	float ManualTopSpeed=100, ManualBottomSpeed=100;
 	float TopMasterVoltage=0, BottomMasterVoltage=0;
+	float TopSpeedHigh=0, TopSpeedLow=0, TopSpeedCur=0;
+	float BottomSpeedHigh=0, BottomSpeedLow=0, BottomSpeedCur=0;
 	unsigned int loopcounter=0;
+	unsigned MaxMinCounter=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
@@ -230,18 +235,37 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		ShooterJagTopB.Set(TopMasterVoltage);
 		ShooterJagBottomB.Set(BottomMasterVoltage);
 		
+		TopSpeedCur=ShooterJagTopA.GetSpeed();
+		BottomSpeedCur=ShooterJagBottomA.GetSpeed();
+		if(MaxMinCounter>=10){
+			if(TopSpeedCur>TopSpeedHigh){
+				TopSpeedHigh=TopSpeedCur;
+			} else if(TopSpeedCur<TopSpeedLow){
+				TopSpeedLow=TopSpeedCur;
+			}
+			if(BottomSpeedCur>BottomSpeedHigh){
+				BottomSpeedHigh=BottomSpeedCur;
+			} else if(BottomSpeedCur<BottomSpeedLow){
+				BottomSpeedLow=BottomSpeedCur;
+			}
+		}
+		MaxMinCounter++;
 		//Set Speed
 		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
-			 ManualTopSpeed+=50;
+			 ManualTopSpeed= ManualTopSpeed + 50;
+			 printf("Top Increase\n");
 		} else if(proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
-			ManualTopSpeed-=50;
+			ManualTopSpeed = ManualTopSpeed - 50;
+			printf("Top Decrease\n");
 		}
 		if(proxy->get(SHOOTER_BOTTOM_SPEED_INCREASE, true)) {
-			ManualBottomSpeed+=50;
+			printf("Bottom Increase\n");
+			ManualBottomSpeed = ManualBottomSpeed + 50;
 		} else if(proxy->get(SHOOTER_BOTTOM_SPEED_DECREASE, true)) {
-			ManualBottomSpeed-=50;
+			printf("Bottom Decrease\n");
+			ManualBottomSpeed = ManualBottomSpeed - 50;
 		}
-		
+		//printf("TOP: %4.1f Bottom: %4.1f\r", ShooterJagTopA.GetSpeed(), ShooterJagBottomA.GetSpeed());
 		//printf("Speed: %f\r", Speed);
 		//Press trigger to make motors go
 #if PID
@@ -249,15 +273,31 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			TopSpeed = -(KEY_SPEED_TOP);
 			BottomSpeed = KEY_SPEED_BOTTOM;	
 		} else if (proxy->get(SHOOTER_MANUAL_TRIGGER)) {
-			TopSpeed = -(ManualTopSpeed);
+			
+			TopSpeed = ManualTopSpeed;
 			BottomSpeed = ManualBottomSpeed;
 		} else {
+			MaxMinCounter=0;
 			TopSpeed = 0;
 			BottomSpeed = 0;
 		}
+		if(proxy->get("joy3b3")){
+			TopSpeedHigh=TopSpeedCur;
+			TopSpeedLow=TopSpeedCur;
+			BottomSpeedHigh=BottomSpeedCur;
+			BottomSpeedLow=BottomSpeedCur;
+		}
 #else 
-		TopSpeed = 3.0;
-		BottomSpeed = 6.0;
+		if (proxy->get("joy3b1")){
+			TopSpeed = -1.5;
+		} else {
+			TopSpeed = 0;
+		}
+		if(proxy->get("joy3b2")){
+			BottomSpeed = 4.25;
+		} else {
+			BottomSpeed = 0;
+		}
 #endif
 		ShooterJagTopA.Set(TopSpeed);
 		ShooterJagBottomA.Set(BottomSpeed);
@@ -298,9 +338,17 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		#endif
 		loopcounter++;
 		SmartDashboard::Log((-1*ManualTopSpeed), "Top Speed");
+		SmartDashboard::Log(((-1*ManualTopSpeed)/4500), "Top Speed Percentage");
+		SmartDashboard::Log(TopSpeedCur, "Actual Speed Top");
+		SmartDashboard::Log(TopSpeedHigh, "Top High");
+		SmartDashboard::Log(TopSpeedLow, "Top Low");
 		SmartDashboard::Log(ManualBottomSpeed, "Bottom Speed");
+		SmartDashboard::Log((ManualBottomSpeed/4500), "Bottom Speed Percentage");
+		SmartDashboard::Log(BottomSpeedCur, "Actual Speed Bottom");
+		SmartDashboard::Log(BottomSpeedHigh, "Bottom High");
+		SmartDashboard::Log(BottomSpeedLow, "Bottom Low");
 		// Make this match the declaraction above
-		sl.PutOne(
+		/*sl.PutOne(
 				TopSpeed,
 				BottomSpeed,
 				ShooterJagTopA.GetSpeed(),
@@ -309,7 +357,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 				ShooterJagTopB.GetOutputVoltage(),//VoltageTopB,
 				ShooterJagBottomA.GetOutputVoltage(),//VoltageBottomA,
 				ShooterJagBottomB.GetOutputVoltage()//VoltageBottomB
-				);
+				);*/
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}

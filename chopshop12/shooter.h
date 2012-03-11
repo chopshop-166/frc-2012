@@ -20,7 +20,7 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define SHOOTER_CYCLE_TIME (50) // 10ms
-#define PID (1)
+#define PID (0)
 
 #define KEY_SPEED_TOP (400)
 #define KEY_SPEED_BOTTOM (2000)
