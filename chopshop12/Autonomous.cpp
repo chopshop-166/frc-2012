@@ -32,7 +32,7 @@ AutonomousTask::AutonomousTask() {
 	
 	state = INIT;
 	int prevCount = 0;
-	Timer shooterTimer, driveTimer, pauseTimer;
+	Timer shooterTimer, driveTimer, pauseTimer, failAlignTimer;
 	proxy->set("joy1T", -1);
 	while( lHandle->IsAutonomous() ) {
 		
@@ -49,7 +49,11 @@ AutonomousTask::AutonomousTask() {
 				//Stop holding bridge manipulator button
 				//if(proxy->get(BM_BUTTON))
 				//	proxy->set(BM_BUTTON, 0);
-				if(proxy->get("CameraX")<.1&&proxy->get("CameraX")>-.1){
+				if(failAlignTimer.Get()==0)	//incase the camera fails, start a 3 second timer
+					failAlignTimer.Start();
+				if((failAlignTimer.Get()>=3)||(proxy->get("CameraX")<.1&&proxy->get("CameraX")>-.1)){	//after 3 seconds of camera failing to align, continue
+					failAlignTimer.Stop();
+					failAlignTimer.Reset();
 					proxy->set("joy3b10", 0);
 					state = CHECK_BALL;
 				}
@@ -63,7 +67,6 @@ AutonomousTask::AutonomousTask() {
 					state = DONE;
 				break;
 			case LOAD_N_SHOOT:
-				
 				//start shooting, loading, and timer
 				if(shooterTimer.Get()==0)	//start time 3 second timer
 					shooterTimer.Start();

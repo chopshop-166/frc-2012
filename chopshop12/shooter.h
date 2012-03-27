@@ -20,10 +20,10 @@
 // You should rename this when you copy it into a new file
 // <<CHANGEME>>
 #define SHOOTER_CYCLE_TIME (50) // 10ms
-#define PID (1)
+#define PID (0)
 
-#define KEY_SPEED_TOP (400)
-#define KEY_SPEED_BOTTOM (2000)
+#define KEY_SPEED_TOP (-1.5)
+#define KEY_SPEED_BOTTOM (4.25)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Shooter : public Team166Task
@@ -45,10 +45,6 @@ private:
 	//Declare Proxy and Robot handles
 	Proxy *proxy;				// Handle to proxy
 	Robot *lHandle;            // Local handle
-	
-	
-	float speed1; //new speed for bottom
-	float speed2; //new speed for bottom
 	
 	float BackspinFactor; // assign a value to this to differentiate top and bottom speed
 	//Jags for the shooter

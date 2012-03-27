@@ -47,10 +47,10 @@ public:
 	ShooterLog() : MemoryLog(
 			sizeof(struct abuf), SHOOTER_CYCLE_TIME, "Shooter",
 			 // Put the names of the values in here, comma-seperated	
-			"Seconds,Nanoseconds,Elapsed Time,\
-			TheoreticalSpeedTop,TheoreticalSpeedBottom,\
-			ActualSpeedTop,ActualSpeedBottom,\
-			VoltageTopA,VoltageTopB,VoltageBottomA,VoltageBottomB\n"
+			"Seconds,Nanoseconds,Elapsed Time,"
+			"TheoreticalSpeedTop,TheoreticalSpeedBottom,"
+			"ActualSpeedTop,ActualSpeedBottom,"
+			"VoltageTopA,VoltageTopB,VoltageBottomA,VoltageBottomB\n"
 			){
 	return;
 	};
@@ -113,15 +113,7 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 	struct abuf *ab = (struct abuf *)nptr;
 	
 	// Output the data into the file
-	fprintf(ofile, "%u,%u, %4.5f, %4.5f, %4.5f, "
-			"%fTheoreticalSpeedTop,"
-			"%fTheoreticalSpeedBottom,"
-			"%fActualSpeedtop,"
-			"%fActualSpeedBottom,"
-			"%fVoltageTopA,"
-			"%fVoltageTopB,"
-			"%fVoltageBottomA,"
-			"%fVoltageBottomB, \n",
+	fprintf(ofile, "%u,%u, %4.5f, %4.5f, %4.5f, %f, %f, %f, %f, %f, %f, %f, %f, \n",
 			ab->tp.tv_sec, ab->tp.tv_nsec,
 			((ab->tp.tv_sec - starttime.tv_sec) + ((ab->tp.tv_nsec-starttime.tv_nsec)/1000000000.)),
 			ab->TheoreticalSpeedTop,
@@ -143,40 +135,32 @@ unsigned int ShooterLog::DumpBuffer(char *nptr, FILE *ofile)
 Shooter::Shooter(void):
 	ShooterJagTopA(SHOOTER_JAG_TOP_A),
 	ShooterJagTopB(SHOOTER_JAG_TOP_B),
-	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_B),
-	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_A)
+	ShooterJagBottomA(SHOOTER_JAG_BOTTOM_A),
+	ShooterJagBottomB(SHOOTER_JAG_BOTTOM_B)
 {
 	Start((char *)"166Shooter", SHOOTER_CYCLE_TIME);
 	// ^^^ Rename those ^^^
 	// <<CHANGEME>>
-	P=0.9;
-	I=0.01;
-	D=0;
 	TopSpeed=0;
 	BottomSpeed=0;
 	//Top Jag A
-
-	ShooterJagTopA.ConfigEncoderCodesPerRev(360);
-#if PID
-	ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
-	ShooterJagTopA.ChangeControlMode(CANJaguar::kSpeed);
-	ShooterJagTopA.SetPID(P,I,D);
-	//ShooterJagTopA.ConfigMaxOutputVoltage(MaxOutputVolts);
-	ShooterJagTopA.EnableControl(0);
-#endif
+	ShooterJagTopA.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagTopB.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagBottomA.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast);
+	ShooterJagBottomB.ConfigNeutralMode(CANJaguar::kNeutralMode_Coast); 
+	//Top Jag B
+	ShooterJagTopA.ChangeControlMode(CANJaguar::kVoltage);
+	//ShooterJagTopB.ConfigMaxOutputVoltage(MaxOutputVolts);
+	ShooterJagTopA.EnableControl();
 	//Top Jag B
 	ShooterJagTopB.ChangeControlMode(CANJaguar::kVoltage);
 	//ShooterJagTopB.ConfigMaxOutputVoltage(MaxOutputVolts);
 	ShooterJagTopB.EnableControl();
 	//Bottom Jag A
-#if PID
-	ShooterJagBottomA.ConfigEncoderCodesPerRev(360);
-	ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
-	ShooterJagBottomA.ChangeControlMode(CANJaguar::kSpeed);
-	ShooterJagBottomA.SetPID(P,I,D);
-	//ShooterJagBottomA.ConfigMaxOutputVoltage(MaxOutputVolts);
-	ShooterJagBottomA.EnableControl(0);
-#endif
+	//Bottom Jag B
+	ShooterJagBottomA.ChangeControlMode(CANJaguar::kVoltage);
+	//ShooterJagBottomB.ConfigMaxOutputVoltage(MaxOutputVolts);
+	ShooterJagBottomA.EnableControl();
 	//Bottom Jag B
 	ShooterJagBottomB.ChangeControlMode(CANJaguar::kVoltage);
 	//ShooterJagBottomB.ConfigMaxOutputVoltage(MaxOutputVolts);
@@ -209,39 +193,35 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	lHandle = Robot::getInstance();
 	lHandle->RegisterLogger(&sl);
 	
+	proxy->TrackNewpress("joy3b6");
 	proxy->TrackNewpress("joy3b7");
-	proxy->TrackNewpress("joy3b8");
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
 #if USE_MAGIC
 	proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
 	proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
+	float ManualTopSpeed=0.0, ManualBottomSpeed=0.0;
 	float MagicCameraConstant=3000000;
 	float MagicCameraValue;
 #endif
-	float ManualTopSpeed=0, ManualBottomSpeed=0;
-	float TopMasterVoltage=0, BottomMasterVoltage=0;
-	int loopcounter=0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
-		
-		//Slave 1 jaguar per axle to the other jaguar
-		TopMasterVoltage = ShooterJagTopA.GetOutputVoltage();
-		BottomMasterVoltage = ShooterJagBottomA.GetOutputVoltage();
-		ShooterJagTopB.Set(TopMasterVoltage);
-		ShooterJagBottomB.Set(BottomMasterVoltage);
 		
 		//Set Speed
 #if !USE_MAGIC
 		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
-			 ManualTopSpeed+=50;
+			 ManualTopSpeed= ManualTopSpeed + 0.2;
+			 printf("Top Increase\n");
 		} else if(proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
-			ManualTopSpeed-=50;
+			ManualTopSpeed = ManualTopSpeed - 0.2;
+			printf("Top Decrease\n");
 		}
 		if(proxy->get(SHOOTER_BOTTOM_SPEED_INCREASE, true)) {
-			ManualBottomSpeed+=50;
+			printf("Bottom Increase\n");
+			ManualBottomSpeed = ManualBottomSpeed + 0.2;
 		} else if(proxy->get(SHOOTER_BOTTOM_SPEED_DECREASE, true)) {
-			ManualBottomSpeed-=50;
+			printf("Bottom Decrease\n");
+			ManualBottomSpeed = ManualBottomSpeed - 0.2;
 		}
 #endif
 #if USE_MAGIC
@@ -256,11 +236,8 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 		ManualTopSpeed= sqrt(MagicCameraConstant*MagicCameraValue);
 		ManualBottomSpeed=(ManualTopSpeed*0.3);
 #endif
-		
-		//printf("Speed: %f\r", Speed);
-		//Press trigger to make motors go
-		if(proxy->get(SHOOTER_TRIGGER)) {
-			TopSpeed = -(KEY_SPEED_TOP);
+		if(proxy->get(SHOOTER_TRIGGER)){
+			TopSpeed = KEY_SPEED_TOP;
 			BottomSpeed = KEY_SPEED_BOTTOM;
 		} else if (proxy->get(SHOOTER_MANUAL_TRIGGER)) {
 			TopSpeed = ManualTopSpeed;
@@ -270,52 +247,26 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			BottomSpeed = 0;
 		}
 		ShooterJagTopA.Set(TopSpeed);
+		ShooterJagTopB.Set(TopSpeed);
 		ShooterJagBottomA.Set(BottomSpeed);
-		if ((loopcounter%7)==0) {
-			if(TopSpeed!=0) {
-				if(TopMasterVoltage=0){
-					printf("Top Dropped out\n");
-					//Configure Top Jaguar A
-					ShooterJagTopA.ConfigEncoderCodesPerRev(360);
-					ShooterJagTopA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
-					ShooterJagTopA.ChangeControlMode(CANJaguar::kSpeed);
-					ShooterJagTopA.SetPID(P,I,D);
-					ShooterJagTopA.EnableControl(0);
-					//Configure Top Jaguar B
-					ShooterJagTopB.ChangeControlMode(CANJaguar::kVoltage);
-					ShooterJagTopB.EnableControl();
-				}
-			} 
-		} else if((loopcounter%14)==0) {
-			if(BottomSpeed!=0) {
-				if(BottomMasterVoltage=0){
-					printf("Bottom Dropped out\n");
-					//Configure Bottom Jaguar A
-					ShooterJagBottomA.ConfigEncoderCodesPerRev(360);
-					ShooterJagBottomA.SetSpeedReference(CANJaguar::kSpeedRef_QuadEncoder);
-					ShooterJagBottomA.ChangeControlMode(CANJaguar::kSpeed);
-					ShooterJagBottomA.SetPID(P,I,D);
-					ShooterJagBottomA.EnableControl(0);
-					//Configure Bottom Jaguar B
-					ShooterJagBottomB.ChangeControlMode(CANJaguar::kVoltage);
-					ShooterJagBottomB.EnableControl();
-				}
-			}
-		}
-		loopcounter++;
-		SmartDashboard::Log(ManualTopSpeed, "Top Speed");
-		SmartDashboard::Log(ManualBottomSpeed, "Bottom Speed");
+		ShooterJagBottomB.Set(BottomSpeed);
+		SmartDashboard::Log(ManualTopSpeed, "Manual Top Speed");
+		SmartDashboard::Log(ManualBottomSpeed, "Manual BottomSpeed");
+		SmartDashboard::Log(ShooterJagTopA.GetOutputVoltage(), "Top A Output");
+		SmartDashboard::Log(ShooterJagTopB.GetOutputVoltage(), "Top B Output");
+		SmartDashboard::Log(ShooterJagBottomA.GetOutputVoltage(), "Bottom A Output");
+		SmartDashboard::Log(ShooterJagBottomB.GetOutputVoltage(), "Bottom B Output");
 		// Make this match the declaraction above
-		sl.PutOne(
-				speed1,
-				speed2,
-				ShooterJagTopA.Get(),
-				ShooterJagBottomA.Get(),
-				0.1,//VoltageTopA,
-				0.1,//VoltageTopB,
-				0.1,//VoltageBottomA,
-				0.1//VoltageBottomB
-				);
+		/*sl.PutOne(
+				TopSpeed,
+				BottomSpeed,
+				ShooterJagTopA.GetSpeed(),
+				ShooterJagBottomA.GetSpeed(),
+				ShooterJagTopA.GetOutputVoltage(),//VoltageTopA,
+				ShooterJagTopB.GetOutputVoltage(),//VoltageTopB,
+				ShooterJagBottomA.GetOutputVoltage(),//VoltageBottomA,
+				ShooterJagBottomB.GetOutputVoltage()//VoltageBottomB
+				);*/
 		// Wait for our next lap
 		WaitForNextLoop();		
 	}
