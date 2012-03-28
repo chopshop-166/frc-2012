@@ -200,10 +200,10 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 #if USE_MAGIC
 	proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
 	proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
-	float ManualTopSpeed=0.0, ManualBottomSpeed=0.0;
 	float MagicCameraConstant=3000000;
 	float MagicCameraValue;
 #endif
+	float ManualTopSpeed=0.0, ManualBottomSpeed=0.0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
