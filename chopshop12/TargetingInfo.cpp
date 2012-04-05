@@ -30,6 +30,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button, int distance)
 	Proxy *proxy2;
 	proxy2 = Proxy::getInstance();
 	float targetheight = Target[TOP_MOST].center_mass_y;
+	TPRINTF(LOG_INFO, "targetheight: %f", targetheight);
 	float targetheightr =((Target[TOP_MOST].center_mass_y)-(Target[RIGHT_MOST].center_mass_y)); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
 	//TPRINTF(LOG_INFO, "targetheightr: %f", targetheightr);
 	float targetheightl=(Target[TOP_MOST].center_mass_y-Target[LEFT_MOST].center_mass_y); //vertical distance from the middle of the image to the middle of the particle; parallel to the edge
@@ -51,7 +52,7 @@ float Ballistics(ParticleAnalysisReport* Target,int button, int distance)
 	//This section claculates the distance from the target (parallel to the ground) and the turret angle
 	TPRINTF(LOG_INFO, "distance: %i", distance);
 	ratio=distance/targetheight;
-	TPRINTF(LOG_INFO, "ratio: %f", ratio);
+	//TPRINTF(LOG_INFO, "ratio: %f", ratio);
 	/*normaldistance=(RATIO*targetheight);
 	TPRINTF(LOG_INFO, "normaldistance: %f", normaldistance);	
 	calctargetwidth=particleheight*24/18; //24/18 is ratio of width to height of vision target
