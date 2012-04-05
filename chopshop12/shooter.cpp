@@ -197,13 +197,18 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	proxy->TrackNewpress("joy3b7");
 	proxy->TrackNewpress("joy3b10");
 	proxy->TrackNewpress("joy3b11");
-	//proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
-	//proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
+#if USE_MAGIC
+	proxy->TrackNewpress(MAGIC_CONSTANT_INCREASE);
+	proxy->TrackNewpress(MAGIC_CONSTANT_DECREASE);
+	float MagicCameraConstant=3000000;
+	float MagicCameraValue;
+#endif
 	float ManualTopSpeed=0.0, ManualBottomSpeed=0.0;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
-		//Set Speed manually
+		//Set Speed
+#if !USE_MAGIC
 		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
 			 ManualTopSpeed= ManualTopSpeed + 0.2;
 			 printf("Top Increase\n");
@@ -218,6 +223,19 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			printf("Bottom Decrease\n");
 			ManualBottomSpeed = ManualBottomSpeed - 0.2;
 		}
+#endif
+#if USE_MAGIC
+		MagicCameraValue=proxy->get("MagicCameraValue", false);
+		
+		if(proxy->get(MAGIC_CONSTANT_INCREASE, true)) {
+			MagicCameraConstant+=100000;
+		} else if (proxy->get(SHOOTER_TOP_SPEED_DECREASE, true)) {
+			MagicCameraConstant-=100000;
+		}
+
+		ManualTopSpeed= sqrt(MagicCameraConstant*MagicCameraValue);
+		ManualBottomSpeed=(ManualTopSpeed*0.3);
+#endif
 		if(proxy->get(SHOOTER_TRIGGER)){
 			TopSpeed = KEY_SPEED_TOP;
 			BottomSpeed = KEY_SPEED_BOTTOM;
