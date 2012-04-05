@@ -203,7 +203,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
-		//Set Speed
+		//Set Speed manually
 		 if(proxy->get(SHOOTER_TOP_SPEED_INCREASE, true)) {
 			 ManualTopSpeed= ManualTopSpeed + 0.2;
 			 printf("Top Increase\n");

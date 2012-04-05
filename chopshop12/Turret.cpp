@@ -169,9 +169,11 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 		if(rspeed>=DEADBAND && rspeed<=-DEADBAND){
 			rspeed = 0;
 		}
+		//sets maximum possible speed for turret
+		rspeed = rspeed / MAX_SPEED;
         volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
         centeroffset=volt-CENTERVOLTAGE;
-        //printf("pot voltage: %f speed: %f \n",volt,rspeed);	//shows volts
+        //printf("pot voltage: %f speed:%f \n",volt,rspeed);	//shows volts
 
         rotateturret.Set(rspeed);	//motor = joystick speed
         // Logging any values

@@ -34,9 +34,9 @@
 #define SHOOTER_MANUAL_TRIGGER			("joy3b2")
 #define BALLFEED_MANUAL					("joy3b4")
 #define TURRET_BTN_AUTO 				("joy3b3") 	//auto-aligns turret
-#define TURRET_BTN_STOP 				("joy3b3")		//stops turret movement when pressed
+#define TURRET_BTN_STOP 				("joy3b3")	//stops turret movement when pressed
 #define TURRET_AXIS 					("joy3x")	//manual turret movement
-#define CAMERA_SNAPSHOT_TAKE			("joy3b1n")		// take a picture and save it to cRIO
+#define CAMERA_SNAPSHOT_TAKE			("joy3b1n")	// take a picture and save it to cRIO
 #define MAGIC_CONSTANT_INCREASE			("joy3b")
 #define MAGIC_CONSTANT_DECREASE			("joy3b")
 #define MAGIC_CONSTANT_INCREASEN		("joy3bn")

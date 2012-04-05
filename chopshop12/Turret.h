@@ -26,6 +26,7 @@
 #define STRINGEXCESS	(3.59)
 #define TURRETANGLE		(.34)
 #define DEADBAND		(.1)
+#define MAX_SPEED		(3) //the fastest speed at which the turret will move
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Turret166 : public Team166Task
