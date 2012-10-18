@@ -203,7 +203,7 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 	float MagicCameraConstant=3000000;
 	float MagicCameraValue;
 #endif
-	float ManualTopSpeed=0.0, ManualBottomSpeed=0.0;
+	float ManualTopSpeed=KEY_SPEED_TOP, ManualBottomSpeed=KEY_SPEED_BOTTOM;
 	// General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		
@@ -243,19 +243,18 @@ int Shooter::Main(int a2, int a3, int a4, int a5,
 			TopSpeed = ManualTopSpeed;
 			BottomSpeed = ManualBottomSpeed;
 		} else {
-			TopSpeed = 0;
-			BottomSpeed = 0;
+			//Keep running to clear jams
+			TopSpeed = LOW_SPEED_TOP;
+			BottomSpeed = LOW_SPEED_BOTTOM;
 		}
 		ShooterJagTopA.Set(TopSpeed);
 		ShooterJagTopB.Set(TopSpeed);
 		ShooterJagBottomA.Set(BottomSpeed);
 		ShooterJagBottomB.Set(BottomSpeed);
-		SmartDashboard::Log(ManualTopSpeed, "Manual Top Speed");
-		SmartDashboard::Log(ManualBottomSpeed, "Manual BottomSpeed");
-		SmartDashboard::Log(ShooterJagTopA.GetOutputVoltage(), "Top A Output");
-		SmartDashboard::Log(ShooterJagTopB.GetOutputVoltage(), "Top B Output");
-		SmartDashboard::Log(ShooterJagBottomA.GetOutputVoltage(), "Bottom A Output");
-		SmartDashboard::Log(ShooterJagBottomB.GetOutputVoltage(), "Bottom B Output");
+		SmartDashboard::Log(TopSpeed, "Text Top Speed");
+		SmartDashboard::Log(BottomSpeed, "Text BottomSpeed");
+		SmartDashboard::Log(((-1)*TopSpeed), "Progress Top Speed");
+		SmartDashboard::Log(BottomSpeed, "Progress BottomSpeed");
 		// Make this match the declaraction above
 		/*sl.PutOne(
 				TopSpeed,

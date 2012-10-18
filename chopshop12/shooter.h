@@ -22,8 +22,10 @@
 #define SHOOTER_CYCLE_TIME (50) // 10ms
 #define PID (0)
 
-#define KEY_SPEED_TOP (-1.5)
-#define KEY_SPEED_BOTTOM (4.25)
+#define KEY_SPEED_TOP (-2.0)
+#define KEY_SPEED_BOTTOM (3.8)
+#define LOW_SPEED_TOP (-1.6)
+#define LOW_SPEED_BOTTOM (2.0)
 // Rename this, too, or you'll run into collisions
 // <<CHANGEME>>
 class Shooter : public Team166Task
