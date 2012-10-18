@@ -140,9 +140,6 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 	int Average2 = 0;
 	int Average3 = 0;
 	
-	int PrevBallCount = 0;
-	
-	int shooting = 0;
     // General main loop (while in Autonomous or Tele mode)
 	while (true) {
 		 //BallCount = number of balls the robot has
@@ -166,35 +163,21 @@ int BallFeeder166::Main(int a2, int a3, int a4, int a5,
 		Average3=(Average3/NUMTOAVERAGE);
 
 		BallCount = (Average3 + Average2 + Average1);
-		proxy->TrackNewpress("joy3b1");
 		proxy->set("BallCount",BallCount);
 		//printf("\rBall Count: %d \t", BallCount);
 		//printf("Ball 0: %d ball 1: %d Ball 2: %d Ball 3: %d\r",
 				//BallLocation0.Get(), BallLocation1.Get(), BallLocation2.Get(), BallLocation3.Get());
 		//to shoot, pull trigger
-		if (proxy->get("joy3b1n"))
-		{
-			if(BallCount >= 1){
-				shooting=!shooting;
-				PrevBallCount = BallCount;
-			}
-		}
-		if(shooting){
-			if((BallCount != (PrevBallCount-1))||(BallLocation3.Get())) {
-				feedspeed = BALLFEED;
-			} else {
-				feedspeed = 0;
-				shooting = !shooting;
-			}
+
 		//ball incoming
-		}else if(proxy->get(BALLFEED_MANUAL)) {
+		if(proxy->get(BALLFEED_MANUAL)) {
 			feedspeed = BALLFEED;
-		}else {
+		}else if(!lHandle->IsAutonomous()){
 			switch(FeedState) {
 				case Stopped:
 					//printf("I am Stopped");
 					feedspeed=0;
-					if(!BallLocation0.Get()) {
+					if(BallLocation0.Get()) {
 						waitTimer=0;
 						FeedState = Waiting;
 					}

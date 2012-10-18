@@ -96,7 +96,7 @@ unsigned int TurretLog::DumpBuffer(char *nptr, FILE *ofile)
 	
 	
 // task constructor
-Turret166::Turret166(void):turretpot(TURRET_POT), rotateturret(TURRET_JAG)
+Turret166::Turret166(void):rotateturret(TURRET_JAG)
 {
 	Start((char *)"166TurretTask", TURRET_CYCLE_TIME);
 	// ^^^ Rename those ^^^
@@ -170,8 +170,7 @@ int Turret166::Main(int a2, int a3, int a4, int a5,
 			rspeed = 0;
 		}
 		//sets maximum possible speed for turret
-		rspeed = rspeed / MAX_SPEED;
-        volt = turretpot.GetVoltage();	//voltage = what the pot picks up				
+		rspeed = rspeed / MAX_SPEED;		
         centeroffset=volt-CENTERVOLTAGE;
         //printf("pot voltage: %f speed:%f \n",volt,rspeed);	//shows volts
 

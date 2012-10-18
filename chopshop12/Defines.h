@@ -31,8 +31,9 @@
 #define SHOOTER_BOTTOM_SPEED_INCREASE	("joy3b11n")
 #define SHOOTER_BOTTOM_SPEED_DECREASE	("joy3b10n")
 #define SHOOTER_TRIGGER					("joy3b1")
-#define SHOOTER_MANUAL_TRIGGER			("joy3b2")
-#define BALLFEED_MANUAL					("joy3b4")
+#define SHOOTER_MANUAL_TRIGGER			("joy3b4")
+#define SHOOTER_LOW_PRESET				("joy3b5")
+#define BALLFEED_MANUAL					("joy3b2")
 #define TURRET_BTN_AUTO 				("joy3b3") 	//auto-aligns turret
 #define TURRET_BTN_STOP 				("joy3b3")		//stops turret movement when pressed
 #define TURRET_AXIS 					("joy3x")	//manual turret movement

@@ -136,9 +136,9 @@ int bridgeManipulator166::Main(int a2, int a3, int a4, int a5,
 		} else if(ManipulatorState<0 && ExtendedLimit.Get()) {
 			ManipulatorSpeed = 0;
 		} else {
-			if(ManipulatorState>0)
-				ManipulatorSpeed = BRIDGESPEEDDOWN * ManipulatorState;
 			if(ManipulatorState<0)
+				ManipulatorSpeed = BRIDGESPEEDDOWN * ManipulatorState;
+			if(ManipulatorState>0)
 				ManipulatorSpeed = BRIDGESPEEDUP * ManipulatorState;
 		}
 		//printf("State: %d Speed: %2.2f\r", ManipulatorState, ManipulatorSpeed);

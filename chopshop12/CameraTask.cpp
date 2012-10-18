@@ -243,7 +243,7 @@ bool CameraTask::FindTargets(double* normalizedCenterX, int* numParticles) {
 		proxy->set("CameraX", (float) 2);
 		DPRINTF("CameraX= %f\n", 2.0);
 	}
-	lHandle->DriverStationDisplay("ProcessImage:%0.6f",proxy->get("CameraX"));
+	//lHandle->DriverStationDisplay("ProcessImage:%0.6f",proxy->get("CameraX"));
 	
 	if(proxy->get("joy3b4n", true))
 	{

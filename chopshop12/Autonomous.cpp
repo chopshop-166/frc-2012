@@ -36,29 +36,33 @@ AutonomousTask::AutonomousTask() {
 	proxy->set("joy1T", -1);
 	while( lHandle->IsAutonomous() ) {
 		
-		proxy->set("joy3b10", 1);
+		proxy->set(TURRET_BTN_AUTO, 1);
 		
 		//printf("State: %d \n", int(state));
 		switch(state){
 			case INIT:
+				lHandle->DriverStationDisplay("We are Initializing");
 				//Lower Bridge Manipulator
 				//proxy->set(BM_BUTTON, 1);
+				proxy->set(SHOOTER_TRIGGER, 1);
 				state = IS_ALIGNING;
 				break;
 			case IS_ALIGNING:
+				lHandle->DriverStationDisplay("We are Aligning");
 				//Stop holding bridge manipulator button
 				//if(proxy->get(BM_BUTTON))
 				//	proxy->set(BM_BUTTON, 0);
 				if(failAlignTimer.Get()==0)	//incase the camera fails, start a 3 second timer
 					failAlignTimer.Start();
-				if((failAlignTimer.Get()>=3)||(proxy->get("CameraX")<.1&&proxy->get("CameraX")>-.1)){	//after 3 seconds of camera failing to align, continue
+				if((failAlignTimer.Get()>=3)){	//after 3 seconds of camera failing to align, continue
 					failAlignTimer.Stop();
 					failAlignTimer.Reset();
-					proxy->set("joy3b10", 0);
+					proxy->set(TURRET_BTN_AUTO, 0);
 					state = CHECK_BALL;
 				}
 				break;
 			case CHECK_BALL:
+				lHandle->DriverStationDisplay("We are Checking Ball %d", int(proxy->get("BallCount")));
 				if(int(proxy->get("BallCount"))>0){
 					prevCount = int(proxy->get("BallCount"));
 					state = LOAD_N_SHOOT;
@@ -67,21 +71,23 @@ AutonomousTask::AutonomousTask() {
 					state = DONE;
 				break;
 			case LOAD_N_SHOOT:
+				lHandle->DriverStationDisplay("We are Shooting");
 				//start shooting, loading, and timer
 				if(shooterTimer.Get()==0)	//start time 3 second timer
 					shooterTimer.Start();
-				if(proxy->get(SHOOTER_TRIGGER)==0)
-					proxy->set(SHOOTER_TRIGGER, 1);	//start shooting
+				if(proxy->get(BALLFEED_MANUAL)==0)
+					proxy->set(BALLFEED_MANUAL, 1);	//start shooting
 				
 				//when the 3 seconds are up, stop timer and shooter
-				if(shooterTimer.Get()>=2){
+				if(shooterTimer.Get()>=1){
 					shooterTimer.Stop();
-					proxy->set(SHOOTER_TRIGGER, 0);
+					proxy->set(BALLFEED_MANUAL, 0);
 					shooterTimer.Reset();
 					state = PAUSE_ONE_SEC;
 				}
 				break;
 			case PAUSE_ONE_SEC:
+				lHandle->DriverStationDisplay("We are Pausing");
 				if(pauseTimer.Get()==0)
 					pauseTimer.Start();
 				else if(pauseTimer.Get()>=1){
@@ -106,6 +112,7 @@ AutonomousTask::AutonomousTask() {
 				}
 				break;
 			case DONE:
+				proxy->set(SHOOTER_TRIGGER, 0);
 				break;
 			default:
 				printf("ERROR IF THIS IS SEEN");
